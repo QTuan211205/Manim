@@ -41,7 +41,7 @@ class Scene1_3(Scene):
         # =====================================================================
         # GIAI ĐOẠN 1: CHUỖI SUY NGHĨ (CHAIN OF THOUGHT - COT)
         # =====================================================================
-        sub_title1 = create_text("Phương thức 1: Sinh thêm Token lập luận (Chain of Thought)", font_size=12, color=GREEN_A)
+        sub_title1 = create_text("1. Generate extra tokens [Wei et al., 2022]", font_size=12, color=GREEN_A)
         sub_title1.next_to(main_title, DOWN, buff=0.2)
         self.play(FadeIn(sub_title1, shift=DOWN*0.1))
         self.wait(2.0)
@@ -51,11 +51,11 @@ class Scene1_3(Scene):
         left_bg = RoundedRectangle(width=5.8, height=4.2, color=RED, fill_color="#1a1112", fill_opacity=0.8, corner_radius=0.1)
         left_bg.shift(LEFT * 3.3 + DOWN * 0.8)
         
-        left_title = create_text("Nhắc lệnh trực tiếp (Standard Prompting)", font_size=11, color=RED_A)
+        left_title = create_text("Standard Prompting (Direct Output)", font_size=11, color=RED_A)
         left_title.next_to(left_bg.get_top(), DOWN, buff=0.25)
         
         # Căn giữa văn bản câu hỏi trong hộp bên trái
-        left_q = create_text("Prompt: Tìm số nguyên tố thứ 1000.", font_size=11, color=WHITE)
+        left_q = create_text("Prompt / Input x", font_size=11, color=WHITE)
         left_q.next_to(left_title, DOWN, buff=0.35)
         
         # Mô phỏng quá trình sinh trực tiếp (Sử dụng Line + add_tip cho đồng bộ tuyệt đối)
@@ -68,7 +68,7 @@ class Scene1_3(Scene):
         # Hộp kết quả đầu ra (Căn giữa)
         left_out_box = RoundedRectangle(width=5.2, height=1.0, color=RED_C, fill_color="#2c1a1b", fill_opacity=0.9, corner_radius=0.08)
         left_out_box.next_to(left_arrow, DOWN, buff=0.15)
-        left_out_text = create_text("Output: 7919\n(Sai - Số nguyên tố thứ 1000 thực tế là 7919,\nnhưng mô hình tính toán nhầm do không suy nghĩ)", font_size=9, color=RED_A)
+        left_out_text = create_text("Direct Output y\n(No intermediate thoughts)", font_size=9, color=RED_A)
         left_out_text.move_to(left_out_box.get_center())
         
         left_group.add(left_bg, left_title, left_q)
@@ -78,11 +78,11 @@ class Scene1_3(Scene):
         right_bg = RoundedRectangle(width=5.8, height=4.2, color=GREEN, fill_color="#111c13", fill_opacity=0.8, corner_radius=0.1)
         right_bg.shift(RIGHT * 3.3 + DOWN * 0.8)
         
-        right_title = create_text("Chuỗi suy nghĩ (Chain of Thought)", font_size=11, color=GREEN_A)
+        right_title = create_text("Chain of Thought (CoT)", font_size=11, color=GREEN_A)
         right_title.next_to(right_bg.get_top(), DOWN, buff=0.25)
         
         # Căn giữa văn bản câu hỏi trong hộp bên phải
-        right_q = create_text("Prompt: Tìm số nguyên tố thứ 1000.\nHãy suy nghĩ từng bước một.", font_size=11, color=WHITE)
+        right_q = create_text("Prompt / Input x", font_size=11, color=WHITE)
         right_q.next_to(right_title, DOWN, buff=0.25)
         
         right_group.add(right_bg, right_title, right_q)
@@ -105,22 +105,22 @@ class Scene1_3(Scene):
         step_box_w, step_box_h = 5.2, 0.45
         step1_box = RoundedRectangle(width=step_box_w, height=step_box_h, color=GREEN_C, fill_color="#182c1b", fill_opacity=0.9, corner_radius=0.06)
         step1_box.next_to(right_q, DOWN, buff=0.2)
-        step1_text = create_text("Lập luận 1: Phải tìm số thứ 1000 trong dãy 2, 3, 5, 7...", font_size=9, color=GREEN_A)
+        step1_text = create_text("Intermediate Thought Token 1", font_size=9, color=GREEN_A)
         step1_text.move_to(step1_box.get_center())
         
         step2_box = RoundedRectangle(width=step_box_w, height=step_box_h, color=GREEN_C, fill_color="#182c1b", fill_opacity=0.9, corner_radius=0.06)
         step2_box.next_to(step1_box, DOWN, buff=0.15)
-        step2_text = create_text("Lập luận 2: Ước lượng giới hạn p_n ≈ n ln(n) ≈ 6907.", font_size=9, color=GREEN_A)
+        step2_text = create_text("Intermediate Thought Token 2", font_size=9, color=GREEN_A)
         step2_text.move_to(step2_box.get_center())
 
         step3_box = RoundedRectangle(width=step_box_w, height=step_box_h, color=GREEN_C, fill_color="#182c1b", fill_opacity=0.9, corner_radius=0.06)
         step3_box.next_to(step2_box, DOWN, buff=0.15)
-        step3_text = create_text("Lập luận 3: Sàng các số lẻ đến 8000, đếm đủ 1000 số.", font_size=9, color=GREEN_A)
+        step3_text = create_text("Intermediate Thought Token 3", font_size=9, color=GREEN_A)
         step3_text.move_to(step3_box.get_center())
 
         final_box = RoundedRectangle(width=step_box_w, height=0.55, color=YELLOW, fill_color="#302d18", fill_opacity=0.9, corner_radius=0.06)
         final_box.next_to(step3_box, DOWN, buff=0.2)
-        final_text = create_text("Kết quả cuối: Số thứ 1000 là 7919 (Chính xác)", font_size=9, color=YELLOW)
+        final_text = create_text("Final Output y", font_size=9, color=YELLOW)
         final_text.move_to(final_box.get_center())
 
         # Animate step-by-step
@@ -146,7 +146,7 @@ class Scene1_3(Scene):
         # =====================================================================
         # GIAI ĐOẠN 2: LẤY MẪU SONG SONG & LỌC (PARALLEL SAMPLING - ALPHACODE)
         # =====================================================================
-        sub_title2 = create_text("Phương thức 2: Lấy mẫu song song & Lọc qua Bộ đánh giá", font_size=12, color=YELLOW)
+        sub_title2 = create_text("2. Call generator multiple times (e.g., AlphaCode [Li et al., 2022])", font_size=12, color=YELLOW)
         sub_title2.next_to(main_title, DOWN, buff=0.2)
         self.play(FadeIn(sub_title2, shift=DOWN*0.1))
         self.wait(1.5)
@@ -154,7 +154,7 @@ class Scene1_3(Scene):
         # Hiển thị đề bài toán lập trình ở trên (y = 2.3)
         problem_bg = RoundedRectangle(width=8.0, height=0.8, color=BLUE_A, fill_color="#121824", fill_opacity=0.8, corner_radius=0.08)
         problem_bg.shift(UP * 2.3)
-        problem_text = create_text("Yêu cầu lập trình: \"Viết hàm Python kiểm tra đồ thị liên thông.\"", font_size=12, color=WHITE)
+        problem_text = create_text("Input / Query", font_size=12, color=WHITE)
         problem_text.move_to(problem_bg.get_center())
 
         self.play(Create(problem_bg), Write(problem_text), run_time=1.0)
@@ -197,7 +197,7 @@ class Scene1_3(Scene):
         for idx, pt in enumerate(endpoints):
             box = RoundedRectangle(width=1.8, height=1.0, color=GRAY, fill_color="#1e1e1e", fill_opacity=0.9, corner_radius=0.06)
             box.move_to(pt)
-            label = create_text(f"Mẫu Code {idx+1}\n(Sinh ngẫu nhiên)", font_size=10, color=WHITE)
+            label = create_text(f"Candidate {idx+1}\n(Random Sample)", font_size=10, color=WHITE)
             label.move_to(box.get_center())
             code_boxes.add(box)
             code_labels.add(label)
@@ -211,7 +211,7 @@ class Scene1_3(Scene):
 
         # Lưới lọc (Unit Test) đặt ở y = -1.0 để các hộp di chuyển qua hoàn toàn
         filter_line = Line(LEFT * 6.0 + DOWN * 1.0, RIGHT * 6.0 + DOWN * 1.0, color=GREEN, stroke_width=3.5)
-        filter_label = create_text("BỘ LỌC ĐÁNH GIÁ (UNIT TEST & CODE RUNNER)", font_size=9, color=GREEN_A).next_to(filter_line, UP, aligned_edge=RIGHT, buff=0.1)
+        filter_label = create_text("VERIFIER / EVALUATOR", font_size=9, color=GREEN_A).next_to(filter_line, UP, aligned_edge=RIGHT, buff=0.1)
         
         self.play(Create(filter_line), Write(filter_label), run_time=1.0)
         self.wait(2.0)
@@ -259,7 +259,7 @@ class Scene1_3(Scene):
             code_boxes[2].get_bottom(), code_boxes[2].get_bottom() + DOWN * 0.6, 
             color=YELLOW, stroke_width=2.5
         ).add_tip(tip_length=0.12, tip_width=0.12)
-        final_out_lbl = create_text("Mã nguồn chính xác duy nhất được trả về", font_size=11, color=YELLOW).next_to(final_arrow, DOWN, buff=0.1)
+        final_out_lbl = create_text("Best candidate selected as Output", font_size=11, color=YELLOW).next_to(final_arrow, DOWN, buff=0.1)
         self.play(Create(final_arrow), Write(final_out_lbl), run_time=0.8)
         self.wait(18.0)
 
@@ -275,7 +275,7 @@ class Scene1_3(Scene):
         # =====================================================================
         # GIAI ĐOẠN 3: HỆ THỐNG AI PHỨC HỢP & CÔNG CỤ NGOÀI (COMPOUND AI & TOOLS)
         # =====================================================================
-        sub_title3 = create_text("Phương thức 3: Hệ thống AI phức hợp (Compound AI System / Tools)", font_size=12, color=BLUE_A)
+        sub_title3 = create_text("3. Incorporate other models/tools [Zaharia et al., 2024]", font_size=12, color=BLUE_A)
         sub_title3.next_to(main_title, DOWN, buff=0.2)
         self.play(FadeIn(sub_title3, shift=DOWN*0.1))
         self.wait(1.5)
@@ -283,17 +283,17 @@ class Scene1_3(Scene):
         # 1. Hộp LLM ở giữa (y = 0.4)
         llm_box = RoundedRectangle(width=2.8, height=1.2, color=BLUE, fill_color="#121824", fill_opacity=0.9, corner_radius=0.08)
         llm_box.shift(UP * 0.4)
-        llm_text = create_text("LLM\n(Bộ điều phối / Generator)", font_size=11, color=BLUE_A).move_to(llm_box.get_center())
+        llm_text = create_text("Language Model\n(Generator)", font_size=11, color=BLUE_A).move_to(llm_box.get_center())
 
         # 2. Hộp Tool: Calculator (y = -1.8)
         calc_box = RoundedRectangle(width=2.5, height=1.1, color=GREEN, fill_color="#0e1a10", fill_opacity=0.9, corner_radius=0.08)
         calc_box.shift(LEFT * 3.3 + DOWN * 1.8)
-        calc_text = create_text("Tool: Máy tính\n(Calculator)", font_size=11, color=GREEN_A).move_to(calc_box.get_center())
+        calc_text = create_text("Tool: Search Engine", font_size=11, color=GREEN_A).move_to(calc_box.get_center())
 
         # 3. Hộp Tool: Python Interpreter (y = -1.8)
         python_box = RoundedRectangle(width=2.5, height=1.1, color=ORANGE, fill_color="#24190e", fill_opacity=0.9, corner_radius=0.08)
         python_box.shift(RIGHT * 3.3 + DOWN * 1.8)
-        python_text = create_text("Tool: Python Code Run\n(Code Interpreter)", font_size=11, color=ORANGE).move_to(python_box.get_center())
+        python_text = create_text("Tool: Code Interpreter", font_size=11, color=ORANGE).move_to(python_box.get_center())
 
         # Mũi tên kết nối hai chiều (Sử dụng Line kết hợp add_tip cho đồng bộ hoàn hảo)
         arrow_calc_out = Line(
@@ -330,7 +330,7 @@ class Scene1_3(Scene):
         # Hiển thị câu hỏi đầu vào ở y = 2.0 (Dưới tiêu đề phụ để tránh đè chữ)
         user_input_bg = RoundedRectangle(width=5.0, height=0.6, color=GRAY, fill_color="#222", fill_opacity=0.8, corner_radius=0.06)
         user_input_bg.shift(UP * 2.0)
-        user_input_txt = create_text("Yêu cầu: Tính giá trị 3.14159 * 2.71828^5", font_size=11, color=WHITE)
+        user_input_txt = create_text("Query / Input", font_size=11, color=WHITE)
         user_input_txt.move_to(user_input_bg.get_center())
 
         self.play(Create(user_input_bg), Write(user_input_txt), run_time=0.8)
@@ -339,7 +339,7 @@ class Scene1_3(Scene):
         # LLM nhận dạng và sinh lệnh gọi máy tính (y = -0.5)
         call_msg_bg = RoundedRectangle(width=2.5, height=0.5, color=GREEN, fill_color="#0e1a10", fill_opacity=0.9, corner_radius=0.06)
         call_msg_bg.shift(DOWN * 0.5)
-        call_msg_txt = create_text("[CALL: 3.14159*2.71828^5]", font_size=10, color=GREEN_A)
+        call_msg_txt = create_text("[Call Tool with Query]", font_size=10, color=GREEN_A)
         call_msg_txt.move_to(call_msg_bg.get_center())
 
         self.play(Create(call_msg_bg), Write(call_msg_txt), run_time=0.8)
@@ -355,7 +355,7 @@ class Scene1_3(Scene):
         # Calculator xuất kết quả ở y = -2.8
         calc_out_bg = RoundedRectangle(width=2.2, height=0.5, color=GREEN_C, fill_color="#182c1b", fill_opacity=0.9, corner_radius=0.06)
         calc_out_bg.shift(DOWN * 2.8 + LEFT * 3.3)
-        calc_out_txt = create_text("Kết quả: 467.43", font_size=10, color=GREEN_A)
+        calc_out_txt = create_text("Tool Output / Results", font_size=10, color=GREEN_A)
         calc_out_txt.move_to(calc_out_bg.get_center())
         
         self.play(Create(calc_out_bg), Write(calc_out_txt), run_time=0.8)
@@ -371,7 +371,7 @@ class Scene1_3(Scene):
         # LLM nhận kết quả và đưa ra câu trả lời cuối: FADE OUT hộp yêu cầu và THAY THẾ bằng hộp kết quả ở y = 2.0
         final_answer_bg = RoundedRectangle(width=5.5, height=0.6, color=YELLOW, fill_color="#302d18", fill_opacity=0.9, corner_radius=0.06)
         final_answer_bg.shift(UP * 2.0)
-        final_answer_txt = create_text("Trả lời: Giá trị phép tính là 467.43 (Chuẩn xác 100%)", font_size=11, color=YELLOW)
+        final_answer_txt = create_text("Final Answer (incorporating tool output)", font_size=11, color=YELLOW)
         final_answer_txt.move_to(final_answer_bg.get_center())
 
         self.play(

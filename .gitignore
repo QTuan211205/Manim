@@ -1,0 +1,5 @@
+# Tạo hoặc ghi thêm vào file .gitignore
+Add-Content .gitignore "`n**/__pycache__/"
+Add-Content .gitignore "`n**/media/"
+Add-Content .gitignore "`n**/partial_movie_files/"
+Add-Content .gitignore "`n**/frames_debug/"

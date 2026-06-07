@@ -8,7 +8,7 @@ config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
 # Hàm hỗ trợ tạo Text đảm bảo không bị lỗi mất dấu tiếng Việt khi hiển thị kích thước nhỏ trên Windows
-def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
+def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
     if font_size < 20:
         t = Text(text, font_size=36, font=font, color=color, **kwargs)
         t.scale(font_size / 36)
@@ -16,7 +16,7 @@ def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
     return Text(text, font_size=font_size, font=font, color=color, **kwargs)
 
 # Hàm hỗ trợ tạo MarkupText đảm bảo không bị lỗi mất dấu tiếng Việt khi hiển thị kích thước nhỏ trên Windows
-def create_markup_text(text, font_size=24, font="Arial", **kwargs):
+def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
     if font_size < 20:
         t = MarkupText(text, font_size=36, font=font, **kwargs)
         t.scale(font_size / 36)
@@ -131,7 +131,7 @@ class Scene3_4(Scene):
         code_1_box.move_to(RIGHT * 2.2 + UP * 0.7)
         code_1_lbl = create_markup_text(
             "<b>Bản nháp 1 (Lỗi):</b>\n"
-            "<span color='#FF8888'>fn main() {\n"
+            "<span foreground='#FF8888'>fn main() {\n"
             "  let s = String::from(\"hello\");\n"
             "  let y = s; // moved s ở đây\n"
             "  println!(\"{}\", s); // Lỗi sử dụng lại s\n"
@@ -192,7 +192,7 @@ class Scene3_4(Scene):
         error_box.move_to(DOWN * 1.6)
         error_lbl = create_markup_text(
             "<b>Compiler Error (Rust Borrow Checker):</b>\n"
-            "<span color='#FF5555'>error[E0382]: borrow of moved value: 's'</span>",
+            "<span foreground='#FF5555'>error[E0382]: borrow of moved value: 's'</span>",
             font_size=8, line_spacing=1.1
         ).move_to(error_box.get_center())
 
@@ -219,7 +219,7 @@ class Scene3_4(Scene):
         # Sử dụng &amp; thay thế cho & để tránh lỗi XML parser của Pango
         code_2_lbl = create_markup_text(
             "<b>Bản nháp 2 (Đã sửa):</b>\n"
-            "<span color='#88FF88'>fn main() {\n"
+            "<span foreground='#88FF88'>fn main() {\n"
             "  let s = String::from(\"hello\");\n"
             "  let y = &amp;s; // Mượn tham chiếu\n"
             "  println!(\"{}\", s); // Biên dịch thành công!\n"
@@ -328,7 +328,7 @@ class Scene3_4(Scene):
         # Nháp 1 (Đúng)
         ans1_box = RoundedRectangle(width=4.0, height=0.5, color=GREEN, fill_color="#143c14", fill_opacity=0.8, corner_radius=0.05)
         ans1_box.next_to(prompt_box, DOWN, buff=0.15)
-        ans1_lbl = create_markup_text("<b>LLM (Draft):</b> Đáp án là <span color='#88FF88'>42</span> (Đúng)", font_size=9).move_to(ans1_box.get_center())
+        ans1_lbl = create_markup_text("<b>LLM (Draft):</b> Đáp án là <span foreground='#88FF88'>42</span> (Đúng)", font_size=9).move_to(ans1_box.get_center())
 
         self.play(FadeIn(prompt_box), Write(prompt_lbl), run_time=0.8)
         self.play(FadeIn(ans1_box), Write(ans1_lbl), run_time=0.8)
@@ -345,7 +345,7 @@ class Scene3_4(Scene):
         # LLM tự nhận định sai (Hallucination)
         halluc_box = RoundedRectangle(width=4.0, height=0.5, color=RED, fill_color="#3c1414", fill_opacity=0.8, corner_radius=0.05)
         halluc_box.next_to(critique_box, DOWN, buff=0.15)
-        halluc_lbl = create_markup_text("<b>LLM (Critique):</b> Chưa đúng, 17+25 phải bằng <span color='#FF8888'>32</span>", font_size=8).move_to(halluc_box.get_center())
+        halluc_lbl = create_markup_text("<b>LLM (Critique):</b> Chưa đúng, 17+25 phải bằng <span foreground='#FF8888'>32</span>", font_size=8).move_to(halluc_box.get_center())
 
         self.play(FadeIn(halluc_box), Write(halluc_lbl), run_time=0.8)
         self.wait(12.0)
@@ -353,7 +353,7 @@ class Scene3_4(Scene):
         # Sửa lại thành đáp án sai
         ans2_box = RoundedRectangle(width=4.0, height=0.5, color=RED, fill_color="#3c1414", fill_opacity=0.8, corner_radius=0.05)
         ans2_box.next_to(halluc_box, DOWN, buff=0.15)
-        ans2_lbl = create_markup_text("<b>LLM (Final):</b> Sửa lại là <span color='#FF8888'>32</span> (Sai hoàn toàn!)", font_size=9).move_to(ans2_box.get_center())
+        ans2_lbl = create_markup_text("<b>LLM (Final):</b> Sửa lại là <span foreground='#FF8888'>32</span> (Sai hoàn toàn!)", font_size=9).move_to(ans2_box.get_center())
 
         self.play(FadeIn(ans2_box), Write(ans2_lbl), run_time=0.8)
         self.wait(12.0)
@@ -408,7 +408,7 @@ class Scene3_4(Scene):
         # Khung đỏ làm nổi bật cạm bẫy 15% (Đúng -> Sai)
         highlight_halluc = RoundedRectangle(width=0.92, height=0.92, color=RED, stroke_width=3, fill_opacity=0).move_to(cells[1].get_center())
         halluc_note = create_markup_text(
-            "<span color='#FF5555'><b>Ảo giác phản hồi (15%)</b></span>\n"
+            "<span foreground='#FF5555'><b>Ảo giác phản hồi (15%)</b></span>\n"
             "LLM tự ý hủy hoại đáp án đúng.",
             font_size=8, line_spacing=1.2
         ).next_to(highlight_halluc, RIGHT, buff=0.25)
@@ -472,7 +472,7 @@ class Scene3_4(Scene):
 
         # Nhãn cảnh báo Nhiễu phản hồi màu đỏ nhấp nháy bên dưới
         warning_lbl = create_markup_text(
-            "<span color='#FF3333'><b>PHẢN HỒI NỘI SINH QUÁ NHIỄU (NOISY FEEDBACK)</b></span>",
+            "<span foreground='#FF3333'><b>PHẢN HỒI NỘI SINH QUÁ NHIỄU (NOISY FEEDBACK)</b></span>",
             font_size=11
         ).move_to(DOWN * 3.2)
 
@@ -502,6 +502,62 @@ class Scene3_4(Scene):
         )
         self.wait(2.0)
 
+        # Generate "TAYLORSWIFT" Toy Example
+        toy_title = create_text("Ví dụ minh họa: Sinh chuỗi \"TAYLORSWIFT\"", font_size=12, color=YELLOW).to_edge(UP, buff=1.0)
+        self.play(FadeIn(toy_title), run_time=0.8)
+
+        # Initial draft letters
+        draft_letters = ["T", "A", "Y", "L", "O", "R", "S", "W", "I", "P", "T"]
+        letter_boxes = VGroup()
+        for idx, char in enumerate(draft_letters):
+            color = RED if idx == 9 else BLUE
+            box = RoundedRectangle(width=0.6, height=0.6, color=color, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
+            box.move_to(LEFT * 3.5 + idx * 0.7 * RIGHT + UP * 0.2)
+            lbl = create_text(char, font_size=12, color=WHITE).move_to(box.get_center())
+            letter_boxes.add(VGroup(box, lbl))
+
+        self.play(FadeIn(letter_boxes, lag_ratio=0.1), run_time=1.5)
+        self.wait(2.0)
+
+        # Feedback pointing to incorrect character
+        feedback_box = RoundedRectangle(width=6.0, height=0.8, color=RED, fill_color="#2b1414", fill_opacity=0.9, corner_radius=0.06)
+        feedback_box.move_to(DOWN * 0.8)
+        feedback_lbl = create_markup_text(
+            "<b>Feedback:</b> Ký tự thứ 10 <span foreground='#FF5555'>'P'</span> bị sai! Hãy sửa lại.",
+            font_size=10, color=WHITE
+        ).move_to(feedback_box.get_center())
+
+        arrow_feedback = Arrow(start=feedback_box.get_top(), end=letter_boxes[9].get_bottom(), color=RED, stroke_width=2)
+
+        self.play(FadeIn(feedback_box), Write(feedback_lbl), Create(arrow_feedback), run_time=1.0)
+        self.wait(3.0)
+
+        # Corrector updates letter 9 to 'F' without group transform issues
+        new_lbl = create_text("F", font_size=12, color=WHITE).move_to(letter_boxes[9][0].get_center())
+
+        self.play(
+            letter_boxes[9][0].animate.set_color(GREEN).set_fill(color="#143c14", opacity=0.9),
+            FadeOut(letter_boxes[9][1]),
+            FadeIn(new_lbl),
+            FadeOut(arrow_feedback),
+            FadeOut(feedback_box),
+            FadeOut(feedback_lbl),
+            run_time=1.0
+        )
+        letter_boxes[9].remove(letter_boxes[9][1])
+        letter_boxes[9].add(new_lbl)
+        self.wait(3.0)
+
+        # Final string display
+        final_lbl = create_markup_text(
+            "Kết quả hoàn chỉnh: <b>TAYLORSWIFT</b>", font_size=12, color=GREEN
+        ).move_to(DOWN * 0.8)
+        self.play(Write(final_lbl), run_time=0.8)
+        self.wait(4.0)
+
+        self.play(FadeOut(letter_boxes), FadeOut(final_lbl), FadeOut(toy_title), run_time=0.8)
+        self.wait(1.0)
+
         # =====================================================================
         # PHẦN 3: HUẤN LUYỆN TỰ SỬA LỖI (TRAINED CORRECTOR) & THUẬT TOÁN SCORE
         # =====================================================================
@@ -524,7 +580,7 @@ class Scene3_4(Scene):
         formula_box = RoundedRectangle(width=8.2, height=1.0, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
         formula_box.move_to(UP * 0.9)
         formula_txt = create_markup_text(
-            "Tinh chỉnh chính sách sửa lỗi:  <span color='#00FF7F'><i>p</i><sub>θ</sub>( <span color='#FFFF00'>better_correction</span> | <span color='#FF7F7F'>bad_draft</span> )</span>",
+            "Tinh chỉnh chính sách sửa lỗi:  <span foreground='#00FF7F'><i>p</i><sub>θ</sub>( <span foreground='#FFFF00'>better</span> | <span foreground='#FF7F7F'>bad</span> )</span>",
             font_size=13
         ).move_to(formula_box.get_center())
 
@@ -602,7 +658,7 @@ class Scene3_4(Scene):
         standard_rl_curve.set_points_smoothly(standard_rl_points)
 
         std_rl_lbl = create_markup_text(
-            "<span color='#FF5555'><b>Standard RL</b></span>\n(Sụp đổ hành vi)",
+            "<span foreground='#FF5555'><b>Standard RL</b></span>\n(Sụp đổ hành vi)",
             font_size=9
         ).move_to(axes.c2p(5.2, 0.45))
 
@@ -639,7 +695,7 @@ class Scene3_4(Scene):
         score_curve.set_points_smoothly(score_points)
 
         score_lbl = create_markup_text(
-            "<span color='#00FF7F'><b>Giải pháp SCoRe</b></span>\n(Ổn định &amp; Tối ưu)",
+            "<span foreground='#00FF7F'><b>Giải pháp SCoRe</b></span>\n(Ổn định &amp; Tối ưu)",
             font_size=9
         ).move_to(axes.c2p(6.5, 0.9))
 
@@ -668,7 +724,62 @@ class Scene3_4(Scene):
         self.wait(2.0)
 
         # =====================================================================
-        # PHẦN 4: TỔNG KẾT PHÂN CẢNH 3.4
+        # PHẦN 4: PHÂN BỔ TÀI NGUYÊN & LUẬT MỞ RỘNG SUY LUẬN (SLIDE 154-164)
+        # =====================================================================
+        part4_title = create_text("4. Phân bổ tài nguyên & Luật mở rộng suy luận", font_size=13, color=BLUE_A)
+        part4_title.next_to(sub_title, DOWN, buff=0.3)
+        self.play(Write(part4_title), run_time=0.8)
+        self.wait(3.0)
+
+        allocation_intro = create_markup_text(
+            "<b>Tối ưu hóa tài nguyên suy luận (Compute Allocation):</b>\n"
+            "Tìm cách phân bổ ngân sách tối ưu giữa kích thước mô hình (S), số lượng\n"
+            "mẫu sinh song song (N), và số bước lập luận (T) để đạt độ chính xác cao nhất.",
+            font_size=13, color=WHITE, line_spacing=1.3
+        ).move_to(UP * 2.1)
+        self.play(Write(allocation_intro), run_time=2.0)
+        self.wait(15.0)
+
+        # Formula box
+        alloc_box = RoundedRectangle(width=8.5, height=1.6, color=BLUE_B, fill_color="#0b1324", fill_opacity=0.9, corner_radius=0.1)
+        alloc_box.move_to(UP * 0.1)
+        alloc_title = create_text("Mục tiêu tối ưu hóa suy luận", font_size=11, color=BLUE_A).next_to(alloc_box.get_top(), DOWN, buff=0.15)
+        
+        alloc_formula = create_markup_text(
+            "argmin<sub>N, T, S</sub>  Error(N, T, S)    s.t.  Cost(N, T, S) = C",
+            font_size=12, color=YELLOW
+        ).move_to(alloc_box.get_center() + DOWN * 0.1)
+        alloc_group = VGroup(alloc_box, alloc_title, alloc_formula)
+
+        self.play(FadeIn(alloc_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(15.0)
+
+        # Key insights list
+        insights_box = RoundedRectangle(width=8.5, height=1.8, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.08)
+        insights_box.move_to(DOWN * 1.8)
+        insights_title = create_text("Quy luật tối ưu hóa tính toán", font_size=10, color=GOLD_B).next_to(insights_box.get_top(), DOWN, buff=0.12)
+        
+        insights_list = VGroup(
+            create_markup_text("• Mô hình nhỏ + nhiều compute suy luận có thể tối ưu hơn mô hình lớn.", font_size=8.5, color=WHITE),
+            create_markup_text("• Tìm kiếm cây (Tree Search / Rebase) là phương pháp tối ưu compute hiệu quả.", font_size=8.5, color=WHITE)
+        ).arrange(DOWN, buff=0.15, aligned_edge=LEFT).next_to(insights_title, DOWN, buff=0.15).shift(LEFT * 0.2)
+        insights_group = VGroup(insights_box, insights_title, insights_list)
+
+        self.play(FadeIn(insights_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(20.0)
+
+        # Clean up Section 4
+        self.play(
+            FadeOut(allocation_intro),
+            FadeOut(alloc_group),
+            FadeOut(insights_group),
+            FadeOut(part4_title),
+            run_time=1.0
+        )
+        self.wait(1.0)
+
+        # =====================================================================
+        # PHẦN 5: TỔNG KẾT PHÂN CẢNH 3.4
         # =====================================================================
         recap_title = create_text("Tổng kết: Các cơ chế Tinh chỉnh & Tự sửa lỗi (Refinement)", font_size=13, color=YELLOW)
         recap_title.next_to(sub_title, DOWN, buff=0.3)

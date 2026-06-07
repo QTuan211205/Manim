@@ -153,7 +153,54 @@ class Scene3_2(Scene):
             font_size=13, color=WHITE, line_spacing=1.3
         ).move_to(UP * 2.3)
         self.play(Write(bon_intro), run_time=2.0)
-        self.wait(24.0)
+        self.wait(10.0)
+
+        # RM training box
+        rm_train_box = RoundedRectangle(width=8.4, height=2.4, color=BLUE_B, fill_color="#141c2b", fill_opacity=0.9, corner_radius=0.1)
+        rm_train_box.move_to(DOWN * 0.2)
+        rm_train_title = create_text("Reward Model Training Data", font_size=12, color=BLUE_A).next_to(rm_train_box.get_top(), DOWN, buff=0.15)
+        
+        data1_title = create_markup_text("<b>1. Classification (Correct/Incorrect)</b>", font_size=9.5, color=WHITE)
+        data1_detail = create_markup_text(
+            "• (x, y) → y is correct (reward = 1)\n"
+            "• (x, y) → y is incorrect (reward = 0)\n"
+            "<span foreground='#888888'>[Cobbe et al., 2021]</span>",
+            font_size=8, line_spacing=1.2
+        )
+        data1_group = VGroup(data1_title, data1_detail).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+        
+        data2_title = create_markup_text("<b>2. Preference Data (RLHF/DPO)</b>", font_size=9.5, color=WHITE)
+        data2_detail = create_markup_text(
+            "• (x, y<sub>w</sub>, y<sub>l</sub>) where y<sub>w</sub> > y<sub>l</sub>\n"
+            "• Optimizing pairwise ranking loss\n"
+            "<span foreground='#888888'>[Stiennon et al., 2020]</span>",
+            font_size=8, line_spacing=1.2
+        )
+        data2_group = VGroup(data2_title, data2_detail).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+        
+        data_split = VGroup(data1_group, data2_group).arrange(RIGHT, buff=0.6)
+        data_split.move_to(rm_train_box.get_center() + DOWN * 0.15)
+        rm_train_group = VGroup(rm_train_box, rm_train_title, data_split)
+
+        self.play(FadeIn(rm_train_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(12.0)
+        self.play(FadeOut(rm_train_group), run_time=0.8)
+
+        # Best-of-N formula box
+        bon_formula_box = RoundedRectangle(width=8.0, height=1.6, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
+        bon_formula_box.move_to(DOWN * 0.2)
+        bon_formula_title = create_text("Công thức Best-of-N", font_size=11, color=BLUE_B).next_to(bon_formula_box.get_top(), DOWN, buff=0.15)
+        
+        bon_formula_txt = create_markup_text(
+            "Best-of-N = argmax<sub>y in {y<sup>(1)</sup>,...,y<sup>(N)</sup>}</sub>  v(y)\n"
+            "Best-of-N ≈ argmax<sub>y</sub> v(y) ≈ argmax<sub>y</sub> A(y)",
+            font_size=11, line_spacing=1.3
+        ).move_to(bon_formula_box.get_center() + DOWN * 0.1)
+        bon_formula_group = VGroup(bon_formula_box, bon_formula_title, bon_formula_txt)
+
+        self.play(FadeIn(bon_formula_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(10.0)
+        self.play(FadeOut(bon_formula_group), run_time=0.8)
 
         # Prompt x
         prompt_box = RoundedRectangle(width=2.2, height=1.0, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
@@ -194,7 +241,7 @@ class Scene3_2(Scene):
             Write(y_texts),
             run_time=2.0
         )
-        self.wait(15.0)
+        self.wait(12.0)
 
         # Vẽ bộ đo Reward Model bên phải (chứa Speedometer)
         rm_box = RoundedRectangle(width=2.4, height=2.2, color=BLUE_A, fill_color="#141c2b", fill_opacity=0.9, corner_radius=0.08)
@@ -300,19 +347,52 @@ class Scene3_2(Scene):
             Create(arrow_to_hacking),
             run_time=1.0
         )
-        self.wait(40.0)
+        self.wait(30.0)
+
+        # Biểu đồ Over-optimization (Slide 115)
+        overopt_axes = Axes(
+            x_range=[0, 10, 1],
+            y_range=[0, 1.2, 0.2],
+            x_length=6.0,
+            y_length=3.0,
+            axis_config={"color": GRAY, "stroke_width": 1.5}
+        ).move_to(DOWN * 0.5)
+        
+        overopt_x_label = create_text("Inference Compute N", font_size=8, color=GRAY_A).next_to(overopt_axes.x_axis, DOWN, buff=0.25, aligned_edge=RIGHT)
+        overopt_y_label = create_text("Score / Acceptability", font_size=8, color=GRAY_A).next_to(overopt_axes.y_axis, LEFT, buff=0.2).rotate(90 * DEGREES)
+        
+        rm_curve = overopt_axes.plot(lambda x: 1.0 - np.exp(-0.4 * x), x_range=[0.1, 9.5], color=BLUE, stroke_width=2.5)
+        rm_lbl = create_text("Reward Model Score", font_size=8, color=BLUE).next_to(rm_curve.get_end(), UR, buff=0.1)
+        
+        acc_curve = overopt_axes.plot(lambda x: 1.25 * x * np.exp(-0.35 * x), x_range=[0.1, 9.5], color=GREEN, stroke_width=2.5)
+        acc_lbl = create_text("True Acceptability", font_size=8, color=GREEN).next_to(overopt_axes.c2p(2.8, 1.25*2.8*np.exp(-0.35*2.8)), UP, buff=0.1)
+        
+        overopt_region = DashedLine(overopt_axes.c2p(3.0, 0), overopt_axes.c2p(3.0, 1.0), color=RED, stroke_width=1.5)
+        overopt_region_lbl = create_markup_text(
+            "<span color='#FF5555'>Over-optimization\n(Reward Hacking)</span>", 
+            font_size=7, color=RED
+        ).next_to(overopt_region, RIGHT, buff=0.15).shift(UP * 0.5)
+        
+        overopt_group = VGroup(overopt_axes, overopt_x_label, overopt_y_label, rm_curve, rm_lbl, acc_curve, acc_lbl, overopt_region, overopt_region_lbl)
 
         # Dọn dẹp phần 1
         self.play(
-            FadeOut(bon_intro), FadeOut(prompt_box), FadeOut(prompt_lbl),
+            FadeOut(prompt_box), FadeOut(prompt_lbl),
             FadeOut(y_boxes), FadeOut(y_texts), FadeOut(y_arrows),
             FadeOut(rm_box), FadeOut(speedometer), FadeOut(digital_score_lbl), FadeOut(warning_icon),
             FadeOut(rm_flow_arrows), FadeOut(score_labels), FadeOut(y5_hacking_text),
             FadeOut(hacking_warn_box), FadeOut(hacking_warn_lbl), FadeOut(arrow_to_hacking),
-            FadeOut(part1_title),
-            run_time=1.2
+            run_time=1.0
         )
-        self.wait(2.0)
+        self.play(FadeIn(overopt_group), run_time=1.2)
+        self.wait(15.0)
+        self.play(
+            FadeOut(overopt_group),
+            FadeOut(bon_intro),
+            FadeOut(part1_title),
+            run_time=1.0
+        )
+        self.wait(1.0)
 
         # =====================================================================
         # PHẦN 2: ĐA SỐ BIỂU QUYẾT & PHÉP TỔNG BIÊN MÁT-GINALIZATION
@@ -329,7 +409,7 @@ class Scene3_2(Scene):
             font_size=13, color=WHITE, line_spacing=1.3
         ).move_to(UP * 2.0)
         self.play(Write(voting_intro), run_time=2.0)
-        self.wait(22.0)
+        self.wait(16.0)
 
         # Đặt bài toán toán học
         math_question_box = RoundedRectangle(width=9.0, height=0.6, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
@@ -376,7 +456,7 @@ class Scene3_2(Scene):
             Write(cot_texts),
             run_time=2.0
         )
-        self.wait(24.0)
+        self.wait(18.0)
 
         # --- BẮT ĐẦU HOẠT HỌA BIỂU QUYẾT ---
         # Di chuyển robot lên hàng ngang phía trên để chuẩn bị bỏ phiếu
@@ -476,9 +556,9 @@ class Scene3_2(Scene):
         winner_tag = create_text("ĐỒNG THUẬN CAO - CHỌN Y = 42", font_size=10, color=GREEN).next_to(count_42_lbl, DOWN, buff=0.2)
 
         self.play(Create(winner_highlight), Write(winner_tag), run_time=1.0)
-        self.wait(16.0)
+        self.wait(12.0)
 
-        # Xóa bớt để hiển thị công thức tổng biên xác suất (Marginalization)
+        # Xóa bớt để hiển thị các công thức Voting & Weighted Voting
         self.play(
             FadeOut(voters), FadeOut(voter_sub_boxes), FadeOut(voter_ans_lbls),
             FadeOut(bin_42), FadeOut(bin_42_lbl),
@@ -488,6 +568,22 @@ class Scene3_2(Scene):
             run_time=1.0
         )
         self.wait(1.0)
+
+        # Công thức Voting & Weighted Voting
+        voting_formula_box = RoundedRectangle(width=8.5, height=2.0, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
+        voting_formula_box.move_to(DOWN * 0.4)
+        voting_formula_title = create_text("Công thức Voting & Weighted Voting", font_size=12, color=BLUE_B).next_to(voting_formula_box.get_top(), DOWN, buff=0.15)
+        
+        voting_formula_txt = create_markup_text(
+            "Voting:   argmax<sub>a</sub>  ∑<sub>i=1</sub><sup>N</sup>  <b>1</b>{y<sup>(i)</sup> = a}\n"
+            "Weighted Voting:   argmax<sub>a</sub>  ∑<sub>i=1</sub><sup>N</sup>  v(y<sup>(i)</sup>) · <b>1</b>{y<sup>(i)</sup> = a}",
+            font_size=11, line_spacing=1.3
+        ).move_to(voting_formula_box.get_center() + DOWN * 0.1)
+        voting_formula_group = VGroup(voting_formula_box, voting_formula_title, voting_formula_txt)
+
+        self.play(FadeIn(voting_formula_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(11.0)
+        self.play(FadeOut(voting_formula_group), run_time=0.8)
 
         # Công thức Marginalization
         formula_box = RoundedRectangle(width=9.0, height=2.8, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
@@ -516,12 +612,39 @@ class Scene3_2(Scene):
             Write(ex_lbl),
             run_time=1.5
         )
-        self.wait(48.0)
+        self.wait(15.0)
+
+        # Xóa bớt để hiển thị Convergence Theorem
+        self.play(
+            FadeOut(formula_box), FadeOut(formula_title),
+            FadeOut(formula_txt), FadeOut(ex_lbl),
+            run_time=1.0
+        )
+        self.wait(1.0)
+
+        # Convergence Theorem & Takeaways
+        convergence_box = RoundedRectangle(width=9.2, height=3.4, color=BLUE_B, fill_color="#0b1324", fill_opacity=0.9, corner_radius=0.1)
+        convergence_box.move_to(DOWN * 0.3)
+        convergence_title = create_text("Định lý hội tụ & Takeaways", font_size=12, color=BLUE_A).next_to(convergence_box.get_top(), DOWN, buff=0.18)
+        
+        convergence_formula = create_markup_text(
+            "Accuracy →  1/M ∑<sub>i=1</sub><sup>M</sup>  <b>I</b> [ a<sub>i</sub><sup>*</sup> = argmax<sub>a</sub>  ∑<sub>z</sub>  v(x, z, a) g(z, a | x) ]",
+            font_size=9.5, color=YELLOW
+        ).move_to(convergence_box.get_center() + UP * 0.7)
+        
+        takeaways_list = VGroup(
+            create_markup_text("• <b>Takeaway 1:</b> Độ chính xác hội tụ dần chứ không tăng mãi theo số lượng N.", font_size=8.5, color=WHITE),
+            create_markup_text("• <b>Takeaway 2:</b> Weighted voting tốt hơn voting thường khi <i>v · g</i> tập trung trọng số đúng.", font_size=8.5, color=WHITE),
+            create_markup_text("• <b>Takeaway 3:</b> Để cải thiện trần hiệu năng, cần cải tiến thêm verifier <i>v</i> hoặc generator <i>g</i>.", font_size=8.5, color=WHITE)
+        ).arrange(DOWN, buff=0.18, aligned_edge=LEFT).next_to(convergence_formula, DOWN, buff=0.25).shift(LEFT * 0.2)
+        convergence_group = VGroup(convergence_box, convergence_title, convergence_formula, takeaways_list)
+
+        self.play(FadeIn(convergence_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(22.0)
 
         # Dọn dẹp phần 2
         self.play(
-            FadeOut(voting_intro), FadeOut(formula_box), FadeOut(formula_title),
-            FadeOut(formula_txt), FadeOut(ex_lbl), FadeOut(part2_title),
+            FadeOut(voting_intro), FadeOut(convergence_group), FadeOut(part2_title),
             run_time=1.2
         )
         self.wait(2.0)
@@ -541,7 +664,7 @@ class Scene3_2(Scene):
             font_size=13, color=WHITE, line_spacing=1.3
         ).move_to(UP * 2.0)
         self.play(Write(mbr_intro), run_time=2.0)
-        self.wait(24.0)
+        self.wait(18.0)
 
         # Công thức MBR
         mbr_formula_box = RoundedRectangle(width=7.5, height=1.0, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
@@ -552,7 +675,7 @@ class Scene3_2(Scene):
         ).move_to(mbr_formula_box.get_center())
 
         self.play(FadeIn(mbr_formula_box), Write(mbr_formula_txt), run_time=1.2)
-        self.wait(30.0)
+        self.wait(22.0)
 
         # Vẽ không gian ngữ nghĩa (Semantic Space) bên trái
         cluster_center = LEFT * 3.8 + DOWN * 1.5
@@ -709,7 +832,7 @@ class Scene3_2(Scene):
 
         # Điền các giá trị vào ma trận
         self.play(Write(matrix_texts), run_time=2.0)
-        self.wait(25.0)
+        self.wait(19.0)
 
         # Tính cột tổng / trung bình Utility ở bên phải
         avg_header = create_text("Avg Utility", font_size=9, color=BLUE_A)
@@ -735,7 +858,7 @@ class Scene3_2(Scene):
         # Hiển thị kết quả tính trung bình từng hàng
         for r in range(5):
             self.play(FadeIn(avg_texts[r]), run_time=0.5)
-        self.wait(30.0)
+        self.wait(22.0)
 
         # Highlight hàng chiến thắng y(1) trên ma trận và không gian ngữ nghĩa
         winner_row_rect = RoundedRectangle(width=4.3, height=0.62, color=GREEN, stroke_width=2.5, fill_opacity=0, corner_radius=0.08).move_to(
@@ -753,7 +876,7 @@ class Scene3_2(Scene):
             Create(winner_node_glow),
             run_time=1.0
         )
-        self.wait(32.0)
+        self.wait(24.0)
 
         # Slide tóm tắt bài học (Recap slide)
         self.play(
@@ -811,7 +934,7 @@ class Scene3_2(Scene):
             comparison_table.add(row_group)
 
         self.play(FadeIn(comparison_table), run_time=1.8)
-        self.wait(45.0)  # Thuyết minh tổng kết
+        self.wait(35.0)  # Thuyết minh tổng kết
 
         # Dọn dẹp kết thúc phân cảnh
         self.play(

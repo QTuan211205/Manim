@@ -57,7 +57,7 @@ class Scene3_3(Scene):
         chapter_header.move_to(ORIGIN)
 
         self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.2)
-        self.wait(5.0)
+        self.wait(3.0)
 
         # Di chuyển tiêu đề lên góc trên cùng làm tiêu đề phụ
         sub_title = create_text("Tìm kiếm trên cây & Quay lui (Tree Search & Backtracking)", font_size=15, color=YELLOW)
@@ -67,7 +67,7 @@ class Scene3_3(Scene):
             ReplacementTransform(chapter_header, sub_title),
             run_time=1.2
         )
-        self.wait(3.0)
+        self.wait(2.0)
 
         # =====================================================================
         # PHẦN 1: SỰ LÃNG PHÍ CỦA PHƯƠNG PHÁP SONG SONG & KHÁI NIỆM TREE SEARCH
@@ -75,7 +75,7 @@ class Scene3_3(Scene):
         part1_title = create_text("1. Sự lãng phí của giải mã song song & Cơ chế Tree Search", font_size=13, color=BLUE_A)
         part1_title.next_to(sub_title, DOWN, buff=0.3)
         self.play(Write(part1_title), run_time=0.8)
-        self.wait(3.0)
+        self.wait(2.0)
 
         # Mô tả lý do chuyển dịch
         intro_text = create_text(
@@ -84,7 +84,7 @@ class Scene3_3(Scene):
             font_size=13, color=WHITE, line_spacing=1.3
         ).move_to(UP * 2.1)
         self.play(Write(intro_text), run_time=2.0)
-        self.wait(12.0)
+        self.wait(9.0)
 
         # Vẽ sơ đồ lãng phí tính toán (Wasted Compute)
         prompt_box = RoundedRectangle(width=1.8, height=0.7, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.06)
@@ -92,7 +92,7 @@ class Scene3_3(Scene):
         prompt_lbl = create_text("Prompt x", font_size=11, color=GREEN).move_to(prompt_box.get_center())
 
         self.play(FadeIn(prompt_box), Write(prompt_lbl), run_time=1.0)
-        self.wait(4.0)
+        self.wait(3.0)
 
         # Nhánh 1 (Lỗi): đi lên
         y_top = 0.5
@@ -144,7 +144,7 @@ class Scene3_3(Scene):
             Write(lbl1_1), Write(lbl2_1),
             run_time=2.0
         )
-        self.wait(10.0)
+        self.wait(8.0)
 
         # Vẽ tiếp các bước sau của cả 2 nhánh
         self.play(
@@ -159,7 +159,7 @@ class Scene3_3(Scene):
             Write(result1_lbl), Write(result2_lbl),
             run_time=2.5
         )
-        self.wait(12.0)
+        self.wait(9.0)
 
         # Vẽ khung đỏ biểu thị tính toán lãng phí của nhánh 1
         wasted_rect = RoundedRectangle(width=6.5, height=0.9, color=RED, stroke_width=2, fill_opacity=0, corner_radius=0.08)
@@ -172,7 +172,7 @@ class Scene3_3(Scene):
             FadeIn(wasted_lbl, shift=DOWN * 0.1),
             run_time=1.0
         )
-        self.wait(15.0)
+        self.wait(11.0)
 
         # Xóa các thành phần và giới thiệu 4 yếu tố thiết kế Tree Search
         self.play(
@@ -199,9 +199,9 @@ class Scene3_3(Scene):
 
         for item in design_items:
             self.play(FadeIn(item, shift=RIGHT * 0.2), run_time=0.8)
-            self.wait(5.0)
+            self.wait(3.5)
 
-        self.wait(8.0)
+        self.wait(6.0)
 
         # Dọn dẹp phần 1
         self.play(
@@ -210,7 +210,7 @@ class Scene3_3(Scene):
             FadeOut(part1_title),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # PHẦN 2: PROCESS-BASED REWARD MODEL (PRM)
@@ -218,7 +218,7 @@ class Scene3_3(Scene):
         part2_title = create_text("2. Process-based Reward Model (PRM)", font_size=13, color=BLUE_A)
         part2_title.next_to(sub_title, DOWN, buff=0.3)
         self.play(Write(part2_title), run_time=0.8)
-        self.wait(3.0)
+        self.wait(2.0)
 
         # Lược đồ phân biệt ORM và PRM
         intro_part2 = create_text(
@@ -227,7 +227,7 @@ class Scene3_3(Scene):
             font_size=13, color=WHITE, line_spacing=1.3
         ).move_to(UP * 2.1)
         self.play(Write(intro_part2), run_time=2.0)
-        self.wait(18.0)
+        self.wait(14.0)
 
         # Khối so sánh ORM (trái) và PRM (phải)
         box_width, box_height = 3.6, 2.0
@@ -267,7 +267,7 @@ class Scene3_3(Scene):
             run_time=1.5
         )
         self.play(FadeIn(orm_output), Create(orm_out_arrow), run_time=1.0)
-        self.wait(19.0)
+        self.wait(14.0)
 
         # Hiển thị PRM sau
         self.play(
@@ -276,7 +276,7 @@ class Scene3_3(Scene):
             run_time=1.5
         )
         self.play(FadeIn(prm_output), Create(prm_out_arrow), run_time=1.0)
-        self.wait(24.0)
+        self.wait(18.0)
 
         # Hiển thị công thức PRM lên phía trên thay thế intro
         prm_formula_box = RoundedRectangle(width=5.8, height=0.8, color=GOLD, fill_color="#16171a", fill_opacity=0.9, corner_radius=0.08)
@@ -292,7 +292,7 @@ class Scene3_3(Scene):
             Write(prm_formula_txt),
             run_time=1.2
         )
-        self.wait(32.3)
+        self.wait(24.3)
 
         # Dọn dẹp phần 2
         self.play(
@@ -302,7 +302,7 @@ class Scene3_3(Scene):
             FadeOut(part2_title),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # PHẦN 3: HOẠT HỌA TÌM KIẾM & QUAY LUI (BACKTRACKING)
@@ -310,7 +310,7 @@ class Scene3_3(Scene):
         part3_title = create_text("3. Hoạt họa Tìm kiếm & Quay lui (Backtracking)", font_size=13, color=BLUE_A)
         part3_title.next_to(sub_title, DOWN, buff=0.3)
         self.play(Write(part3_title), run_time=0.8)
-        self.wait(3.0)
+        self.wait(2.0)
 
         # Tiêu đề nhỏ mô tả ngữ cảnh
         tree_intro = create_markup_text(
@@ -319,7 +319,7 @@ class Scene3_3(Scene):
             font_size=13, color=WHITE, line_spacing=1.3
         ).move_to(UP * 2.1)
         self.play(Write(tree_intro), run_time=2.0)
-        self.wait(18.0)
+        self.wait(14.0)
 
         # Vẽ cây quyết định
         # Vị trí các nút
@@ -365,7 +365,7 @@ class Scene3_3(Scene):
             Write(root_lbl), Write(s1_lbl), Write(s2_lbl), Write(s3_lbl), Write(s4_lbl),
             run_time=2.5
         )
-        self.wait(18.0)
+        self.wait(14.0)
 
         # Bước 1: Thuật toán đi thử theo nhánh s2 (phải)
         path_root_s2 = Line(start=root_pos + DOWN * node_radius, end=s2_pos + UP * node_radius, color=YELLOW, stroke_width=4.0)
@@ -374,7 +374,7 @@ class Scene3_3(Scene):
             s2_circle.animate.set_color(YELLOW),
             run_time=1.0
         )
-        self.wait(12.0)
+        self.wait(9.0)
 
         # PRM đánh giá s2 điểm thấp
         s2_score = create_text("PRM: 0.20", font_size=11, color=RED).next_to(s2_circle, RIGHT, buff=0.15)
@@ -386,7 +386,7 @@ class Scene3_3(Scene):
             s2_circle.animate.set_color(RED),
             run_time=1.0
         )
-        self.wait(10.0)
+        self.wait(8.0)
 
         # Bước 2: Backtracking - Quay lui
         # Chuyển nhánh sang đỏ rồi co rút về root
@@ -401,7 +401,7 @@ class Scene3_3(Scene):
             s2_circle.animate.set_color(GRAY_D),
             run_time=1.0
         )
-        self.wait(15.0)
+        self.wait(11.0)
 
         # Bước 3: Thuật toán đi theo nhánh s1 (trái)
         path_root_s1 = Line(start=root_pos + DOWN * node_radius, end=s1_pos + UP * node_radius, color=GREEN, stroke_width=4.0)
@@ -410,7 +410,7 @@ class Scene3_3(Scene):
             s1_circle.animate.set_color(GREEN),
             run_time=1.0
         )
-        self.wait(10.0)
+        self.wait(8.0)
 
         # PRM đánh giá s1 điểm cao
         s1_score = create_text("PRM: 0.95", font_size=11, color=GREEN).next_to(s1_circle, LEFT, buff=0.15)
@@ -422,7 +422,7 @@ class Scene3_3(Scene):
             s1_circle.animate.set_color(GREEN),
             run_time=1.0
         )
-        self.wait(12.0)
+        self.wait(9.0)
 
         # Bước 4: Tiếp tục đi xuống s3
         path_s1_s3 = Line(start=s1_pos + DOWN * node_radius, end=s3_pos + UP * node_radius, color=GREEN, stroke_width=4.0)
@@ -431,7 +431,7 @@ class Scene3_3(Scene):
             s3_circle.animate.set_color(GREEN),
             run_time=1.0
         )
-        self.wait(10.0)
+        self.wait(8.0)
 
         # PRM đánh giá s3 điểm tốt -> tìm ra đáp án đúng
         s3_score = create_text("PRM: 0.85", font_size=11, color=GREEN).next_to(s3_circle, LEFT, buff=0.15)
@@ -443,7 +443,7 @@ class Scene3_3(Scene):
             s3_circle.animate.set_color(GREEN),
             run_time=1.0
         )
-        self.wait(10.0)
+        self.wait(8.0)
 
         # Kết quả cuối y_correct
         y_box = RoundedRectangle(width=2.4, height=0.6, color=GREEN, fill_color="#143c14", fill_opacity=0.9, corner_radius=0.06)
@@ -457,7 +457,7 @@ class Scene3_3(Scene):
             Create(arrow_to_y),
             run_time=1.5
         )
-        self.wait(24.0)
+        self.wait(18.0)
 
         # Dọn dẹp phần 3
         self.play(
@@ -472,7 +472,7 @@ class Scene3_3(Scene):
             FadeOut(part3_title),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # PHẦN 4: GIẢI THUẬT REBASE (REWARD BALANCED SEARCH)
@@ -480,7 +480,7 @@ class Scene3_3(Scene):
         part4_title = create_text("4. Giải thuật Rebase (Reward Balanced Search)", font_size=13, color=BLUE_A)
         part4_title.next_to(sub_title, DOWN, buff=0.3)
         self.play(Write(part4_title), run_time=0.8)
-        self.wait(3.0)
+        self.wait(2.0)
 
         # Trực quan hóa công thức Rebase
         rebase_formula_box = RoundedRectangle(width=8.0, height=1.1, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
@@ -499,7 +499,7 @@ class Scene3_3(Scene):
             Write(rebase_txt),
             run_time=1.5
         )
-        self.wait(25.0)
+        self.wait(19.0)
 
         # Annotations các biến giải thích
         annotations = VGroup(
@@ -510,11 +510,11 @@ class Scene3_3(Scene):
         ).arrange(DOWN, aligned_edge=LEFT, buff=0.25).move_to(DOWN * 0.3)
 
         self.play(FadeIn(annotations, shift=UP * 0.2), run_time=2.5)
-        self.wait(35.0)
+        self.wait(27.0)
 
         # Xóa annotations để hiện ví dụ phân bổ
         self.play(FadeOut(annotations), run_time=1.0)
-        self.wait(2.0)
+        self.wait(1.0)
 
         # Mô phỏng phân bổ thực tế
         sim_title = create_text("Ví dụ: Ngân sách Budget = 10 luồng | Nhiệt độ τ = 0.3", font_size=12, color=YELLOW).move_to(UP * 0.5)
@@ -535,7 +535,7 @@ class Scene3_3(Scene):
             FadeIn(node_b), Write(lbl_b),
             run_time=1.5
         )
-        self.wait(12.0)
+        self.wait(9.0)
 
         # Kết quả tính toán phân bổ
         alloc_a = create_markup_text("Phân bổ: <span color='#00FF00'><b>9 luồng</b></span> (90% compute)", font_size=11)
@@ -549,7 +549,7 @@ class Scene3_3(Scene):
             FadeIn(alloc_b, shift=UP * 0.15),
             run_time=1.5
         )
-        self.wait(20.0)
+        self.wait(15.0)
 
         # Vẽ các luồng sinh tỏa ra từ 2 nút biểu thị compute allocation
         arrows_a = VGroup()
@@ -578,7 +578,7 @@ class Scene3_3(Scene):
             Create(arrows_b),
             run_time=2.0
         )
-        self.wait(24.0)
+        self.wait(18.0)
 
         # Dọn dẹp phần 4
         self.play(
@@ -590,7 +590,7 @@ class Scene3_3(Scene):
             FadeOut(part4_title),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # PHẦN 5: CÁC KỸ THUẬT DUYỆT CÂY & ỨNG DỤNG
@@ -598,7 +598,7 @@ class Scene3_3(Scene):
         part5_title = create_text("5. Các giải thuật duyệt cây & Ứng dụng thực tế", font_size=13, color=BLUE_A)
         part5_title.next_to(sub_title, DOWN, buff=0.3)
         self.play(Write(part5_title), run_time=0.8)
-        self.wait(3.0)
+        self.wait(2.0)
 
         # Sơ đồ Grid / Mindmap
         center_box = RoundedRectangle(width=3.2, height=0.8, color=YELLOW, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
@@ -634,7 +634,7 @@ class Scene3_3(Scene):
             Create(arrow_right), FadeIn(right_box), Write(right_lbl), Write(right_desc),
             run_time=2.0
         )
-        self.wait(35.0)
+        self.wait(27.0)
 
         # Panel discussion recap box ở dưới đáy
         panel_box = RoundedRectangle(width=9.5, height=1.3, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.08)
@@ -653,7 +653,7 @@ class Scene3_3(Scene):
             Write(panel_desc),
             run_time=2.0
         )
-        self.wait(42.0)
+        self.wait(32.0)
 
         # Dọn dẹp kết thúc toàn bộ phân cảnh
         self.play(
@@ -665,4 +665,4 @@ class Scene3_3(Scene):
             FadeOut(sub_title),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)

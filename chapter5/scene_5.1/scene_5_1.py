@@ -89,13 +89,14 @@ class Scene5_1(Scene):
         title.next_to(trunk, UP, buff=0.12)
         return VGroup(title, trunk, shared, branches, leaves).scale(1.0)
 
-    def make_expert_card(self, name, org, color):
-        card = RoundedRectangle(width=2.05, height=1.05, corner_radius=0.06, color=color, fill_color="#181a1e", fill_opacity=0.96)
-        avatar = Circle(radius=0.18, color=color, fill_color=color, fill_opacity=0.25).move_to(card.get_center() + UP * 0.2)
+    def make_expert_card(self, name, org, handle, color):
+        card = RoundedRectangle(width=2.15, height=1.15, corner_radius=0.06, color=color, fill_color="#181a1e", fill_opacity=0.96)
+        avatar = Circle(radius=0.18, color=color, fill_color=color, fill_opacity=0.25).move_to(card.get_center() + UP * 0.25)
         initial = create_text(name[0], font_size=10, color=color).move_to(avatar.get_center())
-        name_txt = create_text(name, font_size=6.1, color=WHITE).move_to(card.get_center() + DOWN * 0.08)
-        org_txt = create_text(org, font_size=5.0, color=color).move_to(card.get_center() + DOWN * 0.3)
-        return VGroup(card, avatar, initial, name_txt, org_txt)
+        name_txt = create_text(name, font_size=6.1, color=WHITE).move_to(card.get_center() + DOWN * 0.04)
+        org_txt = create_text(org, font_size=5.0, color=color).move_to(card.get_center() + DOWN * 0.22)
+        handle_txt = create_text(handle, font_size=4.2, color=GRAY_B).move_to(card.get_center() + DOWN * 0.38)
+        return VGroup(card, avatar, initial, name_txt, org_txt, handle_txt)
 
     def quote_box(self, speaker, text, color, height=1.45, y=0):
         box = RoundedRectangle(width=10.5, height=height, corner_radius=0.06, color=color, fill_color="#181a1e", fill_opacity=0.95)
@@ -160,12 +161,12 @@ class Scene5_1(Scene):
         # Panel participants.
         panel_title = create_markup_text("<b>Phiên thảo luận Panel</b>", font_size=14, color=YELLOW).move_to(UP * 2.3)
         experts = VGroup(
-            self.make_expert_card("Noam Brown", "OpenAI", "#FF6B6B"),
-            self.make_expert_card("Rishabh Agarwal", "DeepMind/McGill", "#C780FF"),
-            self.make_expert_card("Jakob Foerster", "Oxford/Meta AI", "#4D96FF"),
-            self.make_expert_card("Beidi Chen", "CMU", "#FFD93D"),
-            self.make_expert_card("Nouha Dziri", "AI2", "#6BCB77"),
-            self.make_expert_card("Ilia Kulikov", "Meta AI | Moderator", GRAY_A),
+            self.make_expert_card("Noam Brown", "OpenAI", "@polynoamial", "#FF6B6B"),
+            self.make_expert_card("Rishabh Agarwal", "DeepMind/McGill", "@agarwl_", "#C780FF"),
+            self.make_expert_card("Jakob Foerster", "Oxford/Meta AI", "@j_foerst", "#4D96FF"),
+            self.make_expert_card("Beidi Chen", "CMU", "@BeidiChen", "#FFD93D"),
+            self.make_expert_card("Nouha Dziri", "AI2", "@nouhadziri", "#6BCB77"),
+            self.make_expert_card("Ilia Kulikov", "Meta AI | Moderator", "@uralik1", GRAY_A),
         ).arrange_in_grid(rows=2, cols=3, buff=0.26).move_to(UP * 0.25)
         self.play(FadeIn(panel_title), run_time=0.8)
         self.play(LaggedStart(*[FadeIn(card, shift=UP * 0.12) for card in experts], lag_ratio=0.14), run_time=2.0)
@@ -252,15 +253,40 @@ class Scene5_1(Scene):
             "Không chỉ nằm ở việc xây dựng các mô hình lớn hơn,\n"
             "mà nằm ở việc thiết kế các hệ thống thông minh\n"
             "biết cách suy nghĩ và phân bổ tài nguyên suy luận một cách tối ưu.\n\n"
-            "Cảm ơn các bạn đã theo dõi.",
-            font_size=10.5,
-            color=WHITE,
-            line_spacing=1.2,
+            "Cảm ơn các bạn đã theo d�        self.wait(1.5)
+
+        # =====================================================================
+        # OUTRO CẢM ƠN KẾT THÚC TOÀN BỘ VIDEO
+        # =====================================================================
+        final_outro_box = RoundedRectangle(width=8.5, height=2.2, corner_radius=0.08, color=YELLOW, fill_color="#201c14", fill_opacity=0.95)
+        final_outro_txt = create_markup_text(
+            "<b>Cảm ơn các bạn đã theo dõi!</b>\n\n"
+            "Hãy like và subscribe kênh để cập nhật thêm các bài học mới.\n"
+            "Toàn bộ slide và mã nguồn được đính kèm bên dưới mô tả.",
+            font_size=10.5, color=WHITE, line_spacing=1.3
         )
-        fit_mobject(final_text, max_width=9.8, max_height=2.05)
-        final_text.move_to(final_box.get_center())
-        final_group = VGroup(final_box, final_text).move_to(ORIGIN)
-        self.play(FadeIn(final_box, shift=UP * 0.15), Write(final_text), run_time=1.5)
-        self.wait(13)
-        self.play(FadeOut(header), FadeOut(final_group), run_time=1.4)
+        final_outro_txt.move_to(final_outro_box.get_center())
+        final_outro = VGroup(final_outro_box, final_outro_txt).move_to(ORIGIN)
+        
+        self.play(
+            FadeIn(final_outro, shift=UP * 0.15),
+            run_time=1.2
+        )
+        self.wait(5.0)
+        self.play(FadeOut(final_outro), run_time=1.0)
+        self.wait(1.5)ãy like và subscribe kênh để cập nhật thêm các bài học mới.\n"
+            "Toàn bộ slide và mã nguồn được đính kèm bên dưới mô tả.",
+            font_size=10.5, color=WHITE, line_spacing=1.3
+        )
+        final_outro_txt.move_to(final_outro_box.get_center())
+        final_outro = VGroup(final_outro_box, final_outro_txt).move_to(ORIGIN)
+        
+        self.play(
+            FadeOut(ref_title), FadeOut(ref_group),
+            FadeIn(final_outro, shift=UP * 0.15),
+            run_time=1.2
+        )
+        self.wait(5.0)
+        self.play(FadeOut(final_outro), run_time=1.0)
         self.wait(1.5)
+

@@ -119,29 +119,55 @@ class Scene3_1(Scene):
         controller_lbl = create_text("Meta-Generation Controller", font_size=14, color=BLUE_A)
         controller_lbl.next_to(controller_frame.get_top(), DOWN, buff=0.2)
 
-        # Phản hồi ngược (Feedback Loop Arrow)
+        # Mũi tên phản hồi vòng lại từ Output y về Prompt x
         feedback_arrow = CurvedArrow(
-            start_point=token_y.get_bottom() + DOWN * 0.65,
-            end_point=token_x.get_bottom() + DOWN * 0.65,
-            angle=-60*DEGREES, color=BLUE_A, stroke_width=1.5
+            start_point=token_y.get_bottom() + DOWN * 0.2,
+            end_point=token_x.get_bottom() + DOWN * 0.2,
+            angle=-PI/2,
+            color=BLUE_A
         )
-        feedback_lbl = create_text("Phản hồi vĩ mô (Feedback Loop)", font_size=9, color=BLUE_B)
-        feedback_lbl.next_to(feedback_arrow, DOWN, buff=0.1)
+        feedback_lbl = create_text("Phản hồi vĩ mô (Feedback Loop)", font_size=9, color=BLUE_A)
+        feedback_lbl.next_to(feedback_arrow, DOWN, buff=0.15)
 
         self.play(
-            Create(controller_frame),
-            Write(controller_lbl),
+            Create(controller_frame), Write(controller_lbl),
+            Create(feedback_arrow), Write(feedback_lbl),
+            run_time=1.5
+        )
+        self.wait(10.0)
+
+        # Bổ sung công thức formalization (Slides 97-98)
+        formal_box = RoundedRectangle(
+            width=6.6, height=2.4, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.1
+        ).move_to(ORIGIN)
+        formal_title = create_text("Định nghĩa toán học", font_size=11, color=YELLOW).next_to(formal_box.get_top(), DOWN, buff=0.18)
+        
+        formula_meta = create_markup_text(
+            "Meta-generator:   <span foreground='#33CCFF'>y ~ G(y | x; g<sub>1</sub>, g<sub>2</sub>, ..., g<sub>G</sub>, φ)</span>",
+            font_size=9.5, color=WHITE
+        )
+        formula_special = create_markup_text(
+            "Special case (Token-level):   <span foreground='#AAAAAA'>y ~ g(y | x; p<sub>θ</sub>, φ)</span>",
+            font_size=9.5, color=WHITE
+        )
+        formulas_group = VGroup(formula_meta, formula_special).arrange(DOWN, buff=0.25, aligned_edge=LEFT).next_to(formal_title, DOWN, buff=0.25)
+        
+        formal_grp = VGroup(formal_box, formal_title, formulas_group)
+        
+        self.play(
+            FadeOut(black_box), FadeOut(black_box_lbl),
+            FadeOut(token_x), FadeOut(arrow_in),
+            FadeOut(token_y), FadeOut(arrow_out),
+            FadeOut(controller_frame), FadeOut(controller_lbl),
+            FadeOut(feedback_arrow), FadeOut(feedback_lbl),
+            FadeIn(formal_grp, shift=UP * 0.15),
             run_time=1.2
         )
-        self.play(Create(feedback_arrow), Write(feedback_lbl), run_time=1.2)
-        self.wait(20.0)
+        self.wait(10.0)
 
         # Dọn dẹp phần 1
         self.play(
-            FadeOut(intro_text), FadeOut(black_box), FadeOut(black_box_lbl),
-            FadeOut(token_x), FadeOut(arrow_in), FadeOut(token_y), FadeOut(arrow_out),
-            FadeOut(controller_frame), FadeOut(controller_lbl),
-            FadeOut(feedback_arrow), FadeOut(feedback_lbl),
+            FadeOut(formal_grp),
             FadeOut(part1_title),
             run_time=1.2
         )
@@ -306,9 +332,15 @@ class Scene3_1(Scene):
         chain_flow.move_to(RIGHT * 3.6 + DOWN * 0.4)
         chain_flow[5].next_to(chain_flow[4], RIGHT, buff=0.15)
 
+        chain_formulas = create_markup_text(
+            "Công thức:  y<sub>1</sub> ~ g<sub>1</sub>(x),   y<sub>2</sub> ~ g<sub>2</sub>(x, y<sub>1</sub>),   y<sub>3</sub> ~ g<sub>3</sub>(x, y<sub>2</sub>)",
+            font_size=9, color=BLUE_A
+        ).next_to(chain_flow, DOWN, buff=0.25)
+
         self.play(
             FadeIn(compare_lbl_1), Create(direct_flow),
             FadeIn(compare_lbl_2), Create(chain_flow),
+            FadeIn(chain_formulas, shift=UP * 0.1),
             run_time=1.5
         )
         self.wait(20.0)
@@ -317,6 +349,7 @@ class Scene3_1(Scene):
         self.play(
             FadeOut(compare_lbl_1), FadeOut(direct_flow),
             FadeOut(compare_lbl_2), FadeOut(chain_flow),
+            FadeOut(chain_formulas),
             run_time=0.8
         )
         self.wait(1.0)
@@ -406,7 +439,7 @@ class Scene3_1(Scene):
         )
         question_box.move_to(UP * 1.5)
         question_text = create_markup_text(
-            "<b>Prompt x:</b> <i>\"Khi nào tổng thống Mỹ sinh cùng năm với Taylor Swift qua đời?\"</i>",
+            "<b>Prompt x:</b> <i>\"Complex Question (Requires Multi-step Reasoning)\"</i>",
             font_size=12, color=YELLOW
         )
         question_text.move_to(question_box.get_center())
@@ -419,7 +452,7 @@ class Scene3_1(Scene):
             width=3.0, height=2.2, color=ORANGE, fill_color=ORANGE, fill_opacity=0.08, corner_radius=0.1, stroke_width=2
         )
         tool_box.move_to(RIGHT * 4.5 + DOWN * 0.6)
-        tool_title = create_text("Tìm kiếm / Công cụ\n(Search Engine)", font_size=11, color=ORANGE).move_to(tool_box.get_center())
+        tool_title = create_text("Tìm kiếm / Công cụ\n(Search Engine / API)", font_size=11, color=ORANGE).move_to(tool_box.get_center())
         
         self.play(FadeIn(tool_box), Write(tool_title), run_time=1.0)
         self.wait(4.0)
@@ -427,7 +460,7 @@ class Scene3_1(Scene):
         # Quy trình bước 1: Tự hỏi câu hỏi phụ 1
         step1_box = RoundedRectangle(width=4.8, height=0.6, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.05)
         step1_box.move_to(LEFT * 2.2 + UP * 0.3)
-        step1_lbl = create_text("Tự hỏi 1: Taylor Swift sinh năm nào?", font_size=10, color=WHITE)
+        step1_lbl = create_text("Self-Ask 1: Sub-question 1", font_size=10, color=WHITE)
         step1_lbl.move_to(step1_box.get_center())
 
         self.play(FadeIn(step1_box), Write(step1_lbl), run_time=0.8)
@@ -439,7 +472,7 @@ class Scene3_1(Scene):
         self.wait(4.0)
 
         # Phản hồi từ công cụ về bước 1
-        step1_res = create_text("Trả về: Năm 1989", font_size=10, color=GREEN)
+        step1_res = create_text("Sub-answer 1 (API Response)", font_size=10, color=GREEN)
         step1_res.next_to(step1_box, DOWN, buff=0.15)
         
         self.play(Write(step1_res), run_time=0.8)
@@ -448,7 +481,7 @@ class Scene3_1(Scene):
         # Quy trình bước 2: Tự hỏi câu hỏi phụ 2
         step2_box = RoundedRectangle(width=4.8, height=0.6, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.05)
         step2_box.move_to(LEFT * 2.2 + DOWN * 0.9)
-        step2_lbl = create_text("Tự hỏi 2: Tổng thống Mỹ nào sinh năm 1989 đã mất?", font_size=10, color=WHITE)
+        step2_lbl = create_text("Self-Ask 2: Sub-question 2 (dependent)", font_size=10, color=WHITE)
         step2_lbl.move_to(step2_box.get_center())
 
         self.play(FadeIn(step2_box), Write(step2_lbl), run_time=0.8)
@@ -460,7 +493,7 @@ class Scene3_1(Scene):
         self.wait(4.0)
 
         # Phản hồi từ công cụ về bước 2
-        step2_res = create_text("Trả về: Không có tổng thống nào sinh năm 1989", font_size=10, color=GREEN)
+        step2_res = create_text("Sub-answer 2 (API Response)", font_size=10, color=GREEN)
         step2_res.next_to(step2_box, DOWN, buff=0.15)
 
         self.play(Write(step2_res), run_time=0.8)
@@ -472,7 +505,7 @@ class Scene3_1(Scene):
         )
         final_ans_box.move_to(DOWN * 2.8)
         final_ans_text = create_markup_text(
-            "<b>Đáp án y:</b> <i>\"Không có tổng thống Mỹ nào sinh cùng năm với Taylor Swift qua đời.\"</i>",
+            "<b>Đáp án y:</b> <i>\"Final Answer (Aggregated from sub-answers)\"</i>",
             font_size=11, color=GREEN
         )
         final_ans_text.move_to(final_ans_box.get_center())

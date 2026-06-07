@@ -8,12 +8,20 @@ config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
 # Hàm hỗ trợ tạo Text đảm bảo không bị lỗi mất dấu tiếng Việt khi hiển thị kích thước nhỏ trên Windows
-def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
+def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
     if font_size < 20:
         t = Text(text, font_size=36, font=font, color=color, **kwargs)
         t.scale(font_size / 36)
         return t
     return Text(text, font_size=font_size, font=font, color=color, **kwargs)
+
+# Hàm hỗ trợ tạo MarkupText đảm bảo không bị lỗi mất dấu tiếng Việt khi hiển thị kích thước nhỏ trên Windows
+def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
+    if font_size < 20:
+        t = MarkupText(text, font_size=36, font=font, **kwargs)
+        t.scale(font_size / 36)
+        return t
+    return MarkupText(text, font_size=font_size, font=font, **kwargs)
 
 def source_arrow(left, right, color=BLUE_B, stroke_width=3, buff=0.04, tip_ratio=0.25):
     return Arrow(
@@ -218,7 +226,7 @@ class Scene1_1(Scene):
         self.play(Write(section_title), FadeIn(sequence_caption, shift=UP * 0.1), run_time=1.0)
         self.play(FadeIn(math_card, shift=UP * 0.2), FadeIn(code_card, shift=UP * 0.2), run_time=1.1)
 
-        math_tokens = self.make_token_chain(["x_1", "x_2", "x_3", "..."], PURPLE_A)
+        math_tokens = self.make_token_chain(["x<sub>1</sub>", "x<sub>2</sub>", "x<sub>3</sub>", "..."], PURPLE_A)
         math_tokens.next_to(math_card, DOWN, buff=0.28)
         code_tokens = self.make_token_chain(["def", "solve", "(", "..."], GREEN_A)
         code_tokens.next_to(code_card, DOWN, buff=0.28)
@@ -291,7 +299,7 @@ class Scene1_1(Scene):
                 fill_opacity=0.95,
                 stroke_width=1.1,
             )
-            txt = create_text(token, font_size=10, color=color).move_to(box)
+            txt = create_markup_text(token, font_size=10, color=color).move_to(box)
             chain.add(VGroup(box, txt))
         chain.arrange(RIGHT, buff=0.08)
         return chain

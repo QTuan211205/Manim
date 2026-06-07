@@ -61,7 +61,7 @@ class Scene4_1(Scene):
         self.wait(5.0)
 
         # Di chuyển tiêu đề lên góc trên cùng làm tiêu đề phụ
-        sub_title = create_text("Điểm nghẽn phần cứng &amp; Bản chất của KV Cache", font_size=15, color=YELLOW)
+        sub_title = create_text("Điểm nghẽn phần cứng & Bản chất của KV Cache", font_size=15, color=YELLOW)
         sub_title.to_edge(UP, buff=0.4)
         
         self.play(
@@ -164,6 +164,22 @@ class Scene4_1(Scene):
             Create(bridge_upper), Create(bridge_lower), Write(bridge_lbl),
             run_time=2.0
         )
+        self.wait(4.0)
+
+        # Thẻ thông số H100 SXM (Slide 172)
+        specs_box = RoundedRectangle(width=8.0, height=1.6, color=GOLD_A, fill_color="#181812", fill_opacity=0.95, corner_radius=0.08)
+        specs_box.move_to(DOWN * 2.7)
+        specs_title = create_text("Thông số GPU NVIDIA H100 SXM", font_size=10, color=GOLD_B).next_to(specs_box.get_top(), DOWN, buff=0.12)
+        
+        specs_text = create_markup_text(
+            "• BF16 dense tensor core max FLOP/s:  <b>≈ 1 × 10<sup>15</sup> FLOP/s</b> (1 PFLOPS)\n"
+            "• Băng thông bộ nhớ (Memory Bandwidth):  <b>≈ 3.35 × 10<sup>12</sup> bytes/s</b> (3.35 TB/s)\n"
+            "• Tỷ lệ >> 100 FLOP/byte → Việc tính toán hầu như \"miễn phí\" so với nạp bộ nhớ!",
+            font_size=7.5, line_spacing=1.2
+        ).next_to(specs_title, DOWN, buff=0.1)
+        specs_group = VGroup(specs_box, specs_title, specs_text)
+
+        self.play(FadeIn(specs_group, shift=UP * 0.15), run_time=1.0)
         self.wait(8.0)
 
         # Minh họa luồng dữ liệu (Model weights) truyền qua cầu
@@ -193,7 +209,7 @@ class Scene4_1(Scene):
         # =====================================================================
         # BƯỚC 3: CÔNG THỨC CƯỜNG ĐỘ SỐ HỌC (ARITHMETIC INTENSITY)
         # =====================================================================
-        self.play(FadeOut(intro_text), run_time=0.8)
+        self.play(FadeOut(intro_text), FadeOut(specs_group), run_time=0.8)
 
         formula_title = create_text("Cường độ Số học (Arithmetic Intensity)", font_size=13, color=GOLD_B).move_to(UP * 2.3)
         formula_box = RoundedRectangle(width=8.2, height=0.55, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
@@ -617,7 +633,7 @@ class Scene4_1(Scene):
         size_box.move_to(UP * 1.4)
 
         size_txt = create_markup_text(
-            "Size = ( <span foreground=\"#FFC66D\">batch</span> · <span foreground=\"#FFC66D\">n<sub>ctx</sub></span> ) · ( 2 · <span foreground=\"#FF5555\">n<sub>layer</sub></span> · <span foreground=\"#FF5555\">n<sub>heads</sub></span> · <span foreground=\"#FF5555\">head_dim</span> ) · <span foreground=\"#33AAFF\">n<sub>bytes</sub></span>",
+            "Size = ( <span foreground=\"#FFC66D\">batch</span> · <span foreground=\"#FFC66D\">n<sub>ctx</sub></span> ) · ( 2 · <span foreground=\"#FF5555\">n<sub>layer</sub></span> · <span foreground=\"#FF5555\">n<sub>heads</sub></span> · <span foreground=\"#FF5555\">head<sub>dim</sub></span> ) · <span foreground=\"#33AAFF\">n<sub>bytes</sub></span>",
             font_size=8.5, color=WHITE
         ).move_to(size_box.get_center())
 

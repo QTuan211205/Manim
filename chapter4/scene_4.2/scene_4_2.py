@@ -40,7 +40,7 @@ class Scene4_2(Scene):
         chapter_header.move_to(ORIGIN)
 
         self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.2)
-        self.wait(15.0)
+        self.wait(8.5)
 
         # Di chuyển tiêu đề lên góc trên cùng làm tiêu đề phụ
         sub_title = create_text("Giải mã đầu cơ (Speculative Decoding)", font_size=15, color=YELLOW)
@@ -50,7 +50,7 @@ class Scene4_2(Scene):
             ReplacementTransform(chapter_header, sub_title),
             run_time=1.2
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
         # =====================================================================
         # BƯỚC 2: SỰ KẾT HỢP GIỮA DRAFT MODEL & TARGET MODEL
@@ -60,10 +60,10 @@ class Scene4_2(Scene):
             font_size=14, color=YELLOW
         ).move_to(UP * 1.8)
         self.play(Write(intro_text), run_time=2.0)
-        self.wait(25.0)
+        self.wait(14.0)
 
         # Tạo mô hình nháp Draft Model (Màu cam, nhỏ bên trái)
-        draft_box = RoundedRectangle(width=2.0, height=1.4, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.06)
+        draft_box = RoundedRectangle(width=2.0, height=1.4, color=ORANGE, fill_color="#2a1a0f", fill_opacity=0.9, corner_radius=0.06)
         draft_box.move_to(LEFT * 3.5 + DOWN * 0.8)
         draft_lbl = create_markup_text("<b>Draft Model</b>\n<span foreground=\"#FFA500\">Mô hình Nháp (1B)</span>", font_size=10, color=ORANGE, line_spacing=1.2).next_to(draft_box, UP, buff=0.15)
         
@@ -93,7 +93,7 @@ class Scene4_2(Scene):
             FadeIn(target_box), FadeIn(target_lbl), FadeIn(target_cores),
             run_time=1.8
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
         # Minh họa việc truyền dữ liệu tải trọng số từ VRAM (Giả định VRAM ở ngoài màn hình)
         # Draft model nạp siêu nhanh
@@ -135,10 +135,10 @@ class Scene4_2(Scene):
             *[c.animate(run_time=0.5).set_fill(BLUE, opacity=0.8) for c in target_cores]
         )
         self.play(
-            *[c.animate(run_time=0.5).set_fill(BLUE, opacity=0.15) for c in target_cores],
+            *[c.animate(run_time=0.5).set_fill(BLUE, opacity=0.15).set_color(BLUE) for c in target_cores],
             FadeOut(target_packets)
         )
-        self.wait(35.0)
+        self.wait(8.5)
 
         # Dọn dẹp sơ đồ giới thiệu để chuẩn bị sang mô phỏng băng chuyền
         self.play(
@@ -147,7 +147,7 @@ class Scene4_2(Scene):
             FadeOut(target_box), FadeOut(target_lbl), FadeOut(target_cores),
             run_time=1.0
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # BƯỚC 3: BĂNG CHUYỀN DRAFT GENERATION (K = 5)
@@ -157,7 +157,7 @@ class Scene4_2(Scene):
             font_size=14, color=YELLOW
         ).move_to(UP * 2.0)
         self.play(Write(draft_gen_text), run_time=1.5)
-        self.wait(25.0)
+        self.wait(14.0)
 
         # Vẽ băng chuyền (conveyor belt) ở giữa màn hình
         belt_line = Line(start=LEFT * 5.0 + DOWN * 0.8, end=RIGHT * 5.0 + DOWN * 0.8, color=GRAY_D, stroke_width=4)
@@ -166,34 +166,36 @@ class Scene4_2(Scene):
         conveyor_belt = VGroup(belt_line, belt_roller_left, belt_roller_right)
 
         # Hiện lại Draft Model thu nhỏ ở góc trái phía trên để chỉ ra nguồn phát sinh token
-        draft_model_mini = RoundedRectangle(width=1.5, height=1.0, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
+        draft_model_mini = RoundedRectangle(width=1.5, height=1.0, color=ORANGE, fill_color="#2a1a0f", fill_opacity=0.9, corner_radius=0.05)
         draft_model_mini.move_to(LEFT * 4.0 + UP * 0.6)
-        draft_model_lbl = create_text("Draft Model", font_size=8, color=ORANGE).move_to(draft_model_mini.get_center())
+        draft_model_lbl = create_text("Draft Model", font_size=8, color=WHITE).move_to(draft_model_mini.get_center())
         draft_mini = VGroup(draft_model_mini, draft_model_lbl)
-
+        
         self.play(
             Create(conveyor_belt),
             FadeIn(draft_mini),
             run_time=1.2
         )
-        self.wait(5.0)
+        self.wait(3.0)
 
-        # Sinh nhanh 5 token đặt trên băng chuyền từ trái sang phải
-        tokens_content = ["Hôm", "nay", "trời", "rất", "nắng"]
+        # Sinh nhanh 7 token đặt trên băng chuyền từ trái sang phải
+        tokens_content = ["The", "cow", "jumped", "over", "the", "sun", "."]
         token_boxes = VGroup()
         token_lbls = VGroup()
 
         # Tạo hiệu ứng nhả token từ Draft Model rơi xuống băng chuyền và chạy sang phải
         for i, tok_text in enumerate(tokens_content):
-            # Tạo hộp token màu cam nhạt
-            tok_box = RoundedRectangle(width=1.0, height=0.55, color=ORANGE, fill_color="#2b2014", fill_opacity=0.9, corner_radius=0.04)
+            # Tạo hộp token (2 prompt tokens đầu màu xám, 5 draft tokens sau màu cam nhạt)
+            color = GRAY_A if i < 2 else ORANGE
+            fill_color = "#1a1c1e" if i < 2 else "#2b2014"
+            tok_box = RoundedRectangle(width=0.9, height=0.55, color=color, fill_color=fill_color, fill_opacity=0.9, corner_radius=0.04)
             tok_box.move_to(draft_model_mini.get_center())
             
             tok_lbl = create_text(tok_text, font_size=10, color=WHITE).move_to(tok_box.get_center())
             token_boxes.add(tok_box)
             token_lbls.add(tok_lbl)
 
-            dest_x = -3.2 + i * 1.6
+            dest_x = -4.0 + i * 1.33
             dest_pos = np.array([dest_x, -0.8, 0])
 
             # Chạy hoạt ảnh nhả token
@@ -210,14 +212,14 @@ class Scene4_2(Scene):
             )
             self.wait(0.2)
 
-        self.wait(35.0)
+        self.wait(8.5)
 
         # Dọn dẹp để chuẩn bị sang phần Target Verification
         self.play(
             FadeOut(draft_gen_text),
             run_time=0.8
         )
-        self.wait(1.0)
+        self.wait(0.5)
 
         # =====================================================================
         # BƯỚC 4: KIỂM TRA SONG SONG (TARGET VERIFICATION)
@@ -227,7 +229,7 @@ class Scene4_2(Scene):
             font_size=14, color=YELLOW
         ).move_to(UP * 2.0)
         self.play(Write(verify_text), run_time=1.5)
-        self.wait(25.0)
+        self.wait(14.0)
 
         # Hiện Target Model lớn ở góc phải phía trên
         target_model_mini = RoundedRectangle(width=2.0, height=1.3, color=BLUE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.06)
@@ -248,11 +250,11 @@ class Scene4_2(Scene):
             FadeIn(target_mini_group),
             run_time=1.0
         )
-        self.wait(5.0)
+        self.wait(3.0)
 
         # Hoạt ảnh cả 5 token nháp trên băng chuyền đồng loạt bắn luồng dữ liệu lên Target Model
         verify_lines = VGroup()
-        for i in range(5):
+        for i in range(2, 7):
             start_p = token_boxes[i].get_top()
             end_p = target_model_mini.get_bottom()
             line = Line(start=start_p, end=end_p, color=BLUE_A, stroke_width=1.5).set_opacity(0.6)
@@ -282,14 +284,14 @@ class Scene4_2(Scene):
             FadeOut(verify_lines),
             run_time=0.8
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
         # Trả lại trạng thái bình thường cho Target Model
         self.play(
             *[c.animate(run_time=0.5).set_fill(BLUE, opacity=0.15).set_color(BLUE) for c in target_mini_cores],
             run_time=0.8
         )
-        self.wait(25.0)
+        self.wait(3.5)
 
         # Dọn dẹp để chuẩn bị sang toán học của Rejection Sampling
         self.play(
@@ -300,7 +302,7 @@ class Scene4_2(Scene):
             FadeOut(token_boxes), FadeOut(token_lbls),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(0.5)
 
         # =====================================================================
         # BƯỚC 5: THUẬT TOÁN CHẤP NHẬN / TỪ CHỐI (REJECTION SAMPLING)
@@ -310,7 +312,7 @@ class Scene4_2(Scene):
             font_size=14, color=YELLOW
         ).move_to(UP * 2.1)
         self.play(Write(math_intro), run_time=1.5)
-        self.wait(25.0)
+        self.wait(7.0)
 
         # Hiển thị công thức Speculative Sampling (Xây dựng đúng định dạng toán học)
         formula_box = RoundedRectangle(width=8.4, height=0.85, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
@@ -349,20 +351,20 @@ class Scene4_2(Scene):
             Write(formula_txt),
             run_time=1.2
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
-        # Biểu đồ so sánh phân phối xác suất tại vị trí thứ 4 (Token "rất") - Đặt bên phải màn hình
+        # Biểu đồ so sánh phân phối xác suất tại vị trí thứ 4 (Token "sun") - Đặt bên phải màn hình
         pos4_lbl = create_markup_text(
             "<b>Xét vị trí thứ 4 trên chuỗi nháp:</b>",
             font_size=10, color=WHITE
         ).move_to(LEFT * 3.5 + UP * 0.1)
 
         # Vẽ biểu đồ cột
-        # Draft Model chọn "rất" với xác suất 0.8
+        # Draft Model chọn "sun" với xác suất 0.8
         draft_bar_rect = Rectangle(width=1.0, height=2.4, color=ORANGE, fill_color=ORANGE, fill_opacity=0.7)
-        # Target Model chọn "rất" với xác suất 0.2
+        # Target Model chọn "sun" với xác suất 0.2
         target_bar_rect = Rectangle(width=1.0, height=0.6, color=BLUE, fill_color=BLUE, fill_opacity=0.7)
-        # Target Model chọn "mưa" làm dự đoán tối ưu hơn (0.7)
+        # Target Model chọn "moon" làm dự đoán tối ưu hơn (0.7)
         target_alt_rect = Rectangle(width=1.0, height=2.1, color=GREEN_C, fill_color=GREEN_C, fill_opacity=0.7)
 
         # Đặt vị trí các cột trước, căn đáy chung tại baseline_y = -2.6
@@ -379,9 +381,9 @@ class Scene4_2(Scene):
             color=GRAY, stroke_width=2
         )
 
-        draft_bar_lbl = create_text("P_nháp('rất')\n= 0.8", font_size=8, color=ORANGE).next_to(draft_bar_rect, UP, buff=0.1)
-        target_bar_lbl = create_text("P_đích('rất')\n= 0.2", font_size=8, color=BLUE).next_to(target_bar_rect, UP, buff=0.1)
-        target_alt_lbl = create_text("P_đích('mưa')\n= 0.7", font_size=8, color=GREEN_B).next_to(target_alt_rect, UP, buff=0.1)
+        draft_bar_lbl = create_text("P_nháp('sun')\n= 0.8", font_size=8, color=ORANGE).next_to(draft_bar_rect, UP, buff=0.1)
+        target_bar_lbl = create_text("P_đích('sun')\n= 0.2", font_size=8, color=BLUE).next_to(target_bar_rect, UP, buff=0.1)
+        target_alt_lbl = create_text("P_đích('moon')\n= 0.7", font_size=8, color=GREEN_B).next_to(target_alt_rect, UP, buff=0.1)
 
         self.play(
             Write(pos4_lbl),
@@ -391,7 +393,7 @@ class Scene4_2(Scene):
             FadeIn(target_alt_rect), FadeIn(target_alt_lbl),
             run_time=1.5
         )
-        self.wait(15.0)
+        self.wait(8.5)
 
         # Giải thích tỷ lệ chấp nhận: P_đích / P_nháp = 0.2 / 0.8 = 25% (đặt bên trái, không chồng lấn)
         explain_box = RoundedRectangle(width=4.0, height=1.0, color=RED, fill_color="#2b1414", fill_opacity=0.9, corner_radius=0.05)
@@ -407,12 +409,12 @@ class Scene4_2(Scene):
             Write(explain_txt),
             run_time=1.0
         )
-        self.wait(30.0)
+        self.wait(8.5)
 
         # Từ chối token (đặt dưới explain_box, bên trái màn hình)
         reject_label = create_text("TỪ CHỐI (REJECT)", font_size=12, color=RED, weight=BOLD).move_to(LEFT * 3.5 + DOWN * 1.8)
         self.play(Write(reject_label), run_time=0.8)
-        self.wait(15.0)
+        self.wait(8.5)
 
         # Dọn dẹp để chuẩn bị sang hoạt ảnh cắt laser thực tế
         self.play(
@@ -426,7 +428,7 @@ class Scene4_2(Scene):
             FadeOut(reject_label),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # BƯỚC 6: HIỆU ỨNG LASER CUT & SỬA ĐỔI
@@ -436,17 +438,21 @@ class Scene4_2(Scene):
             font_size=14, color=YELLOW
         ).move_to(UP * 2.0)
         self.play(Write(laser_intro), run_time=1.5)
-        self.wait(25.0)
+        self.wait(7.0)
 
         # Vẽ lại băng chuyền ở giữa
         self.play(Create(conveyor_belt), run_time=0.8)
 
-        # Vẽ lại 5 token trên băng chuyền
+        # Vẽ lại 7 token trên băng chuyền
         belt_tokens = VGroup()
         belt_lbls = VGroup()
-        for i, tok_text in enumerate(tokens_content):
-            dest_x = -3.2 + i * 1.6
-            tok_box = RoundedRectangle(width=1.0, height=0.55, color=ORANGE, fill_color="#2b2014", fill_opacity=0.9, corner_radius=0.04)
+        tokens_full = ["The", "cow", "jumped", "over", "the", "sun", "."]
+        for i, tok_text in enumerate(tokens_full):
+            dest_x = -4.0 + i * 1.33
+            # Prompt tokens (0,1) màu xám, Draft tokens (2-6) màu cam
+            color = GRAY_A if i < 2 else ORANGE
+            fill_color = "#1a1c1e" if i < 2 else "#2a1a0f"
+            tok_box = RoundedRectangle(width=0.9, height=0.55, color=color, fill_color=fill_color, fill_opacity=0.9, corner_radius=0.04)
             tok_box.move_to(np.array([dest_x, -0.8, 0]))
             tok_lbl = create_text(tok_text, font_size=10, color=WHITE).move_to(tok_box.get_center())
             belt_tokens.add(tok_box)
@@ -456,27 +462,27 @@ class Scene4_2(Scene):
             FadeIn(belt_tokens), FadeIn(belt_lbls),
             run_time=1.0
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
-        # Chấp nhận 3 token đầu tiên: chuyển sang màu xanh lá
+        # Chấp nhận 3 token đầu tiên của draft (index 2, 3, 4): chuyển sang màu xanh lá
         self.play(
-            *[belt_tokens[i].animate(run_time=0.5).set_color(GREEN).set_fill("#142b1a", opacity=0.9) for i in range(3)],
-            *[belt_lbls[i].animate(run_time=0.5).set_color(GREEN_A) for i in range(3)],
+            *[belt_tokens[i].animate(run_time=0.5).set_color(GREEN).set_fill("#142b1a", opacity=0.9) for i in range(2, 5)],
+            *[belt_lbls[i].animate(run_time=0.5).set_color(GREEN_A) for i in range(2, 5)],
         )
-        self.wait(5.0)
+        self.wait(3.0)
 
-        # Token thứ 4 và 5 chuyển sang màu đỏ (bị từ chối)
+        # Token thứ 4 và 5 của draft (index 5, 6) chuyển sang màu đỏ (bị từ chối)
         self.play(
-            *[belt_tokens[i].animate(run_time=0.5).set_color(RED).set_fill("#2b1414", opacity=0.9) for i in range(3, 5)],
-            *[belt_lbls[i].animate(run_time=0.5).set_color(RED_A) for i in range(3, 5)],
+            *[belt_tokens[i].animate(run_time=0.5).set_color(RED).set_fill("#2b1414", opacity=0.9) for i in range(5, 7)],
+            *[belt_lbls[i].animate(run_time=0.5).set_color(RED_A) for i in range(5, 7)],
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
-        # Vẽ đường tia laser màu đỏ tươi từ trên xuống (cắt ngay trước vị trí thứ 4, X = 1.0)
-        laser_beam = Line(start=UP * 1.0 + RIGHT * 0.8, end=DOWN * 2.2 + RIGHT * 0.8, color=RED, stroke_width=6)
+        # Vẽ đường tia laser màu đỏ tươi từ trên xuống (cắt ngay trước vị trí thứ 4, X = 2.0)
+        laser_beam = Line(start=UP * 1.0 + RIGHT * 2.0, end=DOWN * 2.2 + RIGHT * 2.0, color=RED, stroke_width=6)
         
         # Điểm sáng phát lửa tại giao điểm giữa laser và băng chuyền
-        laser_spark = Star(color=YELLOW, fill_color=YELLOW, fill_opacity=1.0, stroke_width=1).scale(0.25).move_to(RIGHT * 0.8 + DOWN * 0.8)
+        laser_spark = Star(color=YELLOW, fill_color=YELLOW, fill_opacity=1.0, stroke_width=1).scale(0.25).move_to(RIGHT * 2.0 + DOWN * 0.8)
 
         self.play(
             Create(laser_beam),
@@ -492,24 +498,24 @@ class Scene4_2(Scene):
             laser_spark.animate(run_time=0.25).scale(0.55),
             laser_beam.animate(run_time=0.25).set_color(RED),
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
         # Hai token bị từ chối sụp đổ và biến mất hoàn toàn
         self.play(
             # Laser cắt đứt
-            VGroup(belt_tokens[3], belt_lbls[3]).animate(run_time=0.8, rate_func=smooth).scale(0.1).shift(DOWN * 1.5).set_opacity(0),
-            VGroup(belt_tokens[4], belt_lbls[4]).animate(run_time=0.8, rate_func=smooth).scale(0.1).shift(DOWN * 1.5).set_opacity(0),
+            VGroup(belt_tokens[5], belt_lbls[5]).animate(run_time=0.8, rate_func=smooth).scale(0.1).shift(DOWN * 1.5).set_opacity(0),
+            VGroup(belt_tokens[6], belt_lbls[6]).animate(run_time=0.8, rate_func=smooth).scale(0.1).shift(DOWN * 1.5).set_opacity(0),
             FadeOut(laser_beam), FadeOut(laser_spark),
             run_time=0.8
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
-        # Chèn chữ "mưa" vào vị trí thứ 4 (màu xanh dương phát sáng)
-        corrected_box = RoundedRectangle(width=1.0, height=0.55, color=BLUE, fill_color="#14202b", fill_opacity=0.9, corner_radius=0.04)
-        corrected_box.move_to(RIGHT * 1.6 + DOWN * 0.8)
-        corrected_lbl = create_text("mưa", font_size=10, color=BLUE_A).move_to(corrected_box.get_center())
+        # Chèn chữ "moon" vào vị trí thứ 4 (màu xanh dương phát sáng, X = 2.67)
+        corrected_box = RoundedRectangle(width=0.9, height=0.55, color=BLUE, fill_color="#14202b", fill_opacity=0.9, corner_radius=0.04)
+        corrected_box.move_to(RIGHT * 2.67 + DOWN * 0.8)
+        corrected_lbl = create_text("moon", font_size=10, color=BLUE_A).move_to(corrected_box.get_center())
 
-        success_arrow = Arrow(start=RIGHT * 1.6 + UP * 0.5, end=RIGHT * 1.6 + DOWN * 0.4, color=BLUE_A, stroke_width=2.5)
+        success_arrow = Arrow(start=RIGHT * 2.67 + UP * 0.5, end=RIGHT * 2.67 + DOWN * 0.4, color=BLUE_A, stroke_width=2.5)
         success_lbl = create_text("Sửa đổi thành công!", font_size=8, color=BLUE_B).next_to(success_arrow, UP, buff=0.1)
 
         self.play(
@@ -517,32 +523,32 @@ class Scene4_2(Scene):
             Create(success_arrow), Write(success_lbl),
             run_time=1.2
         )
-        self.wait(25.0)
+        self.wait(7.0)
 
         # Thu được chuỗi token hoàn chỉnh dưới dạng kết quả hiển thị lớn
         final_seq_box = RoundedRectangle(width=6.8, height=0.9, color=GREEN_B, fill_color="#111111", fill_opacity=0.95, corner_radius=0.08)
         final_seq_box.move_to(DOWN * 2.1)
-        final_seq_txt = create_text("Kết quả sinh: \"Hôm nay trời mưa\"", font_size=14, color=WHITE).move_to(final_seq_box.get_center())
+        final_seq_txt = create_text("Kết quả sinh: \"The cow jumped over the moon\"", font_size=14, color=WHITE).move_to(final_seq_box.get_center())
 
         self.play(
             FadeIn(final_seq_box),
             Write(final_seq_txt),
             run_time=1.2
         )
-        self.wait(10.0)
+        self.wait(6.0)
 
         # Dọn dẹp hết để sang phần Tốc Độ thực tế và Tổng kết
         self.play(
             FadeOut(laser_intro),
             FadeOut(conveyor_belt),
-            *[FadeOut(belt_tokens[i]) for i in range(3)],
-            *[FadeOut(belt_lbls[i]) for i in range(3)],
+            *[FadeOut(belt_tokens[i]) for i in range(5)],
+            *[FadeOut(belt_lbls[i]) for i in range(5)],
             FadeOut(corrected_box), FadeOut(corrected_lbl),
             FadeOut(success_arrow), FadeOut(success_lbl),
             FadeOut(final_seq_box), FadeOut(final_seq_txt),
             run_time=1.2
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # =====================================================================
         # BƯỚC 7: TỐC ĐỘ THỰC TẾ & ĐÁNH ĐỔI
@@ -553,7 +559,7 @@ class Scene4_2(Scene):
             ReplacementTransform(sub_title, conclusion_title),
             run_time=1.0
         )
-        self.wait(1.0)
+        self.wait(0.5)
 
         # Tạo bảng so sánh hiệu năng
         comparison_table = VGroup()
@@ -600,7 +606,7 @@ class Scene4_2(Scene):
             Write(tradeoff_note),
             run_time=1.8
         )
-        self.wait(15.0)
+        self.wait(5.0)
 
         # =====================================================================
         # BƯỚC 7.2: ĐÁNH ĐỔI THÔNG LƯỢNG & ĐỘ DÀI NGỮ CẢNH (MAGICDEC)
@@ -614,7 +620,7 @@ class Scene4_2(Scene):
             ReplacementTransform(conclusion_title, magicdec_title),
             run_time=1.0
         )
-        self.wait(1.0)
+        self.wait(0.5)
 
         # Trực quan hóa bằng biểu đồ đường 2D (Axes)
         axes = Axes(
@@ -663,7 +669,7 @@ class Scene4_2(Scene):
             Write(x_lbl), Write(y_lbl),
             run_time=1.5
         )
-        self.wait(1.0)
+        self.wait(0.5)
 
         self.play(
             Create(std_curve),
@@ -671,7 +677,7 @@ class Scene4_2(Scene):
             FadeIn(legend),
             run_time=2.0
         )
-        self.wait(2.0)
+        self.wait(1.0)
 
         # Chú thích
         self.play(
@@ -680,7 +686,7 @@ class Scene4_2(Scene):
             Write(low_ctx_lbl),
             run_time=1.0
         )
-        self.wait(5.0)
+        self.wait(3.0)
 
         self.play(
             FadeIn(long_ctx_dot),
@@ -688,7 +694,7 @@ class Scene4_2(Scene):
             Write(long_ctx_lbl),
             run_time=1.0
         )
-        self.wait(20.0)
+        self.wait(6.0)
 
         # Dọn dẹp đồ thị để chuyển sang phần code mẫu
         self.play(
@@ -699,12 +705,12 @@ class Scene4_2(Scene):
             FadeOut(magicdec_title),
             run_time=1.2
         )
-        self.wait(1.0)
+        self.wait(0.5)
 
         # =====================================================================
         # BƯỚC 8: MÃ NGUỒN THUẬT TOÁN (SLIDE 213-214)
         # =====================================================================
-        code_title = create_text("Mã nguồn thuật toán (Slides 213-214)", font_size=13, color=YELLOW)
+        code_title = create_text("Mã nguồn thuật toán", font_size=13, color=YELLOW)
         code_title.to_edge(UP, buff=0.4)
         self.play(FadeIn(code_title), run_time=0.8)
 
@@ -742,13 +748,13 @@ class Scene4_2(Scene):
             Write(code_content),
             run_time=2.0
         )
-        self.wait(5.0)
+        self.wait(3.0)
 
         # Khung highlight chạy qua các phần chính của code
         highlight_box = SurroundingRectangle(code_content, color=GOLD, stroke_width=2, corner_radius=0.04)
         
         self.play(Create(highlight_box), run_time=1.0)
-        self.wait(25.0)
+        self.wait(7.0)
 
         self.play(
             FadeOut(code_window), FadeOut(title_bar), FadeOut(dots), FadeOut(file_name),
@@ -756,5 +762,5 @@ class Scene4_2(Scene):
             FadeOut(code_title),
             run_time=1.2
         )
-        self.wait(2.0)
-        self.wait(2.0)
+        self.wait(1.0)
+        self.wait(1.0)

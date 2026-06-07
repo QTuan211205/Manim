@@ -125,80 +125,18 @@ class Scene2_4(MovingCameraScene):
         self.wait(2.5)
 
         # Mô tả phân phối Đuôi nặng (Heavy Tail)
-        tail_box = RoundedRectangle(width=8.0, height=3.0, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        tail_box.move_to(DOWN * 1.2)
-        
-        # Biểu đồ cột xác suất từ vựng
-        tail_words = ["\"is\"", "\",\"", "\"and\"", "\"has\"", "\"here\"", "\"actor\"", "\"award\"", "\"Beyoncé\""]
-        tail_probs = [0.45, 0.20, 0.10, 0.05, 0.03, 0.015, 0.015, 0.01]
-        tail_colors = [BLUE_D, BLUE_D, BLUE_D, GRAY_C, GRAY_C, RED_D, RED_D, RED_E]
-        
-        bars = []
-        labels = []
-        vals = []
-        chart_base_y = -2.3
-        
-        for i in range(8):
-            x_pos = -3.5 + i * 1.0
-            height = tail_probs[i] * 4.0
-            bar = Rectangle(
-                width=0.45, 
-                height=max(height, 0.04), 
-                color=tail_colors[i], 
-                fill_color=tail_colors[i], 
-                fill_opacity=0.9
-            )
-            bar.move_to(np.array([x_pos, chart_base_y + max(height, 0.04)/2.0, 0]))
-            bars.append(bar)
-            
-            lbl = create_text(tail_words[i], font_size=8, color=WHITE)
-            lbl.move_to(np.array([x_pos, chart_base_y - 0.25, 0]))
-            labels.append(lbl)
-            
-            val = create_text(f"{tail_probs[i]*100:.1f}%", font_size=7.5, color=tail_colors[i])
-            val.move_to(np.array([x_pos, chart_base_y + height + 0.18, 0]))
-            vals.append(val)
-            
-        bar_group = VGroup(*bars)
-        label_group = VGroup(*labels)
-        val_group = VGroup(*vals)
-        chart_group = VGroup(bar_group, label_group, val_group)
-        chart_group.move_to(DOWN * 1.2)
-
-        self.play(
-            FadeIn(tail_box),
-            FadeIn(chart_group, shift=UP * 0.15),
-            run_time=1.2
+        tail_explain = create_text(
+            "What is wrong with ancestral sampling?\n"
+            "• Greedy decoding causes repetition traps\n"
+            "• But ancestral sampling causes incoherence. Why?\n"
+            "  - Low-probability tokens are too likely\n"
+            "  - I.e., the next-token distribution has a heavy tail.",
+            font_size=11, line_spacing=0.5
         )
-        self.wait(3.0)
-
-        # Giải thích cạm bẫy đuôi nặng: Highlighter quét ngẫu nhiên và bốc trúng Beyoncé
-        selector_line = Line(UP * 0.1, DOWN * 0.1, color=YELLOW, stroke_width=2.5)
-        selector_line.move_to(bars[0].get_top() + UP * 0.1)
+        tail_explain.move_to(DOWN * 1.2)
         
-        self.play(FadeIn(selector_line), run_time=0.4)
-        
-        # Di chuyển bộ chọn quét qua lại rồi dừng ở Beyoncé
-        self.play(
-            selector_line.animate.move_to(bars[2].get_top() + UP * 0.1),
-            run_time=0.5
-        )
-        self.play(
-            selector_line.animate.move_to(bars[4].get_top() + UP * 0.1),
-            run_time=0.4
-        )
-        self.play(
-            selector_line.animate.move_to(bars[7].get_top() + UP * 0.1),
-            run_time=0.6
-        )
-        self.wait(0.5)
-
-        # Highlight cột Beyoncé và hiển thị văn bản incoherent
-        self.play(
-            bars[7].animate.set_color(YELLOW).set_fill(YELLOW, opacity=1.0),
-            FadeOut(selector_line),
-            run_time=0.5
-        )
+        self.play(FadeIn(tail_explain, shift=UP * 0.15), run_time=1.0)
+        self.wait(5.0)
         
         # Clear the screen to show comparison
         comp_title = create_text("Hành vi sinh văn bản của các phương pháp giải mã", font_size=13, color=BLUE_A)
@@ -206,8 +144,7 @@ class Scene2_4(MovingCameraScene):
         self.play(
             FadeOut(ancestral_step),
             FadeOut(ancestral_seq),
-            FadeOut(tail_box),
-            FadeOut(chart_group),
+            FadeOut(tail_explain),
             ReplacementTransform(step1_title, comp_title),
             run_time=1.0
         )

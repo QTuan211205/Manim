@@ -452,7 +452,7 @@ class Scene4_3(Scene):
         # Hiển thị công thức tính kích thước KV Cache (Tránh dùng VGroup chứa label khi cần Transform để tránh lỗi đè chữ)
         formula_bg = RoundedRectangle(width=8.5, height=0.6, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04).move_to(UP * 1.0)
         formula_lbl = create_markup_text(
-            'Size = (batch * <span foreground="#FF3333">n<sub>ctx</sub></span>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head_dim) * n<sub>bytes</sub>',
+            'Size = (batch * <span foreground="#FF3333">n<sub>ctx</sub></span>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head<sub>dim</sub>) * n<sub>bytes</sub>',
             font_size=9.5
         ).move_to(formula_bg.get_center())
         self.play(FadeIn(formula_bg, shift=DOWN * 0.2), FadeIn(formula_lbl, shift=DOWN * 0.2), run_time=1.2)
@@ -503,7 +503,7 @@ class Scene4_3(Scene):
 
         # Cập nhật công thức: n_ctx giảm (sử dụng FadeOut/FadeIn an toàn tránh lỗi chồng chữ)
         formula_lbl_new = create_markup_text(
-            'Size = (batch * <span foreground="#FF3333">n<sub>ctx</sub> (giảm 50%)</span>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head_dim) * n<sub>bytes</sub>',
+            'Size = (batch * <span foreground="#FF3333">n<sub>ctx</sub> (giảm 50%)</span>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head<sub>dim</sub>) * n<sub>bytes</sub>',
             font_size=9.5
         ).move_to(formula_bg.get_center())
         self.play(FadeOut(formula_lbl), FadeIn(formula_lbl_new), run_time=0.8)
@@ -542,7 +542,7 @@ class Scene4_3(Scene):
         # Công thức nổi bật n_bytes
         formula_bg = RoundedRectangle(width=8.5, height=0.6, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04).move_to(UP * 1.0)
         formula_lbl = create_markup_text(
-            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head_dim) * <span foreground="#33FF55">n<sub>bytes</sub></span>',
+            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head<sub>dim</sub>) * <span foreground="#33FF55">n<sub>bytes</sub></span>',
             font_size=9.5
         ).move_to(formula_bg.get_center())
         self.play(FadeIn(formula_bg, shift=DOWN * 0.2), FadeIn(formula_lbl, shift=DOWN * 0.2), run_time=1.2)
@@ -572,7 +572,7 @@ class Scene4_3(Scene):
 
         # Cập nhật công thức: n_bytes giảm (sử dụng FadeOut/FadeIn tránh lỗi đè chữ)
         formula_lbl_new = create_markup_text(
-            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head_dim) * <span foreground="#33FF55">n<sub>bytes</sub> (giảm 2x - 4x)</span>',
+            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * n<sub>heads</sub> * head<sub>dim</sub>) * <span foreground="#33FF55">n<sub>bytes</sub> (giảm 2x - 4x)</span>',
             font_size=9.5
         ).move_to(formula_bg.get_center())
         self.play(FadeOut(formula_lbl), FadeIn(formula_lbl_new), run_time=0.8)
@@ -610,7 +610,7 @@ class Scene4_3(Scene):
         # Công thức nổi bật n_heads
         formula_bg = RoundedRectangle(width=8.5, height=0.6, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04).move_to(UP * 1.1)
         formula_lbl = create_markup_text(
-            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * <span foreground="#33CCFF">n<sub>heads</sub></span> * head_dim) * n<sub>bytes</sub>',
+            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * <span foreground="#33CCFF">n<sub>heads</sub></span> * head<sub>dim</sub>) * n<sub>bytes</sub>',
             font_size=9.5
         ).move_to(formula_bg.get_center())
         self.play(FadeIn(formula_bg, shift=DOWN * 0.2), FadeIn(formula_lbl, shift=DOWN * 0.2), run_time=1.2)
@@ -652,7 +652,7 @@ class Scene4_3(Scene):
 
         # Cập nhật công thức: n_heads giảm (sử dụng FadeOut/FadeIn tránh lỗi đè chữ)
         formula_lbl_new = create_markup_text(
-            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * <span foreground="#33CCFF">n<sub>heads</sub> (giảm 4x - 8x)</span> * head_dim) * n<sub>bytes</sub>',
+            'Size = (batch * n<sub>ctx</sub>) * (2 * n<sub>layer</sub> * <span foreground="#33CCFF">n<sub>heads</sub> (giảm 4x - 8x)</span> * head<sub>dim</sub>) * n<sub>bytes</sub>',
             font_size=9.5
         ).move_to(formula_bg.get_center())
         self.play(FadeOut(formula_lbl), FadeIn(formula_lbl_new), run_time=0.8)
@@ -747,7 +747,7 @@ class Scene4_3(Scene):
         paper_box = RoundedRectangle(width=9.5, height=0.65, color=BLUE, fill_color="#14202b", fill_opacity=0.95, corner_radius=0.04).move_to(DOWN * 1.85)
         paper_lbl = create_markup_text(
             '<b>Tài liệu nghiên cứu:</b> Survey Paper (TMLR 2024) &amp; Code/Slides tại trang web:\n'
-            '<span foreground="#33CCFF"><b>https://llm-meta-generation.github.io</b></span>',
+            '<span foreground="#33CCFF"><b>cmu-l3.github.io/neurips2024-inference-tutorial</b></span>',
             font_size=7.5, color=WHITE, line_spacing=1.2
         ).move_to(paper_box.get_center())
         paper_grp = VGroup(paper_box, paper_lbl)

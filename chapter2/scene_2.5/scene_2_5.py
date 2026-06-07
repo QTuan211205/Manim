@@ -9,7 +9,7 @@ config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
 # Hàm hỗ trợ tạo Text đảm bảo không bị lỗi mất dấu tiếng Việt khi hiển thị kích thước nhỏ trên Windows
-def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
+def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
     if font_size < 20:
         t = Text(text, font_size=36, font=font, color=color, **kwargs)
         t.scale(font_size / 36)
@@ -17,7 +17,7 @@ def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
     return Text(text, font_size=font_size, font=font, color=color, **kwargs)
 
 # Hàm hỗ trợ tạo MarkupText đảm bảo không bị lỗi mất dấu tiếng Việt khi hiển thị kích thước nhỏ trên Windows
-def create_markup_text(text, font_size=24, font="Arial", **kwargs):
+def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
     if font_size < 20:
         t = MarkupText(text, font_size=36, font=font, **kwargs)
         t.scale(font_size / 36)
@@ -74,7 +74,54 @@ class Scene2_5(Scene):
         self.play(Write(part1_title), run_time=0.8)
         self.wait(2.0)
 
-        # Mô tả khái quát
+        # Mô tả khái quát về Sampling Adapters
+        intro_box = RoundedRectangle(width=11.6, height=3.8, color=BLUE_B, fill_color="#101720", fill_opacity=0.95, corner_radius=0.08).move_to(DOWN * 0.1)
+        intro_title = create_text("Các bộ điều chỉnh lấy mẫu (Sampling Adapters)", font_size=13, color=BLUE_A, weight=BOLD).next_to(intro_box.get_top(), DOWN, buff=0.15)
+        
+        # Tạo bảng 3 cột: Method | Purpose / Formula | Adapter type
+        headers = VGroup(
+            create_markup_text("<b>Method</b>", font_size=9.5, color=YELLOW),
+            create_markup_text("<b>Formula / Purpose</b>", font_size=9.5, color=YELLOW),
+            create_markup_text("<b>Adapter Type</b>", font_size=9.5, color=YELLOW)
+        )
+        headers[0].move_to(LEFT * 4.6 + UP * 1.0, aligned_edge=LEFT)
+        headers[1].move_to(LEFT * 1.4 + UP * 1.0, aligned_edge=LEFT)
+        headers[2].move_to(RIGHT * 2.3 + UP * 1.0, aligned_edge=LEFT)
+        
+        rows = VGroup()
+        row_y_starts = 0.6
+        row_spacing = 0.36
+        
+        table_data = [
+            ("Typical sampling", "y ~ q(p<sub>θ</sub>)", "Truncation (entropy)"),
+            ("Mirostat decoding", "Target perplexity", "Truncation (adaptive top-k)"),
+            ("Basis-aware sampling", "y ~ q(p<sub>θ</sub>)", "Truncation (linear program)"),
+            ("Contrastive decoding", "y ~ q(p<sub>θ</sub>) | log p<sub>θ'</sub> - log p<sub>θ</sub>", "Contrastive & truncation"),
+            ("DExperts", "y ~ q*(· | x, c) ∝ p<sub>θ</sub> · (p<sub>θ+</sub> / p<sub>θ-</sub>)<sup>α</sup>", "Logits adjustment"),
+            ("Inference-time adapters", "y ~ q* ∝ r(y) ∝ (p<sub>θ</sub> · p<sub>θ'</sub>)<sup>α</sup>", "Logits adjustment"),
+            ("Proxy tuning", "y ~ q*(· | x, c) ∝ p<sub>θ</sub> · (p<sub>θ+</sub> / p<sub>θ-</sub>)<sup>α</sup>", "Logits adjustment")
+        ]
+        
+        for idx, (m, f, a) in enumerate(table_data):
+            y_pos = row_y_starts - idx * row_spacing
+            col1 = create_text(m, font_size=8.5, color=WHITE)
+            col1.move_to(LEFT * 4.6 + UP * y_pos, aligned_edge=LEFT)
+            
+            col2 = create_markup_text(f, font_size=8.5, color=BLUE_A)
+            col2.move_to(LEFT * 1.4 + UP * y_pos, aligned_edge=LEFT)
+            
+            col3 = create_text(a, font_size=8.5, color=GRAY_A)
+            col3.move_to(RIGHT * 2.3 + UP * y_pos, aligned_edge=LEFT)
+            
+            rows.add(VGroup(col1, col2, col3))
+            
+        intro_group = VGroup(intro_box, intro_title, headers, rows)
+        
+        self.play(FadeIn(intro_group, shift=UP * 0.15), run_time=1.2)
+        self.wait(10.0)
+        self.play(FadeOut(intro_group), run_time=0.8)
+
+        # Mô tả khái quát CD
         intro_text = create_text(
             "Contrastive Decoding kết hợp một mô hình lớn (Expert) và một mô hình nhỏ (Anti-expert)\n"
             "nhằm loại bỏ các từ lặp tẻ nhạt và làm sắc bén phân phối xác suất.",
@@ -158,50 +205,43 @@ class Scene2_5(Scene):
 
         # Hiển thị công thức ở bên phải
         formula_box = RoundedRectangle(
-            width=5.5, height=3.2, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1
+            width=5.8, height=3.8, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1
         )
-        formula_box.move_to(RIGHT * 3.2 + UP * 0.2)
+        formula_box.move_to(RIGHT * 3.4 + UP * 0.2)
         
-        formula_title = create_text("Công thức Contrastive Decoding", font_size=12, color=YELLOW)
+        formula_title = create_text("Công thức lấy mẫu", font_size=12, color=YELLOW)
         formula_title.next_to(formula_box.get_top(), DOWN, buff=0.2)
-
-        # eq1: P_CD(y | x) \propto P_expert(y | x) / P_anti(y | x)
-        eq1_lhs = create_markup_text("P<sub>CD</sub>(y | x) ", font_size=16, color=WHITE)
-        propto_sym = get_propto(color=WHITE, stroke_width=1.5).scale(1.3)
-        eq1_num = create_markup_text("P<sub>expert</sub>(y | x)", font_size=13, color=BLUE_A)
-        eq1_den = create_markup_text("P<sub>anti</sub>(y | x)", font_size=13, color=ORANGE)
+ 
+        # eq1: p(· | x) \propto p_expert(· | x) / p_antiexpert(· | x)
+        eq1_lhs = create_markup_text("p(· | x) ∝ ", font_size=15, color=WHITE)
+        eq1_num = create_markup_text("p<sub>expert</sub>(· | x)", font_size=12, color=BLUE_A)
+        eq1_den = create_markup_text("p<sub>antiexpert</sub>(· | x)", font_size=12, color=ORANGE)
         
-        # Tính chiều dài đường phân số
         w_line = max(eq1_num.width, eq1_den.width) * 0.5 + 0.1
         eq1_line = Line(LEFT * w_line, RIGHT * w_line, color=WHITE, stroke_width=1.5)
         
-        # Định vị
-        propto_sym.next_to(eq1_lhs, RIGHT, buff=0.15)
-        eq1_line.next_to(propto_sym, RIGHT, buff=0.15)
+        eq1_line.next_to(eq1_lhs, RIGHT, buff=0.1)
         eq1_num.next_to(eq1_line, UP, buff=0.08)
         eq1_den.next_to(eq1_line, DOWN, buff=0.08)
         
-        eq1 = VGroup(eq1_lhs, propto_sym, eq1_line, eq1_num, eq1_den)
-        eq1.next_to(formula_title, DOWN, buff=0.25).shift(LEFT * 0.45)
-
-        # eq2: log P_CD(y | x) \propto log P_expert - \alpha log P_anti
-        eq2_lhs = create_markup_text("log P<sub>CD</sub>(y | x)", font_size=11, color=LIGHT_GREY)
-        eq2_proto = get_propto(color=LIGHT_GREY, stroke_width=1.2).scale(1.0)
-        eq2_rhs = create_markup_text("log P<sub>expert</sub>(y | x) - α log P<sub>anti</sub>(y | x)", font_size=11, color=LIGHT_GREY)
-        
-        eq2_proto.next_to(eq2_lhs, RIGHT, buff=0.35)
-        eq2_rhs.next_to(eq2_proto, RIGHT, buff=0.35)
-        
-        eq2 = VGroup(eq2_lhs, eq2_proto, eq2_rhs)
+        eq1 = VGroup(eq1_lhs, eq1_line, eq1_num, eq1_den)
+        eq1.next_to(formula_title, DOWN, buff=0.25).shift(LEFT * 0.35)
+ 
+        # eq2: log p_CD = log p_theta' - log p_theta
+        eq2 = create_markup_text("log p<sub>CD</sub>(· | x) = log p<sub>θ'</sub>(· | x) - log p<sub>θ</sub>(· | x)", font_size=10, color=LIGHT_GREY)
         eq2.next_to(eq1, DOWN, buff=0.3)
-
+ 
+        # eq3: y ~ q* \propto r(y) \propto (p_expert · p_anti)^α
+        eq3 = create_markup_text("y ~ q* ∝ r(y) ∝ (p<sub>θ</sub> · p<sub>θ'</sub>)<sup>α</sup>", font_size=10, color=LIGHT_GREY)
+        eq3.next_to(eq2, DOWN, buff=0.3)
+ 
         alpha_text = create_text(
-            "Trong đó: alpha là hệ số phạt mô hình nhỏ\n"
-            "Mô hình nhỏ dễ sinh văn bản lặp, tẻ nhạt",
-            font_size=10, color=GRAY_A, line_spacing=1.3
+            "CD (eq 1, 2) phạt token lặp của anti-expert.\n"
+            "Inference-time adapters (eq 3) điều phối bằng r(y).",
+            font_size=8.5, color=GRAY_A, line_spacing=1.3
         )
-        alpha_text.next_to(eq2, DOWN, buff=0.2)
-
+        alpha_text.next_to(eq3, DOWN, buff=0.25)
+ 
         self.play(
             FadeIn(formula_box),
             Write(formula_title),
@@ -210,20 +250,21 @@ class Scene2_5(Scene):
         self.play(Write(eq1), run_time=1.0)
         self.wait(4.0)
         self.play(Write(eq2), run_time=1.2)
+        self.play(Write(eq3), run_time=1.2)
         self.play(FadeIn(alpha_text, shift=UP * 0.1), run_time=0.8)
-        self.wait(8.0)  # Thuyết minh chi tiết phép trừ trong log-domain
-
+        self.wait(8.0)  # Thuyết minh chi tiết các công thức lấy mẫu
+ 
         # Hoạt họa phép trừ xác suất tạo ra phân phối mới sắc nét ở bên phải thay thế cho formula_box
         chart_cd_title = create_text("Contrastive Distribution (Adjusted)", font_size=12, color=GREEN)
         chart_cd_title.move_to(RIGHT * 3.2 + UP * 1.8)
-
+ 
         # Trục cơ sở của CD (hạ thấp 0.02 so với đáy cột ở y = -1.2)
         base_cd = Line(RIGHT * 1.5 + DOWN * 1.22, RIGHT * 4.9 + DOWN * 1.22, color=GRAY_D, stroke_width=1.5)
         
         cd_probs = [0.83, 0.03, 0.06, 0.05, 0.03]
         cd_bars = VGroup()
         cd_labels = VGroup()
-
+ 
         for i, token in enumerate(tokens):
             h_cd = cd_probs[i] * 2.5
             bar_cd = Rectangle(
@@ -232,15 +273,15 @@ class Scene2_5(Scene):
             )
             bar_cd.move_to(RIGHT * (1.9 + i * 0.7) + DOWN * (1.2 - h_cd/2.0))
             cd_bars.add(bar_cd)
-
+ 
             lbl_cd = create_text(token, font_size=9, color=WHITE)
             lbl_cd.next_to(bar_cd, DOWN, buff=0.1)
             cd_labels.add(lbl_cd)
-
+ 
         # Animate chuyển đổi từ formula_box sang biểu đồ CD
         self.play(
             FadeOut(formula_box), FadeOut(formula_title),
-            FadeOut(eq1), FadeOut(eq2), FadeOut(alpha_text),
+            FadeOut(eq1), FadeOut(eq2), FadeOut(eq3), FadeOut(alpha_text),
             FadeIn(chart_cd_title), FadeIn(base_cd),
             run_time=1.0
         )

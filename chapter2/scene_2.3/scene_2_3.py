@@ -382,210 +382,54 @@ class Scene2_3(MovingCameraScene):
 
         # Thí nghiệm tư duy đồng xu lệch của tác giả
         coin_setup = create_text(
-            "Thí nghiệm tư duy: Tung đồng xu lệch 100 lần (Ngửa Pr[H]=0.6, Sấp Pr[T]=0.4)",
+            "Biased coin: Pr[ H ] = 0.6, Pr[ T ] = 0.4",
+            font_size=12, color=YELLOW
+        )
+        coin_setup.move_to(UP * 1.2)
+        self.play(Write(coin_setup), run_time=1.0)
+        self.wait(2.0)
+
+        # Hộp hiển thị kết quả 100 lần tung
+        outcome_title = create_text(
+            "Most likely outcome from 100 flips is all heads:",
             font_size=11, color=GRAY_A
         )
-        coin_setup.move_to(UP * 1.4)
-        self.play(Write(coin_setup), run_time=1.0)
-        self.wait(2.7)
-
-        # Biểu đồ phân phối nhị thức xấp xỉ bằng Gaussian cho 100 đồng xu lệch
-        dist_axes = Axes(
-            x_range=[30, 100, 10],
-            y_range=[0, 0.1, 0.02],
-            x_length=8.0,
-            y_length=2.4,
-            axis_config={"color": GRAY, "stroke_width": 1.5}
-        ).move_to(DOWN * 0.5)
-
-        # Nhãn X chuyển xuống dưới cùng tránh chồng lấn
-        x_dist_label = create_text("Số lần Ngửa (Number of Heads)", font_size=8, color=GRAY_A).next_to(dist_axes.x_axis, DOWN, buff=0.45, aligned_edge=RIGHT)
-        y_dist_label = dist_axes.get_y_axis_label(create_text("Xác suất", font_size=8, color=GRAY_A)).shift(LEFT * 0.15)
+        outcome_title.move_to(UP * 0.4)
         
-        # Nhãn X thủ công
-        dist_x_ticks = [40, 60, 80, 100]
-        dist_x_labels = VGroup()
-        for x in dist_x_ticks:
-            lbl = create_text(str(x), font_size=8, color=GRAY_A)
-            lbl.next_to(dist_axes.c2p(x, 0), DOWN, buff=0.15)
-            dist_x_labels.add(lbl)
-
-        # Nhãn Y thủ công
-        dist_y_ticks = [0.0, 0.04, 0.08]
-        dist_y_labels = VGroup()
-        for y in dist_y_ticks:
-            lbl = create_text(f"{y:.2f}" if y > 0 else "0", font_size=8, color=GRAY_A)
-            lbl.next_to(dist_axes.c2p(30, y), LEFT, buff=0.15)
-            dist_y_labels.add(lbl)
-
-        dist_axes_group = VGroup(dist_axes, x_dist_label, y_dist_label, dist_x_labels, dist_y_labels)
-
-        # Vẽ đường cong Gaussian
-        mu = 60
-        sigma = 4.9
-        def gaussian(x):
-            return (1.0 / (sigma * math.sqrt(2 * math.pi))) * math.exp(-((x - mu)**2) / (2 * sigma**2))
-
-        curve_dist = dist_axes.plot(gaussian, x_range=[35, 85], color=BLUE_B, stroke_width=2.5)
-
-        self.play(
-            Create(dist_axes_group),
-            Create(curve_dist),
-            run_time=1.5
+        all_heads_seq = create_markup_text(
+            "H  H  H  H  H  H  H  H  H  H  ...",
+            font_size=16, color=YELLOW
         )
-        self.wait(1.5)
-
-        # Tô màu vùng Typical Set (Xanh lá)
-        typical_area = dist_axes.get_area(curve_dist, x_range=[50, 70], color=GREEN, opacity=0.3)
-        # Di chuyển nhãn "Typical Set" vào phía trong vùng xanh lá để tránh chồng lấn ở đỉnh đồ thị
-        lbl_typical_area = create_text("Tập điển hình\n(Typical Set: ~77.7%)", font_size=7, color=GREEN).move_to(dist_axes.c2p(60, 0.025))
-
-        self.play(
-            FadeIn(typical_area),
-            Write(lbl_typical_area),
-            run_time=1.0
+        all_heads_seq.move_to(DOWN * 0.2)
+        
+        atypical_note = create_markup_text(
+            "But this outcome is <span color='#ff5555'><b>atypical</b></span>.",
+            font_size=12, color=WHITE
         )
-        self.wait(2.2)
+        atypical_note.move_to(DOWN * 0.9)
 
-        # Điểm MAP (100 H) ở cực phải
-        map_dot = Dot(color=RED, radius=0.08).move_to(dist_axes.c2p(100, 0))
-        lbl_map_dot = create_markup_text("MAP: 100 H\n(Xác suất: 6.53 × 10<sup>-23</sup>)", font_size=7, color=RED).next_to(map_dot, UP, buff=0.15)
-
-        # Điểm điển hình (60 H) ở đỉnh
-        typical_dot = Dot(color=YELLOW, radius=0.08).move_to(dist_axes.c2p( mu, gaussian(mu) ))
-        lbl_typical_dot = create_markup_text("Chuỗi điển hình (60 H)\n(Xác suất: 5.67 × 10<sup>-29</sup>)", font_size=7, color=YELLOW).next_to(typical_dot, UR, buff=0.15)
-
-        self.play(
-            FadeIn(map_dot),
-            Write(lbl_map_dot),
-            run_time=0.8
+        analog_note = create_text(
+            "Similarly, the most likely generation may also be atypical.",
+            font_size=11, color=GRAY_A
         )
-        self.wait(1.2)
-        self.play(
-            FadeIn(typical_dot),
-            Write(lbl_typical_dot),
-            run_time=0.8
-        )
+        analog_note.move_to(DOWN * 1.6)
+
+        self.play(Write(outcome_title), run_time=0.8)
+        self.play(FadeIn(all_heads_seq, shift=DOWN*0.1), run_time=1.0)
+        self.wait(2.0)
+        self.play(Write(atypical_note), run_time=0.8)
+        self.wait(2.0)
+        self.play(Write(analog_note), run_time=1.0)
         self.wait(4.0)
-
-        # Dọn dẹp đồ thị để biểu diễn chi tiết toán học
-        self.play(
-            FadeOut(coin_setup),
-            FadeOut(dist_axes_group),
-            FadeOut(curve_dist),
-            FadeOut(typical_area),
-            FadeOut(lbl_typical_area),
-            FadeOut(map_dot),
-            FadeOut(lbl_map_dot),
-            FadeOut(typical_dot),
-            FadeOut(lbl_typical_dot),
-            run_time=0.8
-        )
-        self.wait(0.5)
-
-        # Minh họa chuỗi có xác suất đơn lẻ cao nhất: Toàn Ngửa H H H H...
-        most_likely_title = create_text("Chuỗi đơn lẻ có xác suất cao nhất là 100 lần Ngửa liên tiếp:", font_size=9, color=GRAY_B)
-        
-        all_heads_expr = create_markup_text(
-            "H  H  H  H  H  H  H  H  H  H  •••  H  (100 lần Ngửa)",
-            font_size=11, color=YELLOW
-        )
-        
-        all_heads_prob = create_markup_text(
-            "<i>p</i>( all H ) = 0.6<sup>100</sup> ≈ <span color='#ffff00'>6.53 × 10<sup>-23</sup></span>",
-            font_size=13
-        )
-        
-        # Nhóm nội dung theo chiều dọc và căn giữa
-        content_group = VGroup(most_likely_title, all_heads_expr, all_heads_prob).arrange(DOWN, buff=0.15)
-        content_group.move_to(UP * 0.15)
-        
-        all_heads_box = RoundedRectangle(
-            width=8.0, height=1.5, 
-            color=YELLOW, fill_color="#1d1d12", fill_opacity=0.9,
-            corner_radius=0.06
-        )
-        all_heads_box.move_to(content_group.get_center())
-        all_heads_group = VGroup(all_heads_box, content_group)
-
-        self.play(
-            FadeIn(all_heads_group, shift=DOWN * 0.15),
-            run_time=1.0
-        )
-        self.wait(3.5)
-
-        # Giải thích vì sao chuỗi toàn Ngửa lại không điển hình (Atypical)
-        atypical_explain = create_markup_text(
-            "Nhưng kết quả này hoàn toàn <span color='#ff4444'><b>Không điển hình (Atypical)</b></span>!\n"
-            "Trong thực tế, ta kỳ vọng có khoảng 60 lần Ngửa và 40 lần Sấp.",
-            font_size=10, line_spacing=0.35
-        )
-        atypical_explain.move_to(DOWN * 1.3)
-        self.play(Write(atypical_explain), run_time=1.0)
-        self.wait(4.0)
-
-        # Chi tiết hóa toán học về Typical Set (Giải thích phần tác giả lướt qua để người xem hiểu)
-        self.play(
-            FadeOut(all_heads_group),
-            FadeOut(atypical_explain),
-            run_time=0.8
-        )
-        self.wait(0.5)
-
-        math_title = create_text("Tại sao chuỗi có xác suất cao nhất lại không điển hình?", font_size=12, color=YELLOW)
-        math_title.move_to(UP * 1.3)
-        self.play(Write(math_title), run_time=0.8)
-        self.wait(2.2)
-
-        # Phép so sánh xác suất chuỗi đơn lẻ vs số lượng chuỗi
-        single_atypical = create_markup_text(
-            "• Xác suất chuỗi 100 H (Atypical): <span color='#ffff00'>0.6<sup>100</sup> ≈ 6.53 × 10<sup>-23</sup></span>",
-            font_size=10
-        )
-        single_typical = create_markup_text(
-            "• Xác suất một chuỗi 60 H - 40 T (Typical): <span color='#ff6b6b'>0.6<sup>60</sup> • 0.4<sup>40</sup> ≈ 5.67 × 10<sup>-29</sup></span>  (Nhỏ hơn 1 triệu lần!)",
-            font_size=10
-        )
-        combination_count = create_markup_text(
-            "• Số lượng chuỗi 60 H - 40 T khả thi: C(100, 60) ≈ <span color='#2ecc71'>1.37 × 10<sup>28</sup></span> chuỗi!",
-            font_size=10
-        )
-        sum_prob = create_markup_text(
-            "• Tổng xác suất tập điển hình (Typical Set): <span color='#2ecc71'>C(100, 60) • p(typical) ≈ 77.7%</span> (Rất lớn!)",
-            font_size=10
-        )
-
-        math_details = VGroup(single_atypical, single_typical, combination_count, sum_prob).arrange(DOWN, aligned_edge=LEFT, buff=0.25)
-        math_details.move_to(DOWN * 0.1)
-
-        for line in math_details:
-            self.play(FadeIn(line, shift=RIGHT * 0.15), run_time=0.8)
-            self.wait(2.7)
-        self.wait(3.5)
-
-        # Liên hệ với Ngôn ngữ học
-        linguistics_box = RoundedRectangle(
-            width=7.5, height=1.0,
-            color=BLUE_D, fill_color="#101820", fill_opacity=0.9,
-            corner_radius=0.06
-        )
-        linguistics_txt = create_markup_text(
-            "Trong ngôn ngữ, chuỗi có xác suất cao nhất thường tẻ nhạt, ít thông tin\n"
-            "và hoàn toàn không tự nhiên (atypical) so với cách nói của con người.",
-            font_size=9, line_spacing=0.35
-        )
-        linguistics_txt.move_to(linguistics_box.get_center())
-        linguistics_group = VGroup(linguistics_box, linguistics_txt).move_to(DOWN * 2.2)
-
-        self.play(FadeIn(linguistics_group, shift=UP * 0.15), run_time=0.8)
-        self.wait(6.0)
 
         # Dọn dẹp để sang bước tổng kết
         self.play(
+            FadeOut(coin_setup),
+            FadeOut(outcome_title),
+            FadeOut(all_heads_seq),
+            FadeOut(atypical_note),
+            FadeOut(analog_note),
             FadeOut(pitfall3_title),
-            FadeOut(math_title),
-            FadeOut(math_details),
-            FadeOut(linguistics_group),
             run_time=1.0
         )
         self.wait(1.5)

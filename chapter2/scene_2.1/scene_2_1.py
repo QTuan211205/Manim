@@ -994,40 +994,35 @@ class Scene2_1(MovingCameraScene):
         )
         self.wait(1.5)
 
-        # Hiện công thức tính lũy thừa khổng lồ
-        formula_math = create_markup_text(
-            "<span color='#ffffff'>Số đường đi: </span>"
-            "<span color='#88c0d0'><i>V</i></span>"
-            "<span color='#ffffff'> → </span>"
-            "<span color='#88c0d0'><i>V</i><sup>2</sup></span>"
-            "<span color='#ffffff'> → </span>"
-            "<span color='#88c0d0'><i>V</i><sup>3</sup></span>"
-            "<span color='#ffffff'> → </span>"
-            "<span color='#ebcb8b'><i>V</i><sup><i>t</i></sup></span>",
-            font_size=8
+        # Thẻ thông tin không gian tìm kiếm (Slide 30-31)
+        search_box = RoundedRectangle(width=8.5, height=2.2, color=GOLD_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
+        search_box.scale(2.5)
+        search_box.move_to(self.camera.frame.get_center() + DOWN * 4.2)
+        
+        search_title = create_text("Không gian Tìm kiếm (Search Space) - Slide 30-31", font_size=9, color=GOLD_B)
+        search_title.scale(2.5)
+        search_title.next_to(search_box.get_top(), DOWN, buff=0.4)
+        
+        search_desc = create_markup_text(
+            "• <b>Primitive Generators:</b> Sinh tự hồi quy từng token một.\n"
+            "• <b>Search Space:</b> Không gian phình to theo hàm lũy thừa <i>V<sup>t</sup></i>.\n"
+            "• <b>Search for what? Objective?</b> Ta tìm kiếm chuỗi có mục tiêu gì?",
+            font_size=7, line_spacing=1.3
         )
-        formula_math.scale(2.5)
-        formula_math.move_to(self.camera.frame.get_center() + DOWN * 4.0)
-
-        calc_text = create_text("V = 50,000  =>  V³ = 1.25 × 10¹⁴ (Một trăm hai mươi lăm nghìn tỷ!)", font_size=8, color=YELLOW)
-        calc_text.scale(2.5)
-        calc_text.next_to(formula_math, DOWN, buff=0.6)
+        search_desc.scale(2.5)
+        search_desc.next_to(search_title, DOWN, buff=0.4).align_to(search_box, LEFT).shift(RIGHT * 0.8)
+        search_info_group = VGroup(search_box, search_title, search_desc)
 
         self.play(
-            Write(formula_math),
-            run_time=1.0
+            FadeIn(search_info_group, shift=UP * 0.3),
+            run_time=1.5
         )
-        self.play(
-            FadeIn(calc_text, shift=UP * 0.3),
-            run_time=1.2
-        )
-        self.wait(4.0)
+        self.wait(5.0)
 
         # Trở về trạng thái ban đầu và xóa
         self.play(
             Restore(self.camera.frame),
-            FadeOut(formula_math),
-            FadeOut(calc_text),
+            FadeOut(search_info_group),
             FadeOut(fractal_lines),
             FadeOut(root_group),
             *[FadeOut(c) for c in child_groups],

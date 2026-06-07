@@ -27,8 +27,8 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 | Chương 2: Primitive generators | 23-87 | 36:00 |
 | Chương 3: Meta-generators | 88-164 | 48:00 |
 | Chương 4: Efficient meta-generation | 165-205 | 26:00 |
-| Panel, appendix, references | 206-245 | 10:00 |
-| Tổng | 1-245 | ~130:00 |
+| Chương 5: Thảo luận Panel (Panel Session) | 206 | 07:00 |
+| Tổng | 1-206 | ~127:00 |
 
 ---
 
@@ -61,9 +61,9 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 - Dựng ba trục song song: `pretraining compute`, `post-training compute`, `test-time compute`.
 - Trục pretraining: model lớn hơn, dataset lớn hơn; gắn `Scaling Laws for Neural Language Models [Kaplan et al., 2020]`.
 - Trục post-training: các cặp `(input, output)` đi vào fine-tuning; gắn `Scaling Instruction-Finetuned Language Models [Chung et al., 2022]`.
-- Trục test-time: mũi tên tăng compute tại generation time; gắn `Test-time compute vs. accuracy ([OpenAI, 2024])`.
+- Trục test-time: mũi tên tăng compute tại generation time; gắn `Test-time compute vs. accuracy ([OpenAI, 2024])` và `[Now] Test-time scaling: increase compute at generation time` (Slide 7).
 
-**Công thức/keyword được phép:** `pretraining compute`, `post-training compute`, `test-time compute`.
+**Công thức/keyword được phép:** `pretraining compute`, `post-training compute`, `test-time compute`, `[Now] Test-time scaling: increase compute at generation time`.
 
 **Voiceover:**
 > Khi nhìn vào tiến bộ của language models, tutorial mô tả ba làn sóng scale. Làn sóng đầu tiên là scale pretraining compute: dùng mô hình lớn hơn và tập dữ liệu lớn hơn, với kết quả scaling laws cho neural language models.
@@ -128,15 +128,16 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 **Visual 3Blue1Brown:**
 - Mở với title `I. Primitive Generators` và subtitle `Generating one token at a time`.
 - Chuỗi nguồn từ slide: `Taylor Alison Swift (born December 13, 1989) is`.
-- Một hộp `LM` nhận prefix `x_<t` và xuất phân phối token: `an`, `a`, `the`, `best`, `one`, ...
+- Một hộp `LM` nhận prefix `x_<t` và xuất phân phối token: `an`, `a`, `the`, `best`, `one`, ... (định nghĩa `which defines a conditional distribution over tokens pθ[xt | x<t].` - Slide 26-29).
 - Token `an` được chọn rồi prefix cập nhật thành `... is an`; phân phối tiếp theo gồm `American`, `actress`, `English`, `actor`, `award`, ...
-- Chuyển sang cây quyết định từ slide 30 cho `Taylor Swift is`: các nhánh `the`, `a`, `writer`, `singer`, `and`, `song`, `producer`, ...
+- Chuyển sang cây quyết định từ slide 30 cho `Taylor Swift is` (phân tích `Prefix Continuation Prob.` ở Slide 34-36): các nhánh `the`, `a`, `writer`, `singer`, `and`, `song`, `producer`, ...
 - Kết bằng outline slide 31: `Optimization`, `Sampling`, `Constrained generation, structured outputs`.
 
 **Công thức/keyword được phép:**
 ```tex
 p_\theta[x_t \mid x_{<t}]
 ```
+`which defines a conditional distribution over tokens pθ[xt | x<t].`, `Prefix Continuation Prob.`.
 
 **Voiceover:**
 > Trong primitive generators, ta bắt đầu với token-level generation. Auto-regressive language modeling dùng causal language model, định nghĩa một phân phối có điều kiện trên token tiếp theo: `pθ[x_t | x_<t]`.
@@ -157,10 +158,12 @@ p_\theta[x_t \mid x_{<t}]
 - Slide title `Decoding as optimization`.
 - Hiển thị objective MAP ở trung tâm.
 - Greedy decoding: mỗi bước chọn token có xác suất lớn nhất; dựng bảng đúng từ slide:
-  - Greedy: `Taylor Swift is a former contestant on`; token prob: `0.023`, `0.022`, `0.80`, `0.0004`.
-  - Non-greedy: `Taylor Swift is a singer , song`; token prob: `0.012`, `0.26`, `0.21`, `0.0007`.
-- Beam search: vẽ cây width-limited BFS đúng nhánh slide 37-41, gồm `a`, `the`, `an`, `former`, `writer`, `latest`, `to`, `be`, `join`, `in`, `only`, `person`, `who`, `one` và các xác suất xuất hiện trong slide.
-- Nhãn bắt buộc: `GPT2, beam size 2`; `Beam search with beam size 1 is greedy decoding`.
+  - Greedy path: `Taylor Swift is an American singer . <eos>`; token probabilities: `0.80`, `0.02`, `0.05`, `1.0` (cumulative: `0.0008`).
+  - Non-greedy path: `Taylor Swift is a singer , songwriter`; token probabilities: `0.13`, `0.90`, `0.26`, `0.80` (cumulative: `0.0243`).
+- Beam search: vẽ cây width-limited BFS đúng nhánh slide 37-41, gồm:
+  - Step 1: `"an"` (0.80), `"a"` (0.13), `"the"` (0.06), `"to"` (0.0004). Keeps `"an"` and `"a"`.
+  - Step 2: `"an American"` (0.0160), `"an artist"` (0.0080), `"a singer"` (0.1170), `"a songwriter"` (0.1040). Keeps `"a singer"` and `"a songwriter"`, pruning `"an American"` (the greedy choice!).
+- Nhãn bắt buộc: `GPT2, beam size 2`; `Beam search with beam size 1 is greedy decoding`; `width-limited BFS`; citations `[Freitag and Al-Onaizan, 2017]`, `[Shi et al., 2024]`.
 
 **Công thức/keyword được phép:**
 ```tex
@@ -171,11 +174,11 @@ x_t = \arg\max_x p_\theta[x \mid x_{<t}]
 ```
 
 **Voiceover:**
-> MAP decoding tìm chuỗi có xác suất cao nhất theo mô hình: `arg max_x pθ[x]`. Hai thuật toán optimization được giới thiệu là greedy decoding và beam search.
+> MAP decoding tìm chuỗi có xác suất cao nhất theo mô hình: `arg max_x pθ[x]`. Hai thuật toán optimization phổ biến là greedy decoding và beam search, với các tài liệu tham khảo chính từ [Freitag and Al-Onaizan, 2017] và [Shi et al., 2024].
 >
-> Greedy decoding chọn token có xác suất cao nhất tại từng bước: `x_t = arg max_x pθ[x | x_<t]`. Nhưng greedy không đảm bảo tìm được chuỗi có xác suất cao nhất. Slide minh họa một chuỗi greedy với các token prob `0.023`, `0.022`, `0.80`, `0.0004`, và một chuỗi non-greedy có các token prob `0.012`, `0.26`, `0.21`, `0.0007`.
+> Greedy decoding chọn token có xác suất cao nhất tại từng bước: `x_t = arg max_x pθ[x | x_<t]`. Nhưng giải mã tham lam không đảm bảo tìm được chuỗi có xác suất cao nhất (MAP). Slide minh họa một chuỗi greedy với các token prob `0.80` ("an"), `0.02` ("American"), `0.05` ("singer"), `1.0` ("<eos>") cho ra cumulative probability chỉ `0.0008`, trong khi một chuỗi non-greedy bắt đầu bằng xác suất thấp hơn `0.13` ("a") tiếp nối bởi `0.90` ("singer"), `0.26` (","), `0.80` ("songwriter") đạt cumulative probability lên tới `0.0243`, cao hơn giải pháp tham lam tới 30 lần!
 >
-> Beam search là width-limited breadth-first search. Ở mỗi bước, nó giữ lại một số nhánh tốt nhất theo beam size, rồi tiếp tục mở rộng. Với GPT2 và beam size 2, cây tìm kiếm được prune theo width. Nếu beam size bằng 1, beam search chính là greedy decoding.
+> Beam search là thuật toán width-limited breadth-first search (BFS). Ở mỗi bước, nó giữ lại một số nhánh tốt nhất theo độ rộng beam size K, rồi tiếp tục mở rộng. Với GPT2 và beam size 2, ở bước 1 ta giữ lại "an" (0.80) và "a" (0.13). Ở bước 2, ta tính và so sánh cumulative scores của các nhánh con: "a singer" (0.117), "a songwriter" (0.104), "an American" (0.016), "an artist" (0.008). Beam search giữ lại "a singer" và "a songwriter", đồng thời cắt tỉa (prune) nhánh "an American" - vốn bắt đầu bằng lựa chọn tham lam tốt nhất! Lưu ý rằng khi beam size K = 1, beam search chính là greedy decoding.
 >
 > Subtitle giải thích greedy giống một lựa chọn cục bộ: ở mỗi bước nó chọn token tốt nhất ngay lúc đó. Điều này đơn giản và rẻ, nhưng không bảo đảm tối ưu toàn chuỗi, vì chuỗi tốt hơn có thể bắt đầu bằng một token không phải token tốt nhất tại bước đầu.
 >
@@ -187,11 +190,11 @@ x_t = \arg\max_x p_\theta[x \mid x_{<t}]
 
 **Visual 3Blue1Brown:**
 - Mở bằng `Benefits of MAP`: closed-ended tasks như translation và question answering.
-- Ba warning cards từ slide: `Repetition traps`, `Short sequences`, `Atypicality`.
+- Ba warning cards chỉ rõ `Probability maximization causes decoding problems.` (Slide 43-47): `Repetition traps [Welleck et al., 2020]`, `Short sequences [Stahlberg and Byrne, 2019]`, `Atypicality [Meister et al., 2022]` và `than exact MAP [Meister et al., 2020] .`.
 - Repetition: hiển thị đúng đoạn GPT2 beam size 32 về Taylor Swift lặp `singer-songwriter`, `songwriter-songwriter`, `song-writer-songwriter`.
 - Short sequence: so sánh xác suất đúng từ slide: `Pr[Taylor Swift is <eos>] > Pr[Taylor Swift is an American singer-…]`; remedy: `length normalization`.
 - Atypicality: đồng xu lệch `Pr[H]=0.6`, `Pr[T]=0.4`; outcome 100 heads là most likely nhưng atypical.
-- Kết luận slide 47: approximate MAP, ví dụ narrow beam search, works better than exact MAP.
+- Kết luận slide 47: approximate MAP, ví dụ narrow beam search, hoạt động tốt hơn exact MAP [Meister et al., 2020].
 
 **Công thức/keyword được phép:**
 ```tex
@@ -200,15 +203,16 @@ Pr[H] = 0.6,\quad Pr[T] = 0.4
 ```tex
 Pr[\text{Taylor Swift is <eos>}] > Pr[\text{Taylor Swift is an American singer-...}]
 ```
+Citations: `[Welleck et al., 2020]`, `[Stahlberg and Byrne, 2019]`, `[Meister et al., 2022]`, `[Meister et al., 2020]`.
 
 **Voiceover:**
-> MAP decoding hoạt động tốt cho các tác vụ closed-ended như translation và question answering. Nhưng probability maximization cũng gây ra nhiều decoding problems.
+> MAP decoding hoạt động tốt cho các tác vụ closed-ended như translation và question answering. Nhưng cực đại hóa xác suất cũng gây ra nhiều lỗi giải mã nghiêm trọng.
 >
-> Cạm bẫy đầu tiên là repetition traps. Với GPT2 và beam size 32, output có thể lặp các cụm như `singer-songwriter`, `songwriter-songwriter`, và `song-writer-songwriter`. Remedies trong slide là repetition penalty và unlikelihood training.
+> Cạm bẫy đầu tiên là repetition traps (bẫy lặp từ) được nghiên cứu bởi [Welleck et al., 2020]. Với GPT2 và beam size 32, output có thể bị lặp vô tận các cụm từ như `singer-songwriter`, `songwriter-songwriter`. Các phương pháp khắc phục bao gồm repetition penalty và unlikelihood training.
 >
-> Cạm bẫy thứ hai là short sequences: một chuỗi kết thúc sớm bằng `<eos>` có thể có xác suất cao hơn một câu dài đầy đủ hơn. Remedy được nêu là length normalization.
+> Cạm bẫy thứ hai là sinh chuỗi quá ngắn (short sequences) theo nghiên cứu của [Stahlberg and Byrne, 2019]: một chuỗi kết thúc sớm bằng token `<eos>` có thể có xác suất tích lũy cao hơn một câu dài đầy đủ thông tin hơn, ví dụ `Pr[Taylor Swift is <eos>] > Pr[Taylor Swift is an American singer-...]`. Phương pháp khắc phục phổ biến là length normalization.
 >
-> Cạm bẫy thứ ba là atypicality. Với đồng xu lệch `Pr[H]=0.6`, `Pr[T]=0.4`, outcome có xác suất cao nhất cho 100 lần tung là toàn heads, nhưng outcome đó lại atypical. Tương tự, most likely generation có thể không phải generation tự nhiên. Takeaway của tác giả: approximate MAP, chẳng hạn narrow beam search, có thể tốt hơn exact MAP.
+> Cạm bẫy thứ ba là tính chất phi điển hình (atypicality) được phân tích bởi [Meister et al., 2022]. Với đồng xu lệch có xác suất ngửa `Pr[H]=0.6` và sấp `Pr[T]=0.4`, chuỗi kết quả có xác suất cao nhất cho 100 lần tung là toàn ngửa (HHHH...), nhưng chuỗi này lại vô cùng phi điển hình và thiếu tự nhiên. Tương tự, một generation có xác suất cao nhất của mô hình chưa chắc đã tự nhiên. Vì vậy, takeaway quan trọng của tác giả là approximate MAP (chẳng hạn như narrow beam search) hoạt động tốt hơn exact MAP [Meister et al., 2020].
 >
 > Ý chính của đoạn này là `most likely` không đồng nghĩa với `best` cho mọi loại generation. Trong closed-ended tasks, MAP thường hữu ích vì output space bị ràng buộc và có đáp án rõ. Nhưng với open-ended text generation, cực đại hóa xác suất có thể đẩy mô hình vào output lặp, quá ngắn, hoặc không điển hình. Vì vậy tác giả dùng các pitfalls này để chuyển từ optimization sang sampling.
 
@@ -220,10 +224,19 @@ Pr[\text{Taylor Swift is <eos>}] > Pr[\text{Taylor Swift is an American singer-.
 - Mở slide `Sampling` và `Objective: Sampling`, với settings sampling từ modern LLM APIs.
 - Ancestral sampling: các token `y1`, `y2`, `y3` được sinh tuần tự từ phân phối điều kiện.
 - So sánh ba cột từ slide 52-54: `Greedy (repetition trap)`, `Ancestral (incoherent)`, `Top-k (acceptable)` với đúng đoạn Taylor Swift trong slide.
-- Truncation table slide 55: `Top-k`, `Top-p`, `epsilon`, `eta`, `Min-p` và threshold strategy tương ứng.
-- Biểu đồ logprob từ slide 56-58 cho hai prefix `Taylor Swift` và `My name`; overlay `Top-k = 5`, `Top-p = 0.9`.
+- Truncation table slide 55: `Top-k`, `Top-p`, `epsilon` (probability threshold), `eta` (prob and entropy threshold), `Min-p` (probability at least p_min scaled by maximum token probability).
+- Biểu đồ logprob từ slide 56-58 cho hai prefix `Taylor Swift` và `My name`; highlight từ `' made'` với `Top-k = 5` và `Top-p = 0.9` để thể hiện vùng token được giữ.
 - Temperature: ba panel `tau=0.5`, `tau=1`, `tau=2`; không thêm giá trị xác suất ngoài slide.
-- Code panels từ slide 61-62: `Sampling implementations`, `vLLM`, `HuggingFace`.
+- Code panels từ slide 61-62:
+  - Greedy: `indices, weights = probs.argmax(keepdim=True), None`
+  - Ancestral: `indices, weights = vocab_size, probs`
+  - Top-k: `topk = probs.topk(k); indices, weights = topk.indices, topk.values`
+  - Top-p: `argsort = probs.argsort(descending=True); top_p = (argsort.values.cumsum() < p).sum() + 1; indices, weights = argsort.indices[:top_p], argsort.values[:top_p]`
+  - Epsilon: `indices, weights = vocab_size, probs * (probs > epsilon)`
+  - Temperature: `indices, weights = vocab_size, (logits / temp).softmax(-1)`
+  - Lấy mẫu: `next_token = random.choices(indices, weights=weights, k=1)`
+  - vLLM: `llm = LLM(model="facebook/opt-125m"); sampling_params = SamplingParams(temperature=0.8, top_p=0.95); outputs = llm.generate(prompts, sampling_params)`
+  - HF: `model = AutoModelForCausalLM.from_pretrained("gpt2"); tokenizer = AutoTokenizer.from_pretrained("gpt2"); text = "Hello, my name is"`
 - Heavy-tail causes slide 63-65: `Under-training`, `Mode-seeking`, `low-rank constraints`.
 
 **Công thức/keyword được phép:**
@@ -240,30 +253,46 @@ p_\theta(y)=p_\theta(y_1)p_\theta(y_2\mid y_1)p_\theta(y_3\mid y_1y_2)\cdots p_\
 ```
 
 **Voiceover:**
-> Bây giờ objective chuyển sang sampling. Ancestral sampling sinh từng token bằng cách lấy mẫu từ phân phối điều kiện của mô hình. Điều này tương đương với sequence sampling theo tích các xác suất điều kiện.
+> Bây giờ objective chuyển sang sampling. Ancestral sampling sinh từng token bằng cách lấy mẫu từ phân phối điều kiện của mô hình: `y_t ~ pθ(· | x, y_<t)`. Điều này tương đương với sequence sampling theo tích các xác suất điều kiện.
 >
-> Vấn đề là greedy decoding gây repetition traps, còn ancestral sampling có thể gây incoherence. Lý do tác giả nêu là low-probability tokens are too likely: phân phối có heavy tail. Giải pháp là chop off the tail.
+> Vấn đề là greedy decoding gây repetition traps, còn ancestral sampling có thể gây incoherence do low-probability tokens are too likely (phân phối có heavy tail). Giải pháp là chop off the tail bằng truncation sampling.
 >
-> Truncation sampling nằm giữa greedy và ancestral sampling bằng cách chọn threshold xác suất ở mỗi time step. Slide liệt kê Top-k, Top-p, epsilon, eta và Min-p. Temperature không trực tiếp cắt đuôi mà làm phân phối peaked hơn hoặc phẳng hơn: high tau đa dạng hơn nhưng dễ incoherent; low tau coherent hơn nhưng dễ repetitive.
+> Truncation sampling chọn threshold xác suất ở mỗi time step. Slide 55 liệt kê: Top-k, Top-p, epsilon (giữ token có prob >= epsilon), eta, và Min-p (giữ token có xác suất tối thiểu bằng p_min nhân với xác suất của token lớn nhất). Khi so sánh prefix "Taylor Swift" và "My name" ở slide 56-58, ta thấy Top-k=5 luôn giữ cố định số lượng token, trong khi Top-p=0.9 tự co giãn theo tổng xác suất tích lũy của các token hàng đầu (ví dụ giữ lại từ ' made' có xác suất tích lũy cao).
 >
-> Phần implementation dùng đúng code trong slide cho greedy, ancestral, top-k, top-p, epsilon, temperature, và các framework như vLLM và HuggingFace. Tác giả kết thúc bằng ba lý do heavy-tail: under-training, mode-seeking của cross-entropy loss, và low-rank constraints trên output của LLM.
+> Temperature là một adapter khác: nó không cắt đuôi mà rescale logits bằng công thức softmax chia cho tau. High tau (>= 1) tăng tính đa dạng (diverse) nhưng dễ incoherent; low tau (< 1) tăng tính mạch lạc (coherent) nhưng dễ bị lặp (repetitive).
 >
-> Khi giải thích Top-k và Top-p, cần nhấn mạnh sự khác biệt về threshold. Top-k luôn giữ đúng k token có xác suất cao nhất, nên nó không tự thích nghi với hình dạng phân phối. Top-p dùng cumulative probability, nên vùng được giữ có thể co giãn theo phân phối. Đây là lý do slide đặt Top-k và Top-p cạnh nhau trên hai prefix `Taylor Swift` và `My name`.
+> Phần code trong slide 61 minh họa các thuật toán: greedy dùng argmax; ancestral lấy mẫu trên toàn bộ vocab; Top-k chọn k giá trị hàng đầu; Top-p sắp xếp logits giảm dần rồi tính cumsum dưới p; epsilon lọc theo ngưỡng cứng; temperature điều phối qua logits/temp trước khi softmax; cuối cùng dùng random.choices để lấy mẫu token. Slide 62 cũng cung cách dùng framework vLLM qua LLM.generate và HuggingFace qua AutoModelForCausalLM. Tác giả kết thúc bằng ba lý do heavy-tail: under-training, tính chất mode-seeking của cross-entropy loss, và low-rank constraints của output layer.
 >
-> Temperature là một adapter khác với truncation: nó không quyết định token nào bị cắt, mà rescale logits trước khi lấy mẫu. Vì vậy trong visual, temperature nên được thể hiện bằng phân phối trở nên peaked hơn hoặc gần uniform hơn, còn truncation nên được thể hiện bằng vùng token được giữ lại để sample.
+> Khi giải thích Top-k và Top-p, cần nhấn mạnh sự khác biệt về threshold. Top-k luôn giữ đúng k token có xác suất cao nhất, nên nó không tự thích nghi với hình dạng phân phối. Top-p dùng cumulative probability, nên vùng được giữ có thể co giãn theo phân phối.
+>
+> Temperature không quyết định token nào bị cắt, mà rescale logits trước khi lấy mẫu. Vì vậy trong visual, temperature nên được thể hiện bằng phân phối trở nên peaked hơn hoặc gần uniform hơn, còn truncation nên được thể hiện bằng vùng token được giữ lại để sample.
 
 ### Scene 2.5 - Sampling adapters, constrained decoding và token healing
 **Thời lượng:** 38:30-46:00  
 **Slide:** 66-87
 
 **Visual 3Blue1Brown:**
-- Mở bằng bảng `Sampling adapters`: phân phối `pθ(. | x)` đi qua adapter rồi thành phân phối đã re-adjust.
-- Hiển thị đủ các method trong bảng slide 66-68: Ancestral, Temperature, Greedy, Top-k, Nucleus, Typical, Epsilon, eta, Mirostat, Basis-aware, Contrastive, DExperts, Inference-time adapters, Proxy tuning.
+- Mở bằng bảng `Sampling adapters`: `A sampling adapter takes a token distribution pθ(· | x) and re-adjusts` (Slide 66-68).
+- Hiển thị đủ các method trong bảng slide 66-68 với chú thích chi tiết:
+  - `Ancestral sampling y∼pθ`
+  - `Temperature sampling [Ackley et al., 1985]y∼q(pθ) Rescale`
+  - `Greedy decoding y←maxpθ Argmax (temperature→0)`
+  - `Top-k sampling [Fan et al., 2018]y∼q(pθ) Truncation (top-k)`
+  - `Nucleus sampling [Holtzman et al., 2020]y∼q(pθ) Truncation (cumulative prob.)`
+  - `Typical sampling [Meister et al., 2023]y∼q(pθ) Truncation (entropy)`
+  - `Epsilon sampling [Hewitt et al., 2022]y∼q(pθ) Truncation (probability)`
+  - `ηsampling [Hewitt et al., 2022]y∼q(pθ) Truncation (prob. and entropy)`
+  - `Mirostat decoding [Basu et al., 2021] Target perplexity Truncation (adaptive top-k)`
+  - `Basis-aware sampling [Finlayson et al., 2024]y∼q(pθ) Truncation (linear program)`
+  - `Contrastive decoding [Li et al., 2023a]y∼q(pθ) log pθ′ −logpθand truncation`
+  - `DExperts [Liu et al., 2021] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α`
+  - `Inference-time adapters [Lu et al., 2023]y∼q∗∝r(y) ∝(pθ·pθ′)α`
+  - `• Contrastive decoding [Li et al., 2023a, Liu et al., 2021]`
 - Constrained decoding: prompt JSON Taylor Swift, schema `name: string`, `birth year: int`, output sai schema từ LLM.
 - State machine slide 73-81: các node `start`, `{`, `"name"`, `[A-Za-z]`, `"birth year"`, `\d`, `}`.
 - Tại mỗi bước, bảng GPT2 token probability chỉ hiển thị đúng các token/prob trong slide: `\n 0.36`, `" 0.16`, `{ 0.026`, `https 0.025`; `name 0.31`, `date 0.069`; `Taylor 0.85`; `1989 0.020`; `} 0.34`, v.v.
 - Side effects slide 82: `Generation speedup`, `Reduced performance`.
-- Token healing slide 83-86: `The url is http:` rồi `://`, candidates `s://`, `://`; không thêm tokenizer ví dụ ngoài slide.
+- Token healing slide 83-86: `The url is http:` rồi `://`, candidates `s://`, `://`; alternative fix: tokenizer regularization during `training [Kudo, 2018].`
 - Kết slide 87 summary.
 
 **Công thức/keyword được phép:**
@@ -279,6 +308,10 @@ y \sim q(p_\theta),\quad y \leftarrow \max p_\theta
 ```tex
 y \sim q^*(\cdot\mid x,c) \propto p_\theta \cdot (p_{\theta+}/p_{\theta-})^\alpha
 ```
+```tex
+y \sim q^* \propto r(y) \propto (p_\theta \cdot p_{\theta'})^\alpha
+```
+`A sampling adapter takes a token distribution pθ(· | x) and re-adjusts`, `Temperature sampling [Ackley et al., 1985]y∼q(pθ) Rescale`, `Top-k sampling [Fan et al., 2018]y∼q(pθ) Truncation (top-k)`, `Nucleus sampling [Holtzman et al., 2020]y∼q(pθ) Truncation (cumulative prob.)`, `Epsilon sampling [Hewitt et al., 2022]y∼q(pθ) Truncation (probability)`, `ηsampling [Hewitt et al., 2022]y∼q(pθ) Truncation (prob. and entropy)`, `Mirostat decoding [Basu et al., 2021] Target perplexity Truncation (adaptive top-k)`, `Basis-aware sampling [Finlayson et al., 2024]y∼q(pθ) Truncation (linear program)`, `Contrastive decoding [Li et al., 2023a]y∼q(pθ) log pθ′ −logpθand truncation`, `• Contrastive decoding [Li et al., 2023a, Liu et al., 2021]`, `training [Kudo, 2018].`
 
 **Voiceover:**
 > Sampling adapter nhận phân phối token `pθ(. | x)` và điều chỉnh lại xác suất. Truncation và temperature là adapters, nhưng bảng của tác giả còn liệt kê nhiều phương pháp khác như typical sampling, epsilon, eta, Mirostat, basis-aware sampling, contrastive decoding, DExperts, inference-time adapters và proxy tuning. Với các công thức, chỉ dùng đúng các biểu thức trong bảng slide.
@@ -305,12 +338,16 @@ y \sim q^*(\cdot\mid x,c) \propto p_\theta \cdot (p_{\theta+}/p_{\theta-})^\alph
 
 **Visual 3Blue1Brown:**
 - Mở với title `Meta-generators`.
-- System designer chọn một hệ thống `G`; bên cạnh là evaluator `A(y)` cho acceptability.
-- External information: evaluator `v(y) ≈ A(y)`, với các tên tương đương: critic, verifier, value, reward model, scoring model.
-- Oracle verifier loop từ slide 95: `z ~ pθ(z|x)`, `y ~ pθ(y|x,z)`, stop nếu verifier nói answer correct.
+- System designer chọn một hệ thống `G` (với giả định `We know how to sample probable outputs, y ∼ pθ(y|x)` - Slide 89-90); bên cạnh là evaluator `A(y)` cho acceptability.
+- Hiển thị hộp tương đương thuật ngữ từ Slide 91-92: `Terminology: Evaluator ≈ critic ≈ verifier ≈ value ≈ reward model ≈ scoring model` và mối quan hệ `v(y) ≈ A(y)`.
+- Oracle verifier loop từ slide 95-96: `z ~ pθ(z|x)`, `y ~ pθ(y|x,z)`, stop nếu verifier nói answer correct (`1Adapted from [Brown et al., 2024]. See also [Li et al., 2022, Cobbe et al., 2021, Jiang et al., 2023]` - Slide 96).
 - Formalization slide 97: meta-generator gọi nhiều generators `g1, g2, ..., gG` và parameters `φ`.
 - Token-level generator special case slide 98.
-- Chain slides 100-106: `y1`, `y2`, `y3`; chain-of-thought; self-ask; DSP; examples System-2 Attention và Draft-Sketch-Prove.
+- Chain slides 100-106:
+  - `Motivating example: Chain-of-thought [Wei et al., 2022]:` với chú thích: `Variable output length, analogous to a writeable tape` và `3E.g., [Feng et al., 2023, Merrill and Sabharwal, 2024, Nowak et al., 2024]`.
+  - `Self-Ask [Press et al., 2023]`.
+  - `Demonstrate-Search-Predict (DSP)` (`[Khattab et al., 2022]`, `4[Khattab et al., 2022, Dohan et al., 2022, Schlag et al., 2023, Zheng et al., 2024]`).
+  - `(System-2 Attention [Weston and Sukhbaatar, 2023])` và `(Draft-Sketch-Prove [Jiang et al., 2023])`.
 
 **Công thức/keyword được phép:**
 ```tex
@@ -328,20 +365,22 @@ y \sim G(y\mid x; g_1,g_2,\ldots,g_G,\phi)
 ```tex
 y \sim g(y\mid x; p_\theta,\phi)
 ```
+`We know how to sample probable outputs, y ∼ pθ(y|x)`, `1Adapted from [Brown et al., 2024]. See also [Li et al., 2022, Cobbe et al., 2021, Jiang et al., 2023]`, `Motivating example: Chain-of-thought [Wei et al., 2022]:`, `3E.g., [Feng et al., 2023, Merrill and Sabharwal, 2024, Nowak et al., 2024]`, `4[Khattab et al., 2022, Dohan et al., 2022, Schlag et al., 2023, Zheng et al., 2024]`, `(System-2 Attention [Weston and Sukhbaatar, 2023])`, `(Draft-Sketch-Prove [Jiang et al., 2023])`.
 ```tex
 y_1\sim g_1(x),\quad y_2\sim g_2(x,y_1),\quad y_3\sim g_3(x,y_2)
 ```
+Citations: `[Brown et al., 2024]`, `[Wei et al., 2022]`, `[Press et al., 2023]`, `[Khattab et al., 2022]`, `[Weston and Sukhbaatar, 2023]`, `[Jiang et al., 2023]`.
 
 **Voiceover:**
-> Mục tiêu của system designer là thiết kế một hệ thống `G` sinh ra acceptable sequences. Slide viết mục tiêu là tối ưu kỳ vọng acceptability `A(y)` trên output của `G`. Acceptability có thể là correctness hoặc human preferences.
+> Mục tiêu của system designer là thiết kế một hệ thống `G` sinh ra acceptable sequences. Slide viết mục tiêu là tối ưu kỳ vọng acceptability `A(y)` trên output của `G`: `arg max_G E[A(y)]`. Acceptability có thể là correctness hoặc human preferences.
 >
-> Ta đã biết cách sample probable outputs từ `pθ(y|x)`, nhưng nếu các output probable đó không acceptable thì cần thêm chiến lược. Ý tưởng đầu tiên của meta-generation là tận dụng external information trong generation, ví dụ học một evaluator `v(y) ≈ A(y)` và dùng nó khi sinh. Tác giả dùng các tên gần tương đương: evaluator, critic, verifier, value, reward model, scoring model.
+> Ta đã biết cách sinh probable outputs `y ~ pθ(y|x)`, nhưng nếu các output probable đó không acceptable thì cần thêm chiến lược. Ý tưởng đầu tiên của meta-generation là tận dụng external information, ví dụ học một evaluator `v(y) ≈ A(y)` và dùng nó khi sinh. Slide 91-92 nhấn mạnh sự tương đương thuật ngữ: Evaluator ≈ critic ≈ verifier ≈ value ≈ reward model ≈ scoring model.
 >
-> Ý tưởng thứ hai là gọi generator nhiều hơn một lần để search for good sequences. Với oracle verifier, ta có thể lặp: sinh intermediate `z`, sinh answer `y`, rồi dừng khi verifier nói answer correct.
+> Ý tưởng thứ hai là gọi generator nhiều hơn một lần để search for good sequences. Với oracle verifier loop (phát triển từ [Brown et al., 2024], [Li et al., 2022], [Cobbe et al., 2021]), ta có thể lặp: sinh intermediate `z ~ pθ(z|x)`, sinh answer `y ~ pθ(y|x,z)`, rồi dừng khi verifier xác nhận answer correct.
 >
 > Formalization của slide là `y ~ G(y|x; g1, g2, ..., gG, φ)`. Design choices gồm strategy `G`, lựa chọn generators `g1...gG`, và các parameter khác như number of tokens. Token-level generators ở phần trước là special case: `y ~ g(y|x; pθ, φ)`.
 >
-> Chaining compose generators theo thứ tự: `y1 ~ g1(x)`, `y2 ~ g2(x,y1)`, `y3 ~ g3(x,y2)`. Chain-of-thought là ví dụ: generate thought `z`, rồi generate answer `a`. Chaining có thể mở rộng sang self-ask, API calls, language model programs, System-2 Attention, Draft-Sketch-Prove. Takeaway: chaining decompose generation và incorporate tools/models, nhưng chaining alone không explore output space.
+> Chaining compose generators theo thứ tự: `y1 ~ g1(x)`, `y2 ~ g2(x,y1)`, `y3 ~ g3(x,y2)`. Chain-of-thought [Wei et al., 2022] là ví dụ điển hình: generate thought `z`, rồi generate answer `a`. Tác giả ví von CoT như một dải băng ghi chép (writeable tape) giúp tăng tính biểu diễn nhờ độ dài đầu ra linh hoạt (variable output length). Chaining có thể mở rộng sang Self-Ask [Press et al., 2023], Demonstrate-Search-Predict (DSP) [Khattab et al., 2022], System-2 Attention [Weston and Sukhbaatar, 2023] và Draft-Sketch-Prove [Jiang et al., 2023]. Takeaway: chaining phân rã quá trình sinh và tích hợp công cụ/mô hình, nhưng chaining đơn thuần không explore output space.
 >
 > Điểm quan trọng của acceptability là nó không nhất thiết trùng với probability của mô hình. Một output có thể probable theo `pθ` nhưng không correct, không được con người thích, hoặc không đáp ứng yêu cầu của hệ thống. Meta-generation được đưa vào để tìm cách sinh ra sequences acceptable hơn, bằng cách dùng evaluator, verifier, tool, hoặc bằng cách gọi generator nhiều lần.
 >
@@ -352,17 +391,19 @@ y_1\sim g_1(x),\quad y_2\sim g_2(x,y_1),\quad y_3\sim g_3(x,y_2)
 **Slide:** 108-125
 
 **Visual 3Blue1Brown:**
-- Nhiều candidate `y(1)...y(N)` sinh song song từ `G(.|x)`.
-- Aggregator `h` nhận toàn bộ candidates và trả `y`.
-- Best-of-N: các candidates đi qua reward model `v(y) -> [0,1]`, candidate điểm cao nhất sáng lên.
-- Reward model training: hai slide riêng cho correct/incorrect examples và preference data.
-- Đồ thị over-optimization từ slide 115 giữ dạng slide, không thêm số liệu mới.
-- Voting/self-consistency: nhiều solution path hội tụ về answer `a`; answer có nhiều vote nhất được chọn.
-- Weighted voting: vote được nhân bởi reward model score `v(y(i))`.
-- Convergence theorem slide 119-122: hiển thị công thức và ba takeaway.
+- Nhiều candidate `{y^(1),...,y^(N)}` sinh song song từ `G(· | x)`.
+- Aggregator `y = h(y^(1),...,y^(N))` nhận toàn bộ candidates và trả `y`.
+- Best-of-N: các candidates đi qua reward model `v(y) -> [0,1]`, candidate điểm cao nhất sáng lên: `Best-of-N = argmax_{y in {y^(1), ..., y^(N)}} v(y)`. Hiển thị `Best-of-N ≈ argmax_y v(y) ≈ argmax_y A(y)` (Citations: [Stiennon et al., 2020, Nakano et al., 2022]).
+- Reward model training: hai slide riêng cho correct/incorrect examples ([Cobbe et al., 2021]) và preference data ([Stiennon et al., 2020]).
+- Đồ thị over-optimization từ slide 115 biểu diễn mối quan hệ giữa true performance và optimization score.
+- Voting/self-consistency: nhiều solution path hội tụ về answer `a`; answer có nhiều vote nhất được chọn: `argmax_a sum_{i=1}^N 1{y^(i) = a}` (Citation: [Wang et al., 2023]).
+- Weighted voting: vote được nhân bởi reward model score `v(y^(i))`: `argmax_a sum_{i=1}^N v(y^(i)) * 1{y^(i) = a}` (Citation: [Li et al., 2023b]).
+- Easy-to-Hard Generalization: slide 118 hiển thị `10[Sun et al., 2024] Easy-to-Hard Generalization: Scalable Alignment Beyond Human Supervision .` về việc verifier vượt qua con người.
+- Convergence theorem slide 119-122 [Zhang et al., 2024]: hiển thị công thức hội tụ khi `N -> infinity` và ba takeaway.
 - Kết slide 124-125: parallel meta-generators explore output space bằng full sequences, large gains, bounded by evaluator/generator quality, verifier chỉ dùng ở cuối.
 
 **Công thức/keyword được phép:**
+`10[Sun et al., 2024] Easy-to-Hard Generalization: Scalable Alignment Beyond Human Supervision .`
 ```tex
 \{y^{(1)},\ldots,y^{(N)}\}\sim G(\cdot\mid x),\quad y=h(y^{(1)},\ldots,y^{(N)})
 ```
@@ -381,15 +422,16 @@ y_1\sim g_1(x),\quad y_2\sim g_2(x,y_1),\quad y_3\sim g_3(x,y_2)
 ```tex
 \frac{1}{M}\sum_{i=1}^M I\left[a_i^*=\arg\max_a\sum_z v(x,z,a)g(z,a\mid x)\right]
 ```
+Citations: `[Stiennon et al., 2020]`, `[Nakano et al., 2022]`, `[Cobbe et al., 2021]`, `[Wang et al., 2023]`, `[Li et al., 2023b]`, `[Sun et al., 2024]`, `[Zhang et al., 2024]`.
 
 **Voiceover:**
-> Parallel meta-generators sinh nhiều candidates song song: `{y(1), ..., y(N)} ~ G(.|x)`, rồi aggregate thành output cuối cùng bằng `h`.
+> Parallel meta-generators sinh nhiều candidates song song: `{y^(1), ..., y^(N)} ~ G(· | x)`, rồi aggregate thành output cuối cùng bằng `y = h(y^(1), ..., y^(N))`.
 >
-> Best-of-N hay rejection sampling chọn candidate có reward model score cao nhất. Reward model `v(y) -> [0,1]` có thể được train bằng correct và incorrect examples, hoặc bằng preference data. Best-of-N approximates maximum acceptability: khi số generations `N` tăng, approximation tới `arg max_y v(y)` tốt hơn; nhưng nếu reward model imperfect thì có over-optimization.
+> Chiến lược đầu tiên là Best-of-N (hay rejection sampling), chọn candidate có reward model score cao nhất: `Best-of-N = argmax v(y)`. Công thức này xấp xỉ giá trị cực đại của acceptability, với cơ sở từ nghiên cứu của [Stiennon et al., 2020] và [Nakano et al., 2022]. Reward model `v(y) -> [0, 1]` có thể được huấn luyện từ các ví dụ đúng/sai ([Cobbe et al., 2021]) hoặc preference data ([Stiennon et al., 2020]). Khi số lượng sinh `N` tăng, Best-of-N tiệm cận tốt hơn với `argmax A(y)`, nhưng nếu reward model không hoàn hảo, hệ thống sẽ gặp bẫy `over-optimization` (được minh họa bằng đồ thị slide 115).
 >
-> Voting aggregation chọn answer nhận nhiều vote nhất. Weighted voting thêm reward model score vào vote. Slide nêu rằng voting có thể outperform Best-of-N trong một số ví dụ, và khi `N -> infinity`, voting accuracy converges tới biểu thức marginalize out paths `z`.
+> Phương pháp aggregation thứ hai là Voting (Self-Consistency) chọn đáp án nhận nhiều phiếu bầu nhất: `argmax sum 1{y^(i) = a}` theo [Wang et al., 2023]. Weighted voting tiến xa hơn bằng cách nhân thêm điểm số của reward model vào mỗi phiếu: `argmax sum v(y^(i)) * 1{y^(i) = a}` theo [Li et al., 2023b]. Slide 118 cũng đưa ra một khía cạnh thú vị: Easy-to-Hard Generalization của [Sun et al., 2024], trong đó verifier có thể hoạt động hiệu quả hơn cả người chấm điểm. Khi số mẫu `N` tiến đến vô cùng, độ chính xác của voting hội tụ theo Định lý hội tụ của [Zhang et al., 2024].
 >
-> Ba takeaway của theorem: accuracy không cải thiện mãi với nhiều samples mà eventually converges; weighted voting tốt hơn voting khi `v · g` gán nhiều total mass hơn cho correct answers; muốn cải thiện thêm thì cần improve reward model `v` hoặc generator `g`.
+> Định lý hội tụ mang lại ba takeaway quan trọng: thứ nhất, độ chính xác không tăng mãi mãi mà sẽ hội tụ ở một điểm giới hạn; thứ hai, weighted voting tốt hơn voting thường khi tích `v * g` phân bổ tổng khối lượng lớn hơn cho các câu trả lời đúng; thứ ba, để phá vỡ giới hạn hội tụ, bắt buộc phải cải thiện verifier `v` hoặc generator `g`.
 >
 > Parallel meta-generators explore output space bằng cách sinh full sequences, đem lại large performance gains trong thực tế, nhưng bị giới hạn bởi evaluator và generator. Insight quan trọng là verifier chỉ được dùng ở cuối, trên full sequences. Câu hỏi tiếp theo là liệu ta có thể tận dụng intermediate evaluation tốt hơn không.
 >
@@ -405,7 +447,7 @@ y_1\sim g_1(x),\quad y_2\sim g_2(x,y_1),\quad y_3\sim g_3(x,y_2)
 - Outline slide 126 nhấn `Tree search`.
 - Dựng cây trạng thái: node `s`, cạnh `s -> s'`, điểm `v(s)`.
 - Bảng design choices: `States s`, `Transitions s -> s'`, `Scores v(s)`, `Strategy (breadth-first, depth-first, ...)`.
-- PRM: một solution path `s1, s2, ..., st` đi vào process reward model và trả score trong `[0,1]`.
+- PRM: một solution path `s1, s2, ..., st` đi vào process reward model và trả score trong `[0,1]`: `v(x, s_1, s_2, ..., s_t) -> [0, 1]` (Citations: [Uesato et al., 2022, Lightman et al., 2024, Wang et al., 2024a]).
 - Rebase: frontier node nhận budget theo softmax của score; chỉ dùng công thức slide 130.
 - Aggregation: tree search sinh candidates rồi đưa vào voting; highlight `intermediate states`, `backtracking`, `exploration`.
 - Examples: `Go [Silver et al., 2016]`, `Proofs [Polu and Sutskever, 2020]`, `Agents [Koh et al., 2024]`.
@@ -417,11 +459,12 @@ v(x,s_1,s_2,\ldots,s_t)\to[0,1]
 ```tex
 \mathrm{explore}_i=\mathrm{Round}\left(\mathrm{Budget}\frac{\exp(v(s_i)/\tau)}{\sum_j\exp(v(s_j)/\tau)}\right)
 ```
+Citations: `[Uesato et al., 2022]`, `[Lightman et al., 2024]`, `[Wang et al., 2024a]`, `[Silver et al., 2016]`, `[Polu and Sutskever, 2020]`, `[Koh et al., 2024]`.
 
 **Voiceover:**
 > Tree search giả định generation process có thể decomposed thành search over states và transitions. Khi dùng tree search, ta phải chọn states `s`, transitions `s -> s'`, scores `v(s)`, và strategy như breadth-first hoặc depth-first.
 >
-> Với math problems, một cách score node là process reward model, hay PRM. PRM nhận input và chuỗi bước trung gian `s1, s2, ..., st`, rồi trả điểm trong `[0,1]`.
+> Với các bài toán toán học và lập luận phức tạp, một cách để chấm điểm cho từng bước trung gian là Process Reward Model (PRM) gán nhãn đúng sai cho từng bước `v(x, s_1, s_2, ..., s_t) -> [0, 1]`, dựa trên các nghiên cứu nền tảng của [Uesato et al., 2022], [Lightman et al., 2024] và [Wang et al., 2024a].
 >
 > Reward Balanced Search, hay Rebase, dùng score để phân bổ exploration budget cho frontier. Công thức trong slide phân bổ budget theo softmax của `v(si)/tau`. Node có score cao được cấp nhiều exploration hơn; node score thấp được cấp ít hoặc không được mở rộng.
 >
@@ -439,25 +482,26 @@ v(x,s_1,s_2,\ldots,s_t)\to[0,1]
 - Outline slide 136 nhấn `Refinement/self-correction`.
 - Một draft output đi vào vòng feedback rồi thành improved generation.
 - Split screen feedback source: `Extrinsic` và `Intrinsic`.
-- Extrinsic: external program verifier, AlphaVerus, tutorial code demo URL, và danh sách success cases: verifiers, code interpreters, retrievers, tools + agent environment.
-- Intrinsic prompted: re-prompt same model; hiển thị mixed results, feedback too noisy.
+- Extrinsic: external program verifier (`16 [Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck. 81`), demo code, và success cases: verifiers (`• Verifiers [Aggarwal et al., 2024]`), code interpreters (`• Code interpreters [Chen et al., 2024b]`), retrievers (`• Retrievers [Asai et al., 2024]`), tools + agent environment.
+- Intrinsic prompted: re-prompt same model (e.g. [Madaan et al., 2023] hay `Re-prompt a single LLM, e.g. [Madaan et al., 2023]`); hiển thị mixed results (positive on easy tasks `• Easy to evaluate tasks: positive [Wang et al., 2024b]` or missing info `• E.g., missing info [Asai et al., 2024]`), và highlight: `17E.g., [Huang et al., 2024] Large Language Models Cannot Self-Correct Reasoning Yet` cùng `Takeaway: feedback is too noisy From [Huang et al., 2024]`.
 - Toy slide 148: `Generate "TAYLORSWIFT"`, generator `p(character)`, feedback incorrect characters, corrector regenerate incorrect.
-- Trained corrector: collect `(bad, better)` pairs, update `pθ(better|bad)`, repeat; warning `behavior collapse`, remedy `[Kumar et al., 2024]: regularization + RL`.
+- Trained corrector (như `17[Welleck et al., 2023], Generating Sequences by Learning to [Self-]Correct .`): collect `(bad, better)` pairs, `• Update corrector pθ(better|bad) using the collected data` (Slide 150-151), repeat; warning `Prone to behavior collapse`, remedy: `• [Kumar et al., 2024]: overcome with regularization + RL` (`18E.g., Self-corrective learning [Welleck et al., 2023], SCoRe [Kumar et al., 2024].` - Slide 150-151).
 - Summary slide 153: extrinsic positive with environments detecting/localizing errors; intrinsic prompted mixed; intrinsic trained possible but requires training strategies.
 
 **Công thức/keyword được phép:**
 ```tex
 p_\theta(\mathrm{better}\mid \mathrm{bad})
 ```
+Citations: `[Aggarwal et al., 2024]`, `[Chen et al., 2024b]`, `[Asai et al., 2024]`, `[Madaan et al., 2023]`, `[Wang et al., 2024b]`, `[Huang et al., 2024]`, `[Welleck et al., 2023]`, `[Kumar et al., 2024]`, `16 [Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck. 81`, `• Verifiers [Aggarwal et al., 2024]`, `• Code interpreters [Chen et al., 2024b]`, `• Retrievers [Asai et al., 2024]`, `Re-prompt a single LLM, e.g. [Madaan et al., 2023]`, `• Easy to evaluate tasks: positive [Wang et al., 2024b]`, `• E.g., missing info [Asai et al., 2024]`, `17E.g., [Huang et al., 2024] Large Language Models Cannot Self-Correct Reasoning Yet`, `Takeaway: feedback is too noisy From [Huang et al., 2024]`, `17[Welleck et al., 2023], Generating Sequences by Learning to [Self-]Correct .`, `• Update corrector pθ(better|bad) using the collected data`, `Prone to behavior collapse`, `• [Kumar et al., 2024]: overcome with regularization + RL`, `18E.g., Self-corrective learning [Welleck et al., 2023], SCoRe [Kumar et al., 2024].`.
 
 **Voiceover:**
 > Refinement và self-correction cải thiện một generation bằng feedback. Trong thực tế, quality và source của feedback là crucial. Tác giả phân biệt extrinsic feedback và intrinsic feedback.
 >
-> Extrinsic feedback là external information tại inference time, ví dụ external program verifier. Slide nêu AlphaVerus, tutorial code demo, và các success cases như verifiers, code interpreters, retrievers, tools plus agent environment. Trực giác là external feedback thêm thông tin mới và có thể detect hoặc localize errors.
+> Extrinsic feedback cung cấp thông tin bên ngoài tại inference time, ví dụ external program verifier như AlphaVerus ([Aggarwal et al., 2024]). Slide liệt kê các thành công nhờ tích hợp verifiers ([Aggarwal et al., 2024]), code interpreters ([Chen et al., 2024b]), retrievers ([Asai et al., 2024]), cùng các công cụ trong môi trường agent. Trực giác là external feedback mang lại thông tin mới chưa có trong mô hình để phát hiện và định vị lỗi (detect/localize errors).
 >
-> Intrinsic feedback không dùng external information tại inference time. Một cách là re-prompt cùng một LLM, như Self-Refine. Kết quả mixed: một số task dễ evaluate có kết quả positive, nhưng mathematical reasoning mixed; takeaway từ slide là feedback too noisy.
+> Intrinsic feedback (phản hồi nội tại) không sử dụng thông tin bên ngoài lúc inference. Phương thức phổ biến là prompted-based re-prompting trên chính LLM đó, ví dụ như Self-Refine ([Madaan et al., 2023]). Kết quả của hướng đi này khá trái chiều: có phản hồi tích cực ở các tác vụ dễ đánh giá ([Wang et al., 2024b]) hoặc thiếu thông tin ([Asai et al., 2024]), nhưng với suy luận toán học thì kết quả rất hạn chế. Tác giả nhấn mạnh phát hiện cốt lõi từ nghiên cứu của [Huang et al., 2024] rằng "Large Language Models Cannot Self-Correct Reasoning Yet" vì feedback nội tại thường quá nhiễu (feedback is too noisy).
 >
-> Trường hợp intrinsic trained corrector học trực tiếp để correct. General pattern là collect `(bad, better)` pairs bằng generating và evaluating reward, update corrector `pθ(better|bad)` bằng collected data, rồi repeat. Phương pháp này prone to behavior collapse; SCoRe vượt qua bằng regularization và RL. Summary: extrinsic thường tốt khi environment detect/localize errors; intrinsic prompted mixed; intrinsic trained có thể cải thiện nhưng cần training strategies cụ thể.
+> Hướng thứ hai là học một bộ sửa lỗi nội tại (intrinsic trained corrector), ví dụ như Self-corrective learning ([Welleck et al., 2023]). Quy trình tổng quát là thu thập các cặp dữ liệu `(bad, better)` thông qua việc sinh mẫu và đánh giá reward, sau đó cập nhật bộ sửa lỗi `pθ(better | bad)` trên dữ liệu đã thu thập, rồi lặp lại. Phương pháp này rất dễ bị sụp đổ hành vi (behavior collapse); thuật toán SCoRe của [Kumar et al., 2024] đã giải quyết bằng cách áp dụng regularization kết hợp học tăng cường (RL). Summary: extrinsic feedback hoạt động tốt khi môi trường định vị được lỗi; prompted intrinsic cho kết quả lẫn lộn; trained intrinsic có triển vọng nhưng đòi hỏi chiến lược huấn luyện rất cụ thể.
 >
 > Từ `feedback` trong refinement cần được giải thích rõ. Feedback extrinsic có thể cung cấp thông tin mới mà model không tự có, ví dụ một verifier hoặc code interpreter phát hiện lỗi. Feedback intrinsic thì dựa vào chính mô hình, nên rủi ro là mô hình vừa tạo lỗi vừa không đánh giá đúng lỗi của mình.
 >
@@ -470,25 +514,26 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 **Visual 3Blue1Brown:**
 - Outline slide 154 nhấn `Scaling meta-generators`.
 - Một budget meter `C` chia vào ba knob: model size `N`, generated tokens `T`, inference strategy `S`.
-- Frontier plot từ slide 157: điểm xanh `compute-optimal frontier`; không tự thêm số liệu.
+- Frontier plot từ slide 157: điểm xanh `compute-optimal frontier`.
 - Question 1: small model + more generations vs large model + fewer generations.
-- Question 2: compute-optimal meta-generation strategy; highlight result slide 161: `Tree search (Rebase) can be compute-optimal`.
-- Recap slide 162-163 bằng cards: performance improves with compute, but depends on model size and strategy; smaller models sometimes better; strategies can be combined/mixed; choose based on task performance and cost.
+- Question 2: compute-optimal meta-generation strategy; highlight result slide 161: `Tree search (Rebase) can be compute-optimal [Wu et al., 2024b]`.
+- Recap slide 162-163 bằng cards: performance improves with compute, but depends on model size and strategy; smaller models sometimes better [Wu et al., 2024b]; strategies can be combined/mixed; choose based on task performance and cost.
 - Transition slide 164: many tokens, diverse ways, how do we do this quickly and efficiently?
 
 **Công thức/keyword được phép:**
 ```tex
 \arg\min_{N,T,S}\; \mathrm{error}(N,T,S)\quad \text{s.t.}\quad \mathrm{cost}(N,T,S)=C
 ```
+Citations: `[Wu et al., 2024b]`.
 
 **Voiceover:**
 > Sau khi giới thiệu các strategy, tác giả chuyển sang câu hỏi scaling: làm thế nào allocate test-time compute? Ta chọn strategy dựa trên task performance và compute cost. Cost là function của model size và number of generated tokens.
 >
-> Với compute budget `C`, bài toán compute-optimal inference là chọn `N`, `T`, `S` để minimize error, subject to `cost(N,T,S)=C`. Ở đây `N` là number of model parameters, `T` là number of generated tokens, `S` là inference strategy, và cost được tính bằng floating-point operations.
+> Với compute budget `C`, bài toán compute-optimal inference là chọn `N`, `T`, `S` để minimize error, subject to `cost(N,T,S)=C`. Ở đây `N` là number of model parameters, `T` là number of generated tokens, `S` là inference strategy, và cost được tính bằng floating-point operations (FLOP).
 >
-> Câu hỏi thứ nhất: tốt hơn nên dùng small model và more generations, hay large model và fewer generations? Slide nêu rằng smaller models can be compute optimal trong kết quả của Wu et al. Câu hỏi thứ hai: meta-generation strategy nào compute-optimal? Slide nêu rằng tree search, cụ thể Rebase, can be compute-optimal.
+> Câu hỏi thứ nhất: tốt hơn nên dùng small model và more generations, hay large model và fewer generations? Slide nêu rằng các mô hình nhỏ hơn có thể tối ưu hơn về mặt chi phí (smaller models can be compute optimal) dựa theo kết quả nghiên cứu của [Wu et al., 2024b]. Câu hỏi thứ hai: meta-generation strategy nào compute-optimal? Slide chỉ ra rằng tree search, cụ thể là Rebase, có thể compute-optimal [Wu et al., 2024b].
 >
-> Recap của phần meta-generation: performance improves with increased compute, nhưng phụ thuộc vào model size và meta-generator. Optimal model size và strategy thay đổi theo compute budget; đôi khi smaller models tốt hơn. Mục tiêu dài hạn là design strategies that are universally optimal. Vì các meta-generators sinh nhiều tokens và theo nhiều cách đa dạng như tree search, phần tiếp theo hỏi: làm sao sinh nhanh và hiệu quả?
+> Recap của phần meta-generation: performance improves với increased compute, nhưng phụ thuộc vào model size và meta-generator. Optimal model size và strategy thay đổi theo compute budget; đôi khi smaller models tốt hơn. Mục tiêu dài hạn là design strategies that are universally optimal. Vì các meta-generators sinh nhiều tokens và theo nhiều cách đa dạng như tree search, phần tiếp theo hỏi: làm sao sinh nhanh và hiệu quả?
 >
 > Khái niệm compute-optimal frontier nên được giải thích như tập các configuration không bị dominated: với cùng cost, chúng có error tốt hơn; hoặc với cùng error, chúng dùng ít cost hơn. Vì vậy câu hỏi không chỉ là `dùng model lớn nhất có thể`, mà là chọn model size, number of generated tokens, và strategy sao cho phù hợp budget.
 >
@@ -506,12 +551,15 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 - Mở title `Efficient meta-generation`.
 - Ba mục scope slide 166: basics of efficient generation, make meta-generation faster, which meta-generators are most efficient.
 - Hai đồng hồ đo: `Latency` và `Throughput`; thêm tam giác trade-off với `Quality` đúng slide 168.
-- Hardware diagram: VRAM, processor, memory bandwidth, FLOP/s, on-device memory.
+- Hardware diagram: VRAM, processor, memory bandwidth, FLOP/s, `• Communication Speeds (GB/s)` (Slide 171), and H100 SXM specs card (`23H100 SXM: BF16 dense tensor core max FLOP/s ≈ 1× 1015 FLOP/s, Memory bandwidth` `≈ 3.35× 1012 byte/s. ≫ 100 FLOP/byte is “free”!` - Slide 172).
 - Bottleneck cards: loading activations, loading weights, performing computation, communicating across devices.
-- Time model slide 172: operation time là max giữa compute time và memory transfer time.
+- Time model slide 172: operation time là max giữa compute time và memory transfer time, với công thức `(FLOP per second) · (total operation FLOP)` ở Slide 178-179.
 - Batching: nhiều inputs gom lại và computed simultaneously; nhấn `cost-free for memory-bound operations`.
 - KV cache: prefill stage xử lý prompt all at once; decode stage dùng cached K/V và append new K,V.
-- Single-token optimization slides 176-179: reduce memory bandwidth, improve FLOP/s, reduce FLOP; examples quantization/compression/distillation, FlashAttention, MoE.
+- Single-token optimization slides 176-179:
+  - Giảm memory bandwidth: weight/activation quantization, model compression/distillation.
+  - Tăng FLOP/s: FlashAttention [Dao et al., 2022] (performs same operations but improves utilization).
+  - Giảm FLOP: `FLOP ↓: reduce operations required` (Slide 179) với Mixture-of-Experts (MoE) (`dense models [Fedus et al., 2022] 111` - Slide 179) (fewer FLOPs per token).
 
 **Công thức/keyword được phép:**
 ```tex
@@ -520,19 +568,18 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 ```tex
 \mathrm{Size}=(\mathrm{batch}\cdot n_{ctx})\cdot(2\cdot n_{layer}\cdot n_{heads}\cdot head_{dim})\cdot n_{bytes}
 ```
+Citations: `[Dao et al., 2022]`, `[Fedus et al., 2022]`, `• Communication Speeds (GB/s)`, `23H100 SXM: BF16 dense tensor core max FLOP/s ≈ 1× 1015 FLOP/s, Memory bandwidth`, `≈ 3.35× 1012 byte/s. ≫ 100 FLOP/byte is “free”!`, `(FLOP per second) · (total operation FLOP)`, `FLOP ↓: reduce operations required`, `dense models [Fedus et al., 2022] 111`.
 
 **Voiceover:**
 > Phần efficiency chuyển từ thuật toán sang hệ thống. Scope gồm basics of efficient generation, cách làm meta-generation faster, và câu hỏi meta-generators nào efficient nhất.
 >
 > Efficiency được đo bằng latency và throughput. Latency là người dùng phải chờ bao lâu cho response; throughput là bao nhiêu requests hoàn thành mỗi giây. Latency, throughput và quality thường trade off với nhau ở một budget nhất định.
 >
-> Hardware ảnh hưởng tới generation efficiency qua ba câu hỏi: giữ được bao nhiêu data on-device trong VRAM, device thực hiện bao nhiêu operations mỗi giây, và mất bao lâu để gửi operands từ HBM đến processor. Các bottleneck gồm loading inputs, loading weights, performing computation, và communication across devices.
+> Hardware ảnh hưởng tới generation efficiency qua ba yếu tố: dung lượng dữ liệu trên thiết bị (on-device memory/VRAM), số phép tính trên giây (FLOP/s), và tốc độ truyền dữ liệu (Memory Bandwidth, GB/s). Các bottleneck bao gồm: loading inputs/activations, loading weights, performing computation, và communicating across devices.
 >
-> Slide mô hình hóa time per operation bằng max giữa compute time và memory transfer time. Operations có thể compute-bound hoặc memory-bound. Batching cho phép nhiều inputs computed simultaneously và có thể cost-free với memory-bound operations.
+> Tác giả mô hình hóa time per operation bằng công thức `Time = max(Operation FLOP / Device FLOP/s, Data Transferred / Memory Bandwidth)`. Lấy ví dụ với NVIDIA H100 SXM, sức mạnh tính toán BF16 dense tensor core đạt tới 1x10^15 FLOP/s, trong khi băng thông bộ nhớ là 3.35x10^12 byte/s. Tỷ lệ này cho thấy nếu một phép toán thực hiện trên 100 FLOP/byte thì chi phí tính toán gần như là "miễn phí" so với chi phí truyền dữ liệu!
 >
-> KV cache tách inference thành prefill và decode. Prefill xử lý prompt all at once và giữ keys/values để initialize KV cache. Decode dùng cached KV values cho timestep hiện tại và append K,V mới. Kích thước KV cache theo công thức trong slide phụ thuộc batch, context length, layers, heads, head dimension và bytes.
->
-> Với single decoding step, các hướng tối ưu là giảm memory bandwidth, tăng FLOP/s, hoặc giảm FLOP. Slide nêu quantize weights/activations, compress/distill model, FlashAttention, và Mixture-of-Experts.
+> Với single decoding step, các hướng tối ưu là giảm memory bandwidth (bằng cách quantization, distillation), tăng FLOP/s (bằng FlashAttention [Dao et al., 2022] giúp tăng hiệu suất sử dụng phần cứng dù số phép toán không đổi), hoặc giảm FLOP (bằng Mixture-of-Experts [Fedus et al., 2022] sử dụng ít FLOP hơn cho mỗi token so với mô hình dense).
 >
 > Compute-bound nghĩa là thời gian chủ yếu bị giới hạn bởi số phép tính có thể thực hiện mỗi giây. Memory-bound nghĩa là processor có thể tính nhanh hơn, nhưng phải chờ dữ liệu được chuyển từ memory. Công thức `Time = max(...)` trong slide cho thấy operation time bị chi phối bởi nhánh chậm hơn giữa compute và memory transfer.
 >
@@ -548,15 +595,15 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 - Mở `How to speed up a single generation?`.
 - Chuỗi long output `... The cow jumped over the moon . <EOS>` chạy tuần tự để cho thấy next-token prediction bottleneck.
 - Draft model nhỏ tạo `N proposal tokens` rẻ; main generator kiểm tra song song.
-- Dòng token được chia màu: proposals accepted giữ lại; mismatched tokens discarded.
+- Dòng token được chia màu: proposals accepted giữ lại; mismatched tokens discarded (mô phỏng Speculative Decoding theo [Xia et al., 2024]).
 - Slide 184: biểu đồ throughput/latency theo context length của MagicDec giữ nguyên nội dung nguồn, không thêm số liệu.
 
-**Công thức/keyword được phép:** Không dùng công thức acceptance tự thêm nếu không lấy từ slide chính. Code chi tiết chỉ dùng ở Appendix slides 212-214.
+**Công thức/keyword được phép:** Không dùng công thức acceptance tự thêm nếu không lấy từ slide chính. Code chi tiết chỉ dùng ở Appendix slides 212-214. Citations: `[Xia et al., 2024]`.
 
 **Voiceover:**
 > Generation của long outputs bị bottleneck bởi sequential next-token prediction. Nhưng không phải token nào cũng khó như nhau. Câu hỏi của slide là: làm thế nào spend less time on easier tokens?
 >
-> Speculative decoding dùng một smaller draft model để tạo guesses cho `N` token tiếp theo một cách rẻ. Sau đó các proposal tokens này được truyền song song vào main generator. Những token khớp với prediction của main generator được giữ lại, còn token không khớp bị discard.
+> Speculative decoding dùng một smaller draft model để tạo guesses cho `N` token tiếp theo một cách rẻ. Sau đó các proposal tokens này được truyền song song vào main generator để thẩm định, được mô tả chi tiết trong công trình của [Xia et al., 2024]. Những token khớp với prediction của main generator được giữ lại, còn token không khớp bị discard.
 >
 > Tác giả nhấn mạnh decoding thường memory-bound. Speculative decoding có thể harm throughput ở low context, nhưng cải thiện cả throughput và latency ở long context lengths, theo kết quả MagicDec trong slide.
 >
@@ -564,25 +611,35 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 >
 > Nhưng slide cũng cảnh báo không phải lúc nào speculative decoding cũng tốt. Ở low context, overhead của draft model và verification có thể làm throughput xấu đi. Ở long context lengths, memory-bound decode nặng hơn, nên lợi ích của việc kiểm tra nhiều proposal song song rõ hơn.
 
-### Scene 4.3 - KV cache reuse, prefix sharing và KV cache compression
-**Thời lượng:** 108:00-116:30  
-**Slide:** 185-196
+### Scene 4.3 - KV cache reuse, prefix sharing, KV cache compression và recap, takeaways
+**Thời lượng:** 108:00-120:00  
+**Slide:** 185-205
 
 **Visual 3Blue1Brown:**
 - Mở `How to speed up meta-generation?`.
 - Shared prefix prompt xuất hiện nhiều lần trong parallel generation; các bản sao KV cache dư thừa được tô đỏ.
-- PagedAttention: các logical blocks map vào physical pages trong VRAM; shared prefix trỏ chung page.
-- Multi-level prefix sharing: long few-shot prompt + Best-of-N generation; vẽ cây prefix nhiều tầng.
-- RadixAttention: Radix tree quản lý cache; LRU eviction khi memory cần giải phóng.
-- Hydragen: shared-prefix attention components đi qua Tensor Cores; không thêm công thức ngoài slide.
-- KV cache compression: ba hướng `Token Dropping`, `Quantization`, `Architectural Modification`.
+- PagedAttention (`PagedAttention [Kwon et al., 2023] prevents redundant storage costs by` `mapping KV cache blocks to physical “pages” of VRAM` - Slide 188).
+- Multi-level prefix sharing: long few-shot prompt + Best-of-N generation; vẽ cây prefix nhiều tầng (`• Long inputs can be amortized via Prefix Sharing of KV Cache` - Slide 200).
+- RadixAttention: `RadixAttention enables complex prefix sharing patterns [Zheng et al., 2024],` quản lý cache dưới dạng Radix tree; LRU eviction khi memory cần giải phóng.
+- Hydragen: `Hydragen [Juravsky et al., 2024] makes shared-prefix attention components` đi qua Tensor Cores; không thêm công thức ngoài slide.
+- KV cache compression [Adams et al., 2024]: ba hướng `Token Dropping`, `Quantization`, `Architectural Modification`.
 - Với token dropping, quantization, MQA/GQA, luôn hiển thị lại cùng công thức size từ slide 193-195 để cho thấy mỗi hướng tác động vào thành phần nào.
-- Recap slide 196: meta-generators efficient nếu `Parallelizable` và `Prefix-shareable`; token budget không phải indicator duy nhất.
+- Architectural tweaks: `Architectural tweaks such as Multi-Query Attention [Shazeer, 2019] or` `Grouped-Query Attention [Ainslie et al., 2023] reduce the number of Key +` Value heads (Slide 195).
+- Recap slide 196: meta-generators efficient nếu `Parallelizable` và `• Prefix-shareable: long inputs are presented as identical shared` (Slide 196); token budget không phải indicator duy nhất (Citations: `[Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck.` - Slide 201).
+- Trình bày bảng so sánh hiệu năng tổng kết (Slide 196):
+  - Chained: Parallelizable (No), Prefix-shareable (No)
+  - Parallel: Parallelizable (Yes), Prefix-shareable (Yes)
+  - Tree Search: Parallelizable (Semi), Prefix-shareable (Yes)
+  - Refinement: Parallelizable (No), Prefix-shareable (No)
+- Hiển thị các hướng đi tương lai (Looking Ahead) (Slide 197-205): hybrid meta-generators, learning to search, agent environments, compute allocation.
+- Survey paper slide 204: tên paper, authors, TMLR 2024, arXiv URL.
+- Thank you slide 205: đúng URL `https://cmu-l3.github.io/neurips2024-inference-tutorial`.
 
 **Công thức/keyword được phép:**
 ```tex
 (\mathrm{batch}\cdot n_{ctx})\cdot(2\cdot n_{layer}\cdot n_{heads}\cdot head_{dim})\cdot n_{bytes}
 ```
+Citations: `[Kwon et al., 2023]`, `[Zheng et= al., 2024]`, `[Juravsky et al., 2024]`, `[Adams et al., 2024]`, `[Shazeer, 2019]`, `[Ainslie et al., 2023]`, `PagedAttention [Kwon et al., 2023] prevents redundant storage costs by`, `mapping KV cache blocks to physical “pages” of VRAM`, `• Long inputs can be amortized via Prefix Sharing of KV Cache`, `RadixAttention enables complex prefix sharing patterns [Zheng et al., 2024],`, `Hydragen [Juravsky et al., 2024] makes shared-prefix attention components`, `Architectural tweaks such as Multi-Query Attention [Shazeer, 2019] or`, `Grouped-Query Attention [Ainslie et al., 2023] reduce the number of Key +`, `• Prefix-shareable: long inputs are presented as identical shared`, `[Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck.`.
 
 **Voiceover:**
 > Với meta-generation, câu hỏi là meta-generators tương tác với real-world efficiency và hardware utilization như thế nào, và làm sao thiết kế meta-generators efficient hơn.
@@ -600,30 +657,12 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 > PagedAttention giải quyết redundant storage ở mức memory pages. RadixAttention mở rộng ý tưởng đó cho nhiều cấp prefix sharing bằng cây prefix. Hydragen tập trung vào làm phần attention trên shared prefix nhanh hơn, tận dụng Tensor Cores. Ba kỹ thuật này cùng truyền một thông điệp: cấu trúc của prompt và meta-generator có thể tạo ra cơ hội tối ưu hệ thống.
 >
 > Với KV cache compression, mỗi hướng tác động vào một biến trong công thức size. Token dropping giảm effective context length, quantization giảm bytes, architectural modification giảm số Key/Value heads. Đây là lý do công thức size nên xuất hiện lặp lại trong visual để người xem thấy mỗi kỹ thuật giảm phần nào của bộ nhớ.
-
-### Scene 4.4 - Recap, takeaways, looking ahead và thank you
-**Thời lượng:** 116:30-120:00  
-**Slide:** 197-205
-
-**Visual 3Blue1Brown:**
-- Slide 197 `Recap and takeaways`.
-- Ba khối của tutorial xuất hiện: Primitive generators, Meta-generators, Efficient meta-generation.
-- Takeaways meta-generators: chained, parallel, tree search, refinement; spend test-time compute; use cost-performance tradeoffs.
-- Takeaways efficient meta-generation: parallelizability, prefix sharing KV cache, prompt design và meta-generator structure ảnh hưởng efficiency.
-- Looking ahead: hybrid meta-generators, learning to search, agent environments, compute allocation; warning science conclusions based on few tasks.
-- Survey paper slide 204: tên paper, authors, TMLR 2024, arXiv URL.
-- Thank you slide 205: đúng URL `https://cmu-l3.github.io/neurips2024-inference-tutorial`.
-
-**Công thức/keyword được phép:** Không có công thức mới.
-
-**Voiceover:**
-> Recap của tutorial gồm ba phần: primitive generators sinh từng token một; meta-generators là strategies for calling generators; efficient meta-generation là sinh nhanh và hiệu quả.
 >
-> Takeaway về meta-generators: có nhiều strategy như chained, parallel, tree search, refinement. Chúng spend test-time compute để cải thiện performance, và cần dùng cost-performance tradeoffs để choose hoặc design phương pháp.
+> Tổng kết lại, kịch bản tutorial gồm ba phần lớn: primitive generators sinh từng token một; meta-generators là cách gọi các generators; và efficient meta-generation giúp tối ưu hóa hệ thống phần cứng khi chạy các thuật toán đó.
 >
-> Takeaway về efficiency: parallelizability giảm latency và tăng throughput; long inputs có thể được amortized bằng prefix sharing của KV cache; prompt design và meta-generator structure có thể thay đổi efficiency thực tế đáng kể. Token budget có thể là oversimplification.
+> Để tối ưu hóa Meta-generation, chúng ta có nhiều chiến lược như chained, parallel, tree search hay refinement. Chúng ta phân bổ test-time compute để cải thiện performance và thiết kế dựa trên cost-performance trade-offs. Về mặt hệ thống, khả năng song song hóa (parallelizability) giúp giảm latency và tăng throughput. Cấu trúc câu nhắc và meta-generator quyết định phần lớn hiệu năng thực tế, vì vậy token budget chỉ là một sự đơn giản hóa.
 >
-> Looking ahead gồm hybrid meta-generators, learning to search như explore, backtrack, self-correct, agent environments, và câu hỏi allocate compute. Tác giả cũng nhấn mạnh rằng nhiều kết luận khoa học hiện dựa trên chỉ một vài tasks. Tutorial dựa trên survey paper `From Decoding to Meta-Generation: Inference-time Algorithms for Large Language Models`, TMLR 2024. Kết thúc bằng trang thank you và URL tutorial.
+> Hướng phát triển tương lai sẽ tập trung vào các hệ thống lai (hybrid systems) kết hợp song song và cải thiện tuần tự, học cách tự tìm kiếm (learning to search) với khả năng quay lui và tự sửa lỗi, tối ưu hóa agent để tương tác với môi trường bên ngoài, và tự động phân bổ compute linh hoạt. Slide kết thúc bằng lời khuyên: rất nhiều kết luận khoa học hiện nay chỉ dựa trên một vài tác vụ thử nghiệm và giới thiệu cuốn sách/tài liệu tham khảo "From Decoding to Meta-Generation: Inference-time Algorithms for Large Language Models" tại trang web cmu-l3.github.io/neurips2024-inference-tutorial.
 >
 > Câu `Science: many conclusions are based on a few tasks` cần được giữ trong voice vì nó là cảnh báo quan trọng của tác giả. Các kỹ thuật meta-generation cho thấy nhiều kết quả mạnh, nhưng mức độ tổng quát của kết luận vẫn phụ thuộc vào tasks, evaluator, generator và budget được thử nghiệm. Vì vậy phần looking ahead không chỉ là danh sách hướng nghiên cứu, mà còn là lời nhắc rằng lĩnh vực này cần thêm bằng chứng rộng hơn.
 
@@ -667,104 +706,7 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 >
 > Ở phần systems, panel mở rộng từ software optimization sang hardware và hybrid architecture. Một hướng là co-design model, algorithm và hardware vì inference có thể chiếm phần lớn compute hơn trước. Một hướng khác là hệ thống lai biết dùng code hoặc tool khi đó là giải pháp efficient hơn, thay vì mọi thứ đều phải do LLM sinh token. Panel cũng nhắc tới generative verifiers: nếu verifier cũng là language model, ta có thể áp dụng inference-time compute cho verifier, dẫn tới tầng meta tiếp theo.
 
-### Appendix A.1 - Pairwise MBR và liên hệ với weighted voting
-**Thời lượng:** 127:00-128:30  
-**Slide:** 207-211
 
-**Visual 3Blue1Brown:**
-- Slide 207 `Appendix` dùng như transition.
-- Slides 208-209: candidate set `{y(1),...,y(N)}` nằm trên vòng tròn; mỗi candidate được so với các candidate khác bằng utility `v(y,y(i))`.
-- Slide 210: chart AlpacaEval 2.0 win rate giữ nguyên dạng slide; không thêm số liệu ngoài slide.
-- Slide 211: weighted voting được diễn giải như instance của MBR, với utility bằng indicator same answer nhân sequence score.
-
-**Công thức/keyword được phép:**
-```tex
-\mathrm{MBR}(g,v,N)=\arg\max_{y\in\{y^{(1)},\ldots,y^{(N)}\}}\frac{1}{N}\sum_{i=1}^N v(y,y^{(i)})
-```
-```tex
-\frac{1}{N}\sum_{i=1}^N v(y,y^{(i)})\approx \mathbb{E}_{y'\sim p}[v(y,y')]
-```
-```tex
-v(y,y^{(i)})=\mathbf{1}[a=a^{(i)}]\cdot v(y^{(i)}),\quad y=(z,a),\; y^{(i)}=(z^{(i)},a^{(i)})
-```
-
-**Voiceover:**
-> Appendix bổ sung phần pairwise aggregation bằng Minimum Bayes Risk. MBR chọn candidate có consensus utility cao nhất so với các candidates còn lại. Candidate set được sample từ generator `g`, và `v(y,y')` là utility function.
->
-> Slide cũng cho ví dụ dùng LLM utility trên AlpacaEval 2.0 và liên hệ weighted voting với MBR. Weighted voting là một instance của MBR khi utility bằng indicator cùng answer nhân với sequence score.
->
-> Khái niệm `consensus utility` ở đây khác với Best-of-N thông thường. Best-of-N hỏi candidate nào có score độc lập cao nhất. Pairwise MBR hỏi candidate nào được các candidate khác hỗ trợ nhiều nhất theo utility function. Vì vậy MBR là một cách aggregate dựa trên quan hệ giữa candidates, không chỉ dựa trên score đơn lẻ của từng candidate.
-
-### Appendix A.2 - Code examples cho speculative decoding
-**Thời lượng:** 128:30-129:30  
-**Slide:** 212-214
-
-**Visual 3Blue1Brown:**
-- Slide 212 `Code examples`.
-- Slides 213-214 hiển thị code block đúng nội dung, highlight từng phần:
-  - `speculative_decode(...)`
-  - `generate(drf_m, tok, gen, spec_size, t)`
-  - `tgt_lprob = tgt_m(spec_id)`
-  - `compute_ll_rejs(...)`
-  - `compute_adjusted_dist(...)`
-- Không diễn giải thành công thức acceptance mới ngoài code.
-
-**Công thức/code được phép:**
-```python
-def speculative_decode(tgt_m, drf_m, tok, inp: torch.Tensor, max_tok: int, n_spec: int = 5, t: float = 1.0):
-    gen = inp
-    max_len = inp.shape[1] + max_tok
-    while gen.shape[1] < max_len:
-        tok_left = max_len - gen.shape[1]
-        spec_size = min(n_spec, tok_left - 1)
-        if spec_size > 0:
-            spec_id, spec_lprob = generate(drf_m, tok, gen, spec_size, t)
-            tgt_lprob = tgt_m(spec_id)
-            rejs = compute_ll_rejs(tgt_lprob, spec_lprob)
-            if len(rejs) > 0:
-                accepted = spec_id[:, :rejs[0]]
-                adj_probs = compute_adjusted_dist(tgt_lprob, spec_lprob)
-                next_tok = Categorical(adj_probs)
-            else:
-                accepted = spec_id
-                next_tok = Categorical(tgt_lprob.exp())
-            gen = torch.cat([gen, accepted, next_tok])
-```
-```python
-def compute_ll_rejs(tgt_lprob: torch.Tensor, spec_lprob: torch.Tensor, spec_tok_id: torch.Tensor) -> torch.Tensor:
-    llrs = tgt_lprob[spec_tok_id] - spec_lprob[spec_tok_id]
-    uniform_lprobs = torch.log(torch.rand_like(llrs))
-    rej_idx = torch.nonzero((llrs <= uniform_lprobs))
-    return rej_idx
-
-def compute_adjusted_dist(tgt_lprob: torch.Tensor, spec_lprob: torch.Tensor, rej_idx: torch.Tensor) -> torch.Tensor:
-    adj_dist = torch.clamp(torch.exp(tgt_lprob[rej_idx]) - torch.exp(spec_lprob[rej_idx]), min=0)
-    adj_dist = torch.div(adj_dist, adj_dist.sum())
-    return adj_dist
-```
-
-**Voiceover:**
-> Code examples trong appendix cho speculative decoding. Hàm chính giữ `gen`, tính `max_len`, chọn `spec_size`, dùng draft model để sinh speculative ids và log probabilities, rồi forward target model để lấy target log probabilities. Nếu có rejection, phần accepted lấy đến rejection đầu tiên và next token được sample từ adjusted distribution; nếu không có rejection, toàn bộ speculative ids được accepted.
->
-> Hai helper functions trong slide tính rejection bằng log-likelihood ratio và tạo adjusted distribution bằng hiệu giữa target probability và speculative probability, clamp về không âm rồi normalize.
->
-> Khi dựng video, phần code không cần giải thích như một tutorial PyTorch đầy đủ. Mục tiêu là liên hệ code với khái niệm ở Scene 4.2: draft model propose, target model verify, helper function tìm rejection, và adjusted distribution xử lý bước tiếp theo sau rejection. Không thêm công thức acceptance ngoài những gì code thể hiện.
-
-### References roll
-**Thời lượng:** 129:30-130:00  
-**Slide:** 215-245
-
-**Visual 3Blue1Brown:**
-- Hiển thị `References i` đến `References xxxi` như credit/reference roll.
-- Không đọc từng reference thành narration dài; các trang references là nguồn citation, không phải nội dung giảng mới.
-- Có thể dùng layout grid 3x3 các thumbnail slide reference chạy từ page 215 đến 245, hoặc scroll dọc tốc độ vừa đủ để người xem thấy đây là bibliography.
-
-**Công thức/keyword được phép:** Không có công thức mới.
-
-**Voiceover:**
-> Phần còn lại của PDF là danh mục references, từ `References i` đến `References xxxi`. Các references này là nguồn cho các paper và phương pháp đã được nhắc trong tutorial. Video kết thúc bằng reference roll thay vì biến danh mục này thành nội dung giảng mới.
-
----
 
 ## Checklist kiểm soát nguồn cho khi dựng Manim
 
@@ -783,4 +725,4 @@ def compute_adjusted_dist(tgt_lprob: torch.Tensor, spec_lprob: torch.Tensor, rej
 - Scene 4.3: phải có PagedAttention, RadixAttention, Hydragen, KV compression, token dropping, quantization, MQA/GQA, efficiency recap.
 - Scene 4.4: phải có recap/takeaways, looking ahead, survey paper và đúng URL thank-you.
 - Scene 5.1: panel chỉ dùng panelists từ slide 206 và ý chính từ subtitle panel; không gán quote nếu subtitle không rõ người nói.
-- Appendix: slides 207-214 là appendix/code; slides 215-245 là references roll.
+.
