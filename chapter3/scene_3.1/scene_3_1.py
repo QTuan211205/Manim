@@ -45,6 +45,8 @@ def get_crossmark(color=RED, stroke_width=2.5):
 
 class Scene3_1(Scene):
     def construct(self):
+        # (Lời thoại đã được phân phối xuống từng phần cụ thể bên dưới)
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
@@ -70,6 +72,10 @@ class Scene3_1(Scene):
         )
         self.wait(3.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Mục tiêu của system designer là thiết kế một hệ thống G sinh ra các
+        # acceptable sequences. Slide viết mục tiêu là tối ưu kỳ vọng acceptability A(y)
+        # trên output của G: arg max_G E[A(y)]. Acceptability có thể là correctness hoặc human preferences."
         # =====================================================================
         # PHẦN 1: GIỚI THIỆU BỘ ĐIỀU PHỐI CẤP CAO (META-GENERATION INTRO)
         # =====================================================================
@@ -173,6 +179,15 @@ class Scene3_1(Scene):
         )
         self.wait(2.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Chúng ta đã biết cách sinh probable outputs y ~ pθ(y|x), nhưng nếu các
+        # output probable đó không acceptable thì cần thêm chiến lược. Ý tưởng đầu tiên của meta-generation
+        # là tận dụng thông tin bên ngoài, ví dụ học một evaluator v(y) ≈ A(y) và dùng nó khi sinh.
+        # Slide 91-92 nhấn mạnh sự tương đương thuật ngữ: Evaluator ≈ critic ≈ verifier ≈ value ≈ reward model ≈ scoring model.
+        #
+        # Điểm quan trọng của acceptability là nó không nhất thiết trùng với probability của mô hình.
+        # Một output có thể probable theo pθ nhưng không correct, không được con người thích, hoặc không
+        # đáp ứng yêu cầu của hệ thống. Meta-generation được đưa vào để tìm cách sinh ra sequences acceptable hơn."
         # =====================================================================
         # PHẦN 2: MÔ HÌNH PHẦN THƯỞNG ĐÁNH GIÁ KẾT QUẢ (OUTCOME-BASED RM)
         # =====================================================================
@@ -286,6 +301,15 @@ class Scene3_1(Scene):
         )
         self.wait(2.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Chaining compose các generators theo thứ tự: y1 ~ g1(x), y2 ~ g2(x,y1),
+        # y3 ~ g3(x,y2). Chain-of-thought là ví dụ điển hình: chúng ta sinh intermediate thought z,
+        # rồi dùng z để sinh answer a. Chúng ta ví von CoT như một dải băng ghi chép (writeable tape)
+        # giúp tăng tính biểu diễn nhờ độ dài đầu ra linh hoạt (variable output length).
+        #
+        # Với chain-of-thought, đây là một decomposition đơn giản nhưng có tác động sâu: hệ thống
+        # cho phép sinh một intermediate thought z, rồi dùng z để sinh answer a. Slide cũng nói
+        # chain-of-thought tăng expressivity vì output length có thể biến đổi, tương tự một writable tape."
         # =====================================================================
         # PHẦN 3: KỸ THUẬT CHAINING & CHAIN OF THOUGHT (CoT)
         # =====================================================================
@@ -426,6 +450,10 @@ class Scene3_1(Scene):
         self.wait(2.0)
 
         # =====================================================================
+        # LỜI THOẠI: "Chaining có thể mở rộng sang Self-Ask, Demonstrate-Search-Predict (DSP),
+        # System-2 Attention và Draft-Sketch-Prove. Takeaway: chaining phân rã quá trình sinh và tích hợp
+        # công cụ hoặc mô hình ngoài, nhưng chaining đơn thuần không giúp khám phá output space."
+        # =====================================================================
         # PHẦN 4: SƠ ĐỒ TỰ HỎI (SELF-ASK) & GỌI CÔNG CỤ (TOOL USE)
         # =====================================================================
         part4_title = create_text("4. Quy trình Tự hỏi (Self-Ask) & Gọi công cụ (Tool Use)", font_size=13, color=BLUE_A)
@@ -523,6 +551,13 @@ class Scene3_1(Scene):
         )
         self.wait(2.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Ý tưởng thứ hai là gọi generator nhiều hơn một lần để search for good sequences.
+        # Với oracle verifier loop, chúng ta có thể lặp: sinh intermediate z ~ pθ(z|x), sinh answer
+        # y ~ pθ(y|x,z), rồi dừng khi verifier xác nhận answer correct.
+        #
+        # Formalization của slide là y ~ G(y|x; g1, g2, ..., gG, φ). Design choices gồm chiến lược G,
+        # lựa chọn các generators g1 đến gG, và các parameter khác như số lượng token."
         # =====================================================================
         # BƯỚC 5: TỔNG QUAN PHÂN LẠI CHIẾN LƯỢC MÔ HÌNH (PREVIEW SLIDE)
         # =====================================================================

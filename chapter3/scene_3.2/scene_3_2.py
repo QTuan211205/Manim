@@ -113,9 +113,70 @@ class Speedometer(VGroup):
 
 class Scene3_2(Scene):
     def construct(self):
+        # =========================================================================
+        # VOICEOVER (Scene 3.2) [Trích từ full_video_script.md]
+        # Lời thoại:
+        #   - "Parallel meta-generators sinh nhiều candidates song song: `{y^(1), ...,
+        #     y^(N)} ~ G(· | x)`, rồi aggregate thành output cuối cùng bằng `y =
+        #     h(y^(1), ..., y^(N))`."
+        # 
+        #   - "Chiến lược đầu tiên là Best-of-N (hay rejection sampling), chọn
+        #     candidate có reward model score cao nhất: `Best-of-N = argmax v(y)`.
+        #     Công thức này xấp xỉ giá trị cực đại của acceptability, với cơ sở từ
+        #     nghiên cứu của [Stiennon et al., 2020] và [Nakano et al., 2022]. Reward
+        #     model `v(y) -> [0, 1]` có thể được huấn luyện từ các ví dụ đúng/sai
+        #     ([Cobbe et al., 2021]) hoặc preference data ([Stiennon et al., 2020]).
+        #     Khi số lượng sinh `N` tăng, Best-of-N tiệm cận tốt hơn với `argmax
+        #     A(y)`, nhưng nếu reward model không hoàn hảo, hệ thống sẽ gặp bẫy
+        #     `over-optimization` (được minh họa bằng đồ thị slide 115)."
+        # 
+        #   - "Phương pháp aggregation thứ hai là Voting (Self-Consistency) chọn đáp
+        #     án nhận nhiều phiếu bầu nhất: `argmax sum 1{y^(i) = a}` theo [Wang et
+        #     al., 2023]. Weighted voting tiến xa hơn bằng cách nhân thêm điểm số của
+        #     reward model vào mỗi phiếu: `argmax sum v(y^(i)) * 1{y^(i) = a}` theo
+        #     [Li et al., 2023b]. Slide 118 cũng đưa ra một khía cạnh thú vị:
+        #     Easy-to-Hard Generalization của [Sun et al., 2024], trong đó verifier có
+        #     thể hoạt động hiệu quả hơn cả người chấm điểm. Khi số mẫu `N` tiến đến
+        #     vô cùng, độ chính xác của voting hội tụ theo Định lý hội tụ của [Zhang
+        #     et al., 2024]."
+        # 
+        #   - "Định lý hội tụ mang lại ba takeaway quan trọng: thứ nhất, độ chính xác
+        #     không tăng mãi mãi mà sẽ hội tụ ở một điểm giới hạn; thứ hai, weighted
+        #     voting tốt hơn voting thường khi tích `v * g` phân bổ tổng khối lượng
+        #     lớn hơn cho các câu trả lời đúng; thứ ba, để phá vỡ giới hạn hội tụ, bắt
+        #     buộc phải cải thiện verifier `v` hoặc generator `g`."
+        # 
+        #   - "Parallel meta-generators explore output space bằng cách sinh full
+        #     sequences, đem lại large performance gains trong thực tế, nhưng bị giới
+        #     hạn bởi evaluator và generator. Insight quan trọng là verifier chỉ được
+        #     dùng ở cuối, trên full sequences. Câu hỏi tiếp theo là liệu ta có thể
+        #     tận dụng intermediate evaluation tốt hơn không."
+        # 
+        #   - "Reward model là cầu nối giữa probability và acceptability. Trong
+        #     Best-of-N, generator tạo nhiều candidates, còn reward model xếp hạng
+        #     chúng. Nếu reward model phản ánh acceptability tốt, tăng `N` giúp tìm
+        #     candidate tốt hơn. Nhưng nếu reward model imperfect, hệ thống có thể tối
+        #     ưu quá mức theo reward model thay vì theo acceptability thật; đây là ý
+        #     `over-optimization` trong slide."
+        # 
+        #   - "Voting và weighted voting giải thích một dạng aggregation khác: không
+        #     chỉ hỏi sequence nào có score cao nhất, mà hỏi answer nào được nhiều
+        #     paths ủng hộ. Trong reasoning tasks, nhiều solution paths khác nhau có
+        #     thể dẫn tới cùng một answer. Self-consistency tận dụng điều đó bằng cách
+        #     marginalize out paths `z` và chọn answer được hỗ trợ mạnh nhất."
+        # =========================================================================
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Parallel meta-generators sinh nhiều candidates song song: y^(1)...y^(N) ~ G(· | x),
+        # rồi aggregate thành output cuối cùng bằng y = h(y^(1), ..., y^(N)).
+        #
+        # Parallel meta-generators giúp khám phá không gian đầu ra (explore output space) bằng cách
+        # sinh các chuỗi đầy đủ (full sequences), mang lại hiệu năng vượt trội trong thực tế,
+        # mặc dù bị giới hạn bởi năng lực của verifier và chi phí tính toán tăng tuyến tính theo N."
         # =====================================================================
         # BƯỚC 1: TIÊU ĐỀ PHÂN CẢNH CHÍNH
         # =====================================================================
@@ -138,6 +199,15 @@ class Scene3_2(Scene):
         )
         self.wait(3.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Chiến lược đầu tiên là Best-of-N (hay rejection sampling), chọn candidate có
+        # điểm số mô hình phần thưởng cao nhất: Best-of-N = argmax v(y). Công thức này xấp xỉ giá trị
+        # cực đại của acceptability, với cơ sở từ nghiên cứu của Stiennon và Nakano.
+        #
+        # Reward model v(y) cho ra điểm số từ 0 đến 1, được huấn luyện từ các ví dụ đúng sai hoặc preference data.
+        # Khi số lượng sinh N tăng, Best-of-N tiệm cận tốt hơn với argmax A(y). Tuy nhiên, nếu reward model
+        # không hoàn hảo, hệ thống sẽ gặp bẫy over-optimization hay còn gọi là reward hacking."
         # =====================================================================
         # PHẦN 1: KỸ THUẬT BEST-OF-N & CẠM BẪY REWARD HACKING
         # =====================================================================
@@ -395,6 +465,14 @@ class Scene3_2(Scene):
         self.wait(1.0)
 
         # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Phương pháp gom tụ thứ hai là Voting (Self-Consistency) chọn đáp án nhận nhiều phiếu
+        # bầu nhất: argmax sum 1{y^(i) = a} theo nghiên cứu của Wang năm 2023. Weighted voting tiến xa hơn bằng
+        # cách nhân thêm điểm số của reward model vào mỗi phiếu bầu theo nghiên cứu của Li năm 2023.
+        #
+        # Ngoài ra, Easy-to-Hard Generalization của Sun cho thấy verifier có thể hoạt động hiệu quả hơn cả người
+        # chấm điểm. Khi số mẫu N tiến đến vô cùng, độ chính xác của voting hội tụ theo Định lý hội tụ của Zhang."
+        # =====================================================================
         # PHẦN 2: ĐA SỐ BIỂU QUYẾT & PHÉP TỔNG BIÊN MÁT-GINALIZATION
         # =====================================================================
         part2_title = create_text("2. Đa số biểu quyết (Majority Voting) & Phương pháp Self-Consistency", font_size=13, color=BLUE_A)
@@ -649,6 +727,12 @@ class Scene3_2(Scene):
         )
         self.wait(2.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Định lý hội tụ mang lại ba bài học quan trọng: thứ nhất, độ chính xác không tăng mãi
+        # mãi mà sẽ hội tụ ở một giới hạn nhất định; thứ hai, weighted voting tốt hơn voting thường khi
+        # tích v * g phân bổ nhiều trọng số hơn cho đáp án đúng; thứ ba, để vượt qua giới hạn hội tụ, chúng ta
+        # bắt buộc phải cải thiện bản thân verifier v hoặc generator g."
         # =====================================================================
         # PHẦN 3: RỦI RO BAYES TỐI THIỂU (MINIMUM BAYES RISK - MBR)
         # =====================================================================

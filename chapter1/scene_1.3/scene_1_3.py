@@ -27,6 +27,33 @@ def create_markup_text(text, font_size=24, font="Arial", **kwargs):
 
 class Scene1_3(Scene):
     def construct(self):
+        # =========================================================================
+        # VOICEOVER (Scene 1.3) [Trích từ full_video_script.md]
+        # Lời thoại:
+        #   - "Có ba cách chính để dùng test-time compute. Thứ nhất, chúng ta cho mô
+        #     hình sinh thêm token, ví dụ như chain-of-thought: mô hình viết ra các
+        #     bước suy nghĩ trung gian trước khi đưa ra câu trả lời cuối cùng."
+        # 
+        #   - "Thứ hai, chúng ta gọi generator nhiều lần. AlphaCode là ví dụ điển
+        #     hình: hệ thống sinh ra rất nhiều chương trình ứng viên, rồi tiến hành
+        #     lọc và gom nhóm để lấy một tập kết quả nhỏ hơn nhưng chất lượng hơn."
+        # 
+        #   - "Thứ ba, chúng ta chuyển từ một mô hình ngôn ngữ đơn lẻ sang một
+        #     compound AI system (hệ thống AI phức hợp): ở đó mô hình có thể kết hợp
+        #     với các bộ đánh giá (evaluators), kiểm định (verifiers), code
+        #     interpreter, công cụ tìm kiếm hoặc công cụ bên ngoài. Đây chính là nền
+        #     tảng để định nghĩa meta-generation."
+        # 
+        #   - "Khi sinh thêm token, mỗi token mới tương ứng với một lần chạy qua mạng
+        #     neural (forward pass), nên bản thân việc sinh thêm token đã tiêu tốn tài
+        #     nguyên tính toán. Với chain-of-thought, lượng compute đó dùng để tạo ra
+        #     các token suy nghĩ trung gian. Với việc gọi lại nhiều lần (repeated
+        #     calls), compute được dùng để tạo nhiều ứng viên. Còn với compound AI
+        #     system, một phần gánh nặng tính toán có thể được chuyển giao cho các
+        #     công cụ chuyên biệt đáng tin cậy như code interpreter hay công cụ tìm
+        #     kiếm."
+        # =========================================================================
+
         # Thiết lập màu nền tối đặc trưng 3B1B (Loại bỏ hoàn toàn lưới nền để không còn dấu cộng chia màn hình)
         self.camera.background_color = "#111111"
 
@@ -40,6 +67,10 @@ class Scene1_3(Scene):
 
         # =====================================================================
         # GIAI ĐOẠN 1: CHUỖI SUY NGHĨ (CHAIN OF THOUGHT - COT)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Có ba cách chính để dùng test-time compute. Thứ nhất, chúng ta 
+        # cho mô hình sinh thêm token, ví dụ như chain-of-thought: mô hình viết ra 
+        # các bước suy nghĩ trung gian trước khi đưa ra câu trả lời cuối cùng."
         # =====================================================================
         sub_title1 = create_text("1. Generate extra tokens [Wei et al., 2022]", font_size=12, color=GREEN_A)
         sub_title1.next_to(main_title, DOWN, buff=0.2)
@@ -145,6 +176,10 @@ class Scene1_3(Scene):
 
         # =====================================================================
         # GIAI ĐOẠN 2: LẤY MẪU SONG SONG & LỌC (PARALLEL SAMPLING - ALPHACODE)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Thứ hai, chúng ta gọi generator nhiều lần. AlphaCode là ví dụ 
+        # điển hình: hệ thống sinh ra rất nhiều chương trình ứng viên, rồi tiến hành 
+        # lọc và gom nhóm để lấy một tập kết quả nhỏ hơn nhưng chất lượng hơn."
         # =====================================================================
         sub_title2 = create_text("2. Call generator multiple times (e.g., AlphaCode [Li et al., 2022])", font_size=12, color=YELLOW)
         sub_title2.next_to(main_title, DOWN, buff=0.2)
@@ -274,6 +309,11 @@ class Scene1_3(Scene):
 
         # =====================================================================
         # GIAI ĐOẠN 3: HỆ THỐNG AI PHỨC HỢP & CÔNG CỤ NGOÀI (COMPOUND AI & TOOLS)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Thứ ba, chúng ta chuyển từ một mô hình ngôn ngữ đơn lẻ sang một 
+        # compound AI system (hệ thống AI phức hợp): ở đó mô hình có thể kết hợp với 
+        # các bộ đánh giá (evaluators), kiểm định (verifiers), code interpreter, 
+        # công cụ tìm kiếm hoặc công cụ bên ngoài. Đây chính là nền tảng để định nghĩa meta-generation."
         # =====================================================================
         sub_title3 = create_text("3. Incorporate other models/tools [Zaharia et al., 2024]", font_size=12, color=BLUE_A)
         sub_title3.next_to(main_title, DOWN, buff=0.2)
@@ -398,6 +438,14 @@ class Scene1_3(Scene):
 
         # =====================================================================
         # GIAI ĐOẠN 4: TỔNG KẾT BA PHƯƠNG PHÁP (SUMMARY CARDS)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Khi sinh thêm token, mỗi token mới tương ứng với một lần chạy 
+        # qua mạng neural (forward pass), nên bản thân việc sinh thêm token đã tiêu tốn 
+        # tài nguyên tính toán. Với chain-of-thought, lượng compute đó dùng để tạo ra 
+        # các token suy nghĩ trung gian. Với việc gọi lại nhiều lần (repeated calls), 
+        # compute được dùng để tạo nhiều ứng viên. Còn với compound AI system, một phần 
+        # gánh nặng tính toán có thể được chuyển giao cho các công cụ chuyên biệt đáng 
+        # tin cậy như code interpreter hay công cụ tìm kiếm."
         # =====================================================================
         summary_title = create_text("Mở Rộng Lúc Suy Luận = Sinh thêm Token, Sinh song song & Sử dụng Công cụ", font_size=11, color=BLUE_A)
         summary_title.next_to(main_title, DOWN, buff=0.3)

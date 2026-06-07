@@ -32,6 +32,9 @@ class Scene2_3(MovingCameraScene):
         self.camera.background_color = "#111111"
 
         # =====================================================================
+        # LỜI THOẠI: "MAP decoding hoạt động tốt cho các tác vụ closed-ended như translation
+        # và question answering. Nhưng cực đại hóa xác suất cũng gây ra nhiều lỗi giải mã nghiêm trọng."
+        # =====================================================================
         # BƯỚC 1: TIÊU ĐỀ PHÂN CẢNH CHÍNH & LỢI ÍCH CỦA MAP (00:00 - 00:35)
         # =====================================================================
         chapter_title = create_text("Các cạm bẫy của Giải mã MAP", font_size=24, color=RED_A)
@@ -118,6 +121,11 @@ class Scene2_3(MovingCameraScene):
         self.wait(0.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Cạm bẫy đầu tiên là repetition traps (bẫy lặp từ) được nghiên cứu bởi
+        # Welleck cùng các cộng sự năm 2020. Với mô hình GPT2 và beam size là 32, output có thể bị lặp
+        # vô hạn các cụm từ như singer-songwriter, songwriter-songwriter. Các phương pháp khắc
+        # phục phổ biến bao gồm repetition penalty và unlikelihood training."
         # =====================================================================
         # BƯỚC 2: CẠM BẪY 1 - BẪY LẶP (REPETITION TRAPS) (00:35 - 01:25)
         # =====================================================================
@@ -231,6 +239,11 @@ class Scene2_3(MovingCameraScene):
         self.wait(1.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Cạm bẫy thứ hai là sinh chuỗi quá ngắn (short sequences) theo nghiên cứu
+        # của Stahlberg và Byrne năm 2019: một chuỗi kết thúc sớm bằng token <eos> có thể có xác suất
+        # tích lũy cao hơn một câu dài đầy đủ thông tin hơn, ví dụ Pr[Taylor Swift is <eos>] lớn hơn
+        # Pr[Taylor Swift is an American singer-...]. Phương pháp khắc phục thông dụng là length normalization."
         # =====================================================================
         # BƯỚC 3: CẠM BẪY 2 - XU HƯỚNG CHUỒI NGẮN (SHORT SEQUENCES) (01:25 - 02:20)
         # =====================================================================
@@ -374,6 +387,13 @@ class Scene2_3(MovingCameraScene):
 
 
         # =====================================================================
+        # LỜI THOẠI: "Cạm bẫy thứ ba là tính chất phi điển hình (atypicality) được phân tích bởi
+        # Meister cùng các cộng sự năm 2022. Với đồng xu lệch có xác suất ngửa Pr[H]=0.6 và sấp Pr[T]=0.4,
+        # chuỗi kết quả có xác suất cao nhất cho 100 lần tung là toàn ngửa (HHHH...), nhưng chuỗi này lại
+        # vô cùng phi điển hình và thiếu tự nhiên. Tương tự, một generation có xác suất cao nhất của mô hình
+        # chưa chắc đã tự nhiên. Vì thế, kết luận quan trọng của chúng ta là approximate MAP (chẳng hạn như
+        # narrow beam search) hoạt động tốt hơn exact MAP theo Meister năm 2020."
+        # =====================================================================
         # BƯỚC 4: CẠM BẪY 3 - TÍNH KHÔNG ĐIỂN HÌNH (ATYPICALITY) (02:20 - 03:40)
         # =====================================================================
         pitfall3_title = create_markup_text("3. Tính không điển hình (Atypicality) <span color='#888888'>[Meister et al., 2022]</span>", font_size=13, color=RED_B)
@@ -435,6 +455,11 @@ class Scene2_3(MovingCameraScene):
         self.wait(1.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Ý chính của đoạn này là most likely không đồng nghĩa với best cho mọi loại generation.
+        # Trong các closed-ended tasks, MAP thường rất hữu ích vì không gian đầu ra bị ràng buộc và có đáp án rõ.
+        # Nhưng với open-ended text generation, cực đại hóa xác suất có thể đẩy mô hình vào output lặp, quá ngắn,
+        # hoặc không điển hình. Vì vậy chúng ta dùng các cạm bẫy này để chuyển từ optimization sang sampling."
         # =====================================================================
         # BƯỚC 5: TỔNG KẾT & CHUYỂN TIẾP SANG LẤY MẪU (SAMPLING) (03:40 - 04:15)
         # =====================================================================

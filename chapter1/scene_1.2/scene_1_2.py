@@ -67,6 +67,29 @@ def get_text_part(mobject, substring):
 
 class Scene1_2(MovingCameraScene):
     def construct(self):
+        # =========================================================================
+        # VOICEOVER (Scene 1.2) [Trích từ full_video_script.md]
+        # Lời thoại:
+        #   - "Khi nhìn vào tiến bộ của các mô hình ngôn ngữ lớn, chúng ta có thể chia
+        #     làm ba làn sóng scale. Làn sóng đầu tiên là scale pretraining compute:
+        #     sử dụng mô hình lớn hơn và tập dữ liệu lớn hơn, với các quy luật scale
+        #     (scaling laws) cho mô hình ngôn ngữ."
+        # 
+        #   - "Làn sóng thứ hai là post-training compute: thu thập các cặp
+        #     input-output, rồi fine-tune mô hình để làm tốt hơn trên các tác vụ và có
+        #     thể generalize sang tác vụ mới."
+        # 
+        #   - "Làn sóng hiện tại là test-time scaling. Ta giữ mô hình đã huấn luyện,
+        #     nhưng thiết kế phương pháp dùng thêm compute tại inference hoặc
+        #     generation time để tăng performance."
+        # 
+        #   - "Điểm quan trọng cần lưu ý là hai làn sóng đầu, dù rất quan trọng, vẫn
+        #     chưa đủ cho mọi tác vụ mà chúng ta mong muốn ở mô hình ngôn ngữ. Vì thế,
+        #     test-time scaling không thay thế pretraining hay post-training; nó là
+        #     một chiều kích thước tính toán khác, được sử dụng sau khi mô hình đã tồn
+        #     tại, ngay tại thời điểm hệ thống đang cần sinh câu trả lời."
+        # =========================================================================
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
@@ -89,6 +112,7 @@ class Scene1_2(MovingCameraScene):
 
         # =====================================================================
         # GIAI ĐOẠN 1: GIỚI THIỆU HỆ TRỤC TỌA ĐỘ 3D ẢO
+        # VOICEOVER: (Giới thiệu hệ trục tọa độ 3D biểu diễn 3 chiều hướng scale compute)
         # =====================================================================
         # Đặt gốc tọa độ dịch về bên trái để tránh đè các thẻ bên phải
         origin_pt = LEFT * 3.5 + DOWN * 1.5
@@ -127,6 +151,13 @@ class Scene1_2(MovingCameraScene):
             run_time=2.0
         )
         self.wait(15.0) # Đợi lời thoại giới thiệu tổng quan về 3 làn sóng mở rộng quy mô
+        # =========================================================================
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Khi nhìn vào tiến bộ của các mô hình ngôn ngữ lớn, chúng ta có 
+        # thể chia làm ba làn sóng scale. Làn sóng đầu tiên là scale pretraining compute: 
+        # sử dụng mô hình lớn hơn và tập dữ liệu lớn hơn, với các quy luật scale 
+        # (scaling laws) cho mô hình ngôn ngữ."
+        # =========================================================================
         # GIAI ĐOẠN 2: LÀN SÓNG 1 - PRE-TRAINING COMPUTING
         # =====================================================================
         # Highlight trục X
@@ -155,6 +186,12 @@ class Scene1_2(MovingCameraScene):
         self.play(FadeOut(flash_x), run_time=0.4)
 
         # =====================================================================
+        # =========================================================================
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Làn sóng thứ hai là post-training compute: thu thập các cặp 
+        # input-output, rồi fine-tune mô hình để làm tốt hơn trên các tác vụ và có 
+        # thể generalize sang tác vụ mới."
+        # =========================================================================
         # GIAI ĐOẠN 3: LÀN SÓNG 2 - POST-TRAINING COMPUTING
         # =====================================================================
         # Highlight trục Y
@@ -179,6 +216,12 @@ class Scene1_2(MovingCameraScene):
         self.play(FadeOut(flash_y), run_time=0.4)
 
         # =====================================================================
+        # =========================================================================
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Làn sóng hiện tại là test-time scaling. Ta giữ mô hình đã 
+        # huấn luyện, nhưng thiết kế phương pháp dùng thêm compute tại inference 
+        # hoặc generation time để tăng performance."
+        # =========================================================================
         # GIAI ĐOẠN 4: LÀN SÓNG 3 - TEST-TIME COMPUTING
         # =====================================================================
         # Highlight trục Z
@@ -251,9 +294,15 @@ class Scene1_2(MovingCameraScene):
         self.wait(18.0)
 
 
-        # =====================================================================
+        # =========================================================================
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Điểm quan trọng cần lưu ý là hai làn sóng đầu, dù rất quan trọng, 
+        # vẫn chưa đủ cho mọi tác vụ mà chúng ta mong muốn ở mô hình ngôn ngữ. Vì thế, 
+        # test-time scaling không thay thế pretraining hay post-training; nó là một chiều 
+        # kích thước tính toán khác, được sử dụng sau khi mô hình đã tồn tại, ngay tại 
+        # thời điểm hệ thống đang cần sinh câu trả lời."
+        # =========================================================================
         # GIAI ĐOẠN 5: TỔNG KẾT & QUAY LẠI HỆ TRỤC 3D TOÀN CẢNH
-        # =====================================================================
         # Hiển thị lại hệ trục và lưới phối cảnh 3D
         self.play(FadeIn(origin), Create(floor_grid), run_time=1.0)
         self.play(

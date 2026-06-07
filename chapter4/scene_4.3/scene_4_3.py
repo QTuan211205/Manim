@@ -27,6 +27,8 @@ def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
 
 class Scene4_3(Scene):
     def construct(self):
+        # (Lời thoại đã được phân phối xuống từng phần cụ thể bên dưới)
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
@@ -52,6 +54,18 @@ class Scene4_3(Scene):
         )
         self.wait(5.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Với meta-generation, câu hỏi là các meta-generators tương tác
+        # với hiệu năng thực tế và việc tận dụng phần cứng như thế nào, và làm sao
+        # để thiết kế các meta-generators hiệu quả hơn.
+        #
+        # Việc triển khai thông thường và các quá trình sinh song song thường có các
+        # nội dung tiền tố dùng chung bị trùng lặp trong các câu nhắc.
+        # Sự chia sẻ tiền tố này xuất hiện rất tự nhiên trong meta-generation. Ví dụ,
+        # phương pháp Best-of-N sử dụng cùng một câu nhắc để sinh ra nhiều câu trả lời ứng viên;
+        # thuật toán duyệt cây có nhiều nhánh chia sẻ cùng một tiền tố; hay các chatbot,
+        # các kỹ thuật few-shot prompting có phần chỉ dẫn hệ thống dài giống hệt nhau.
+        # Nếu mỗi yêu cầu lưu riêng KV cache cho phần tiền tố giống nhau này, bộ nhớ VRAM sẽ bị lãng phí."
         # =====================================================================
         # BƯỚC 2: BÀI TOÁN TRÙNG LẶP KV CACHE & LÃNG PHÍ VRAM
         # =====================================================================
@@ -140,6 +154,11 @@ class Scene4_3(Scene):
         self.wait(1.5)
 
         # =====================================================================
+        # LỜI THOẠI: "Cơ chế PagedAttention trong thư viện vLLM giúp tránh việc lưu trữ
+        # dư thừa bằng cách ánh xạ các khối KV cache logic vào các trang bộ nhớ vật lý
+        # của VRAM. PagedAttention giải quyết vấn đề dư thừa bộ nhớ này ở cấp độ các trang
+        # bộ nhớ, tương tự như nguyên lý bộ nhớ ảo của hệ điều hành."
+        # =====================================================================
         # BƯỚC 3: CƠ CHẾ PAGEDATTENTION (vLLM)
         # =====================================================================
         step2_title = create_markup_text(
@@ -202,6 +221,12 @@ class Scene4_3(Scene):
         )
         self.wait(1.5)
 
+        # =====================================================================
+        # LỜI THOẠI: "Việc tái sử dụng KV cache không chỉ dừng lại ở một tiền tố dùng chung duy nhất.
+        # Nhiều cấp độ chia sẻ tiền tố có thể xuất hiện, ví dụ một câu nhắc few-shot dài kết hợp với
+        # quá trình sinh Best-of-N. Cơ chế RadixAttention trong SGLang hỗ trợ các mô hình chia sẻ
+        # tiền tố phức tạp này thông qua việc quản lý cache dưới dạng cây Radix, và tự động giải phóng
+        # các khối KV cache ít được sử dụng nhất (LRU Eviction) khi bộ nhớ đầy."
         # =====================================================================
         # BƯỚC 4: RADIXATTENTION (SGLANG) & CÂY TIỀN TỐ (RADIX TREE)
         # =====================================================================
@@ -321,6 +346,11 @@ class Scene4_3(Scene):
         )
         self.wait(1.5)
 
+        # =====================================================================
+        # LỜI THOẠI: "Hydragen giúp tăng tốc các phần tính toán cơ chế attention trên tiền tố
+        # dùng chung bằng cách tận dụng phần cứng Tensor Cores. Cả ba kỹ thuật PagedAttention,
+        # RadixAttention và Hydragen cùng truyền tải một thông điệp quan trọng: cấu trúc của
+        # câu nhắc và của meta-generator có thể tạo ra cơ hội tối ưu hóa hệ thống rất lớn."
         # =====================================================================
         # BƯỚC 5: CƠ CHẾ TĂNG TỐC HYDRAGEN & ĐỒ THỊ HIỆU NĂNG
         # =====================================================================
@@ -442,6 +472,14 @@ class Scene4_3(Scene):
         self.wait(1.5)
 
         # =====================================================================
+        # LỜI THOẠI: "Bên cạnh đó, việc nén KV cache (KV cache compression) là rất quan trọng vì
+        # kích thước KV cache chính là nút thắt cổ chai đối với các batch size lớn hơn và độ dài
+        # ngữ cảnh dài hơn khi suy luận. Chúng ta có ba hướng chính để nén bộ nhớ đệm này, đó là:
+        # loại bỏ token (token dropping), lượng tử hóa (quantization), và thay đổi kiến trúc mô hình.
+        #
+        # Ở đây, mỗi hướng đi sẽ tác động trực tiếp vào một biến số trong công thức tính toán dung lượng.
+        # Đầu tiên là Token Dropping, kỹ thuật này giúp giảm chiều dài ngữ cảnh hiệu dụng n_ctx."
+        # =====================================================================
         # BƯỚC 5: KỸ THUẬT LOẠI BỎ TOKEN (TOKEN DROPPING)
         # =====================================================================
         step5_title = create_text("5. Loại bỏ Token (Token Dropping)", font_size=13, color=YELLOW)
@@ -532,6 +570,10 @@ class Scene4_3(Scene):
         self.wait(1.5)
 
         # =====================================================================
+        # LỜI THOẠI: "Hướng đi thứ hai là Quantization, giúp giảm số lượng byte (n_bytes)
+        # của bộ nhớ đệm KV cache trên mỗi token. Bằng cách nén từ kiểu dữ liệu FP16 xuống INT8
+        # hoặc INT4, chúng ta có thể tối ưu hóa không gian lưu trữ và tăng thông lượng của hệ thống."
+        # =====================================================================
         # BƯỚC 6: LƯỢNG TỬ HÓA BỘ NHỚ ĐỆM (QUANTIZATION)
         # =====================================================================
         step6_title = create_text("6. Lượng tử hóa bộ nhớ đệm (KV Cache Quantization)", font_size=13, color=YELLOW)
@@ -599,6 +641,11 @@ class Scene4_3(Scene):
         )
         self.wait(1.5)
 
+        # =====================================================================
+        # LỜI THOẠI: "Hướng đi thứ ba là thay đổi cấu trúc của mô hình để giảm bớt số lượng đầu Key và Value
+        # (n_heads) cho phần KV cache. Những tinh chỉnh kiến trúc này như Multi-Query Attention (MQA)
+        # hoặc Grouped-Query Attention (GQA) giúp giảm đáng kể số lượng đầu Key và Value attention
+        # cần lưu trữ mà vẫn duy trì được hiệu quả tính toán."
         # =====================================================================
         # BƯỚC 7: THAY ĐỔI KIẾN TRÚC MÔ HÌNH (MQA VS. GQA)
         # =====================================================================
@@ -677,6 +724,18 @@ class Scene4_3(Scene):
         self.wait(1.5)
 
         # =====================================================================
+        # LỜI THOẠI: "Để tổng kết lại, toàn bộ chương trình của chúng ta bao gồm ba phần lớn:
+        # các bộ sinh cơ bản (primitive generators) sinh từng token một; các meta-generators
+        # là cách gọi và điều phối các generators; và cuối cùng là các kỹ thuật meta-generation hiệu năng
+        # giúp tối ưu hóa phần cứng hệ thống khi chạy các thuật toán đó.
+        #
+        # Để tối ưu hóa Meta-generation, chúng ta có nhiều chiến lược như chained, parallel, tree search
+        # hay refinement. Chúng ta phân bổ tài nguyên test-time compute để cải thiện hiệu năng và thiết kế
+        # dựa trên các đánh giá cân bằng giữa chi phí và hiệu quả (cost-performance trade-offs).
+        # Về mặt hệ thống, khả năng song song hóa (parallelizability) giúp giảm độ trễ (latency) và tăng
+        # thông lượng (throughput). Cấu trúc của câu nhắc và meta-generator quyết định phần lớn hiệu năng
+        # thực tế, và do đó ngân sách token (token budget) chỉ là một sự đơn giản hóa."
+        # =====================================================================
         # BƯỚC 8: TỔNG KẾT & ĐÁNH GIÁ HIỆU NĂNG META-GENERATOR
         # =====================================================================
         step8_title = create_text("8. Tổng kết: Đánh giá hiệu năng Meta-generator", font_size=13, color=YELLOW)
@@ -720,6 +779,18 @@ class Scene4_3(Scene):
         self.play(FadeOut(step8_title), FadeOut(table), FadeOut(quote_grp), run_time=1.0)
         self.wait(1.5)
 
+        # =====================================================================
+        # LỜI THOẠI: "Hướng phát triển tương lai sẽ tập trung vào các hệ thống lai (hybrid systems)
+        # kết hợp song song và cải thiện tuần tự, học cách tự tìm kiếm (learning to search) với khả năng
+        # quay lui và tự sửa lỗi, tối ưu hóa các agent để tương tác tốt hơn với môi trường bên ngoài,
+        # và tự động phân bổ tài nguyên compute linh hoạt.
+        #
+        # Có một cảnh báo quan trọng rằng: rất nhiều kết luận khoa học hiện nay chỉ dựa trên một vài
+        # tác vụ thử nghiệm cụ thể. Các kỹ thuật meta-generation cho thấy nhiều kết quả mạnh mẽ, nhưng
+        # mức độ tổng quát của kết luận vẫn phụ thuộc rất nhiều vào các tác vụ, bộ đánh giá, mô hình sinh
+        # và ngân sách compute được thử nghiệm. Do đó, phần nhìn về tương lai này không chỉ là danh sách
+        # các hướng nghiên cứu, mà còn là lời nhắc nhở rằng lĩnh vực này cần thêm nhiều bằng chứng thực
+        # nghiệm rộng hơn nữa."
         # =====================================================================
         # BƯỚC 9: HƯỚNG PHÁT TRIỂN TƯƠNG LAI (LOOKING AHEAD)
         # =====================================================================

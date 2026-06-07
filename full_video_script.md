@@ -47,11 +47,11 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 **Công thức/keyword được phép:** Không có công thức.
 
 **Voiceover:**
-> Chúng ta bắt đầu với chủ đề chính của tutorial: các thuật toán sinh đầu ra bằng mô hình ngôn ngữ, đặc biệt là meta-generation algorithms cho large language models. Lý do chủ đề này quan trọng là cộng đồng đang tìm cách dùng thêm compute tại test time, sau khi mô hình đã được huấn luyện, để cải thiện chất lượng generation system.
+> Chúng ta bắt đầu với chủ đề chính của video hôm nay: các thuật toán sinh đầu ra bằng mô hình ngôn ngữ, đặc biệt là các thuật toán meta-generation cho mô hình ngôn ngữ lớn (LLM). Lý do chủ đề này quan trọng là vì hiện nay, chúng ta đang tìm cách dùng thêm năng lực tính toán tại thời điểm chạy (test-time compute) – tức là sau khi mô hình đã được huấn luyện – để cải thiện chất lượng của toàn bộ hệ thống tạo văn bản.
 >
-> Mô hình ngôn ngữ có thể hỗ trợ nhiều tác vụ nếu tác vụ đó được biểu diễn như việc sinh một chuỗi: từ giải bài toán olympiad cho tới viết code. Vì vậy tutorial tập trung vào câu hỏi: khi đã có một language model, ta nên gọi nó, điều khiển nó, và kết hợp nó với các thành phần khác như thế nào để sinh kết quả tốt hơn?
+> Mô hình ngôn ngữ có thể hỗ trợ nhiều tác vụ nếu tác vụ đó được biểu diễn dưới dạng sinh một chuỗi tuần tự: từ việc giải các bài toán Olympic phức tạp cho tới viết mã nguồn thực tế. Vì thế, chúng ta sẽ tập trung vào câu hỏi: khi đã có một mô hình ngôn ngữ, chúng ta nên gọi nó, điều khiển nó, và kết hợp nó với các thành phần khác như thế nào để sinh ra kết quả tốt nhất?
 >
-> Trong subtitle, tác giả cũng đặt chủ đề này trong bối cảnh inference algorithms và LLM OS. Nghĩa là ta không chỉ xem language model như một hàm dự đoán token đơn lẻ, mà xem nó như một thành phần trong một hệ thống sinh hoàn chỉnh: hệ thống có thể gọi mô hình nhiều lần, dùng công cụ, dùng evaluator, và quyết định cách tiêu compute tại thời điểm sinh.
+> Chúng ta cũng đặt chủ đề này trong bối cảnh các thuật toán suy luận (inference algorithms) và hệ điều hành LLM (LLM OS). Điều này có nghĩa là, chúng ta không chỉ xem mô hình ngôn ngữ như một bộ dự đoán token đơn lẻ, mà xem nó như một thành phần trong một hệ thống sinh hoàn chỉnh: nơi hệ thống có thể gọi mô hình nhiều lần, dùng công cụ bổ trợ, dùng bộ đánh giá (evaluators), và quyết định cách tiêu compute tại thời điểm sinh.
 
 ### Scene 1.2 - Ba hướng scale compute
 **Thời lượng:** 02:00-04:20  
@@ -66,13 +66,13 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 **Công thức/keyword được phép:** `pretraining compute`, `post-training compute`, `test-time compute`, `[Now] Test-time scaling: increase compute at generation time`.
 
 **Voiceover:**
-> Khi nhìn vào tiến bộ của language models, tutorial mô tả ba làn sóng scale. Làn sóng đầu tiên là scale pretraining compute: dùng mô hình lớn hơn và tập dữ liệu lớn hơn, với kết quả scaling laws cho neural language models.
+> Khi nhìn vào tiến bộ của các mô hình ngôn ngữ lớn, chúng ta có thể chia làm ba làn sóng scale. Làn sóng đầu tiên là scale pretraining compute: sử dụng mô hình lớn hơn và tập dữ liệu lớn hơn, với các quy luật scale (scaling laws) cho mô hình ngôn ngữ.
 >
 > Làn sóng thứ hai là post-training compute: thu thập các cặp input-output, rồi fine-tune mô hình để làm tốt hơn trên các tác vụ và có thể generalize sang tác vụ mới.
 >
 > Làn sóng hiện tại là test-time scaling. Ta giữ mô hình đã huấn luyện, nhưng thiết kế phương pháp dùng thêm compute tại inference hoặc generation time để tăng performance.
 >
-> Điểm tác giả nhấn mạnh là hai làn sóng đầu, dù rất quan trọng, vẫn chưa đủ cho mọi tác vụ mà ta muốn language model làm. Vì vậy test-time scaling không thay thế pretraining hay post-training; nó là một chiều compute khác, được dùng sau khi mô hình đã tồn tại, ngay lúc hệ thống đang cần sinh câu trả lời.
+> Điểm quan trọng cần lưu ý là hai làn sóng đầu, dù rất quan trọng, vẫn chưa đủ cho mọi tác vụ mà chúng ta mong muốn ở mô hình ngôn ngữ. Vì thế, test-time scaling không thay thế pretraining hay post-training; nó là một chiều kích thước tính toán khác, được sử dụng sau khi mô hình đã tồn tại, ngay tại thời điểm hệ thống đang cần sinh câu trả lời.
 
 ### Scene 1.3 - Test-time compute được dùng như thế nào
 **Thời lượng:** 04:20-07:20  
@@ -87,13 +87,13 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 **Công thức/keyword được phép:** `Generate extra tokens`, `Call generator multiple times`, `Verifiers`, `code interpreters`, `search engines`.
 
 **Voiceover:**
-> Có ba cách chính để dùng test-time compute. Thứ nhất, ta cho mô hình sinh thêm token, ví dụ chain-of-thought: mô hình viết các bước trung gian trước khi trả lời.
+> Có ba cách chính để dùng test-time compute. Thứ nhất, chúng ta cho mô hình sinh thêm token, ví dụ như chain-of-thought: mô hình viết ra các bước suy nghĩ trung gian trước khi đưa ra câu trả lời cuối cùng.
 >
-> Thứ hai, ta gọi generator nhiều lần. AlphaCode là ví dụ điển hình: hệ thống sinh rất nhiều chương trình, rồi lọc và gom nhóm để lấy một tập output nhỏ hơn.
+> Thứ hai, chúng ta gọi generator nhiều lần. AlphaCode là ví dụ điển hình: hệ thống sinh ra rất nhiều chương trình ứng viên, rồi tiến hành lọc và gom nhóm để lấy một tập kết quả nhỏ hơn nhưng chất lượng hơn.
 >
-> Thứ ba, ta chuyển từ một language model đơn lẻ sang compound AI system: mô hình có thể dùng evaluator, verifier, code interpreter, search engine hoặc công cụ bên ngoài. Đây là nền để định nghĩa meta-generation.
+> Thứ ba, chúng ta chuyển từ một mô hình ngôn ngữ đơn lẻ sang một compound AI system (hệ thống AI phức hợp): ở đó mô hình có thể kết hợp với các bộ đánh giá (evaluators), kiểm định (verifiers), code interpreter, công cụ tìm kiếm hoặc công cụ bên ngoài. Đây chính là nền tảng để định nghĩa meta-generation.
 >
-> Khi sinh thêm token, mỗi token tương ứng với một lần forward pass qua neural network, nên bản thân việc generate nhiều hơn đã là tiêu compute. Với chain-of-thought, compute đó được dùng để tạo intermediate thought tokens. Với repeated calls, compute được dùng để tạo nhiều candidates. Với compound AI system, một phần computation có thể được chuyển sang các tools đáng tin cậy hơn như code interpreter hoặc search engine.
+> Khi sinh thêm token, mỗi token mới tương ứng với một lần chạy qua mạng neural (forward pass), nên bản thân việc sinh thêm token đã tiêu tốn tài nguyên tính toán. Với chain-of-thought, lượng compute đó dùng để tạo ra các token suy nghĩ trung gian. Với việc gọi lại nhiều lần (repeated calls), compute được dùng để tạo nhiều ứng viên. Còn với compound AI system, một phần gánh nặng tính toán có thể được chuyển giao cho các công cụ chuyên biệt đáng tin cậy như code interpreter hay công cụ tìm kiếm.
 
 ### Scene 1.4 - Generator và meta-generator
 **Thời lượng:** 07:20-10:00  
@@ -113,9 +113,9 @@ Nội dung cần loại khỏi các bản dựng cũ nếu không xuất hiện 
 >
 > Meta-generator là chiến lược cấp cao hơn: gọi generator nhiều lần, dùng external information, hoặc chọn output tốt nhất bằng một mô hình riêng. Lý do dùng meta-generator là để generate more nhằm cải thiện task performance, kết hợp nhiều mô hình như verifier hay retriever, và đưa thông tin bên ngoài như tools hay feedback vào generation.
 >
-> Tutorial gồm ba phần chính: primitive generators, meta-generators, và efficient meta-generation. Sau đó là panel session. Website của tutorial cung cấp slides, code examples và reading list.
+> Nội dung chính của chúng ta gồm ba phần: primitive generators, meta-generators, và efficient meta-generation, tiếp theo là buổi thảo luận panel. Chúng ta cũng có thể truy cập các tài nguyên trực tuyến để xem slide, ví dụ code và danh sách tài liệu đọc thêm.
 >
-> Từ `primitive` ở đây không có nghĩa là các phương pháp này không quan trọng. Trong subtitle, tác giả giải thích chúng là primitives theo nghĩa building blocks: các khối cơ bản để xây dựng những meta-generation algorithms phức tạp hơn. Vì vậy trước khi nói về meta-generator, ta phải hiểu cách một generator sinh một sequence đơn lẻ.
+> Từ "primitive" ở đây không có nghĩa là các phương pháp này không quan trọng. Chúng ta có thể hiểu chúng là các primitives theo nghĩa building blocks – tức là những khối cơ bản để xây dựng các thuật toán meta-generation phức tạp hơn. Vì thế, trước khi nói về meta-generator, chúng ta phải hiểu cách một generator sinh ra một chuỗi đơn lẻ.
 
 ---
 
@@ -212,9 +212,9 @@ Citations: `[Welleck et al., 2020]`, `[Stahlberg and Byrne, 2019]`, `[Meister et
 >
 > Cạm bẫy thứ hai là sinh chuỗi quá ngắn (short sequences) theo nghiên cứu của [Stahlberg and Byrne, 2019]: một chuỗi kết thúc sớm bằng token `<eos>` có thể có xác suất tích lũy cao hơn một câu dài đầy đủ thông tin hơn, ví dụ `Pr[Taylor Swift is <eos>] > Pr[Taylor Swift is an American singer-...]`. Phương pháp khắc phục phổ biến là length normalization.
 >
-> Cạm bẫy thứ ba là tính chất phi điển hình (atypicality) được phân tích bởi [Meister et al., 2022]. Với đồng xu lệch có xác suất ngửa `Pr[H]=0.6` và sấp `Pr[T]=0.4`, chuỗi kết quả có xác suất cao nhất cho 100 lần tung là toàn ngửa (HHHH...), nhưng chuỗi này lại vô cùng phi điển hình và thiếu tự nhiên. Tương tự, một generation có xác suất cao nhất của mô hình chưa chắc đã tự nhiên. Vì vậy, takeaway quan trọng của tác giả là approximate MAP (chẳng hạn như narrow beam search) hoạt động tốt hơn exact MAP [Meister et al., 2020].
+> Cạm bẫy thứ ba là tính chất phi điển hình (atypicality) được phân tích bởi [Meister et al., 2022]. Với đồng xu lệch có xác suất ngửa `Pr[H]=0.6` và sấp `Pr[T]=0.4`, chuỗi kết quả có xác suất cao nhất cho 100 lần tung là toàn ngửa (HHHH...), nhưng chuỗi này lại vô cùng phi điển hình và thiếu tự nhiên. Tương tự, một generation có xác suất cao nhất của mô hình chưa chắc đã tự nhiên. Vì vậy, kết luận quan trọng của chúng ta là approximate MAP (chẳng hạn như narrow beam search) hoạt động tốt hơn exact MAP [Meister et al., 2020].
 >
-> Ý chính của đoạn này là `most likely` không đồng nghĩa với `best` cho mọi loại generation. Trong closed-ended tasks, MAP thường hữu ích vì output space bị ràng buộc và có đáp án rõ. Nhưng với open-ended text generation, cực đại hóa xác suất có thể đẩy mô hình vào output lặp, quá ngắn, hoặc không điển hình. Vì vậy tác giả dùng các pitfalls này để chuyển từ optimization sang sampling.
+> Ý chính của đoạn này là `most likely` không đồng nghĩa với `best` cho mọi loại generation. Trong closed-ended tasks, MAP thường hữu ích vì output space bị ràng buộc và có đáp án rõ. Nhưng với open-ended text generation, cực đại hóa xác suất có thể đẩy mô hình vào output lặp, quá ngắn, hoặc không điển hình. Vì vậy chúng ta dùng các cạm bẫy này để chuyển từ optimization sang sampling.
 
 ### Scene 2.4 - Sampling, truncation và temperature
 **Thời lượng:** 28:30-38:30  
@@ -261,7 +261,7 @@ p_\theta(y)=p_\theta(y_1)p_\theta(y_2\mid y_1)p_\theta(y_3\mid y_1y_2)\cdots p_\
 >
 > Temperature là một adapter khác: nó không cắt đuôi mà rescale logits bằng công thức softmax chia cho tau. High tau (>= 1) tăng tính đa dạng (diverse) nhưng dễ incoherent; low tau (< 1) tăng tính mạch lạc (coherent) nhưng dễ bị lặp (repetitive).
 >
-> Phần code trong slide 61 minh họa các thuật toán: greedy dùng argmax; ancestral lấy mẫu trên toàn bộ vocab; Top-k chọn k giá trị hàng đầu; Top-p sắp xếp logits giảm dần rồi tính cumsum dưới p; epsilon lọc theo ngưỡng cứng; temperature điều phối qua logits/temp trước khi softmax; cuối cùng dùng random.choices để lấy mẫu token. Slide 62 cũng cung cách dùng framework vLLM qua LLM.generate và HuggingFace qua AutoModelForCausalLM. Tác giả kết thúc bằng ba lý do heavy-tail: under-training, tính chất mode-seeking của cross-entropy loss, và low-rank constraints của output layer.
+> Phần code trong slide 61 minh họa các thuật toán: greedy dùng argmax; ancestral lấy mẫu trên toàn bộ vocab; Top-k chọn k giá trị hàng đầu; Top-p sắp xếp logits giảm dần rồi tính cumsum dưới p; epsilon lọc theo ngưỡng cứng; temperature điều phối qua logits/temp trước khi softmax; cuối cùng dùng random.choices để lấy mẫu token. Slide 62 cũng cung cách dùng framework vLLM qua LLM.generate và HuggingFace qua AutoModelForCausalLM. Chúng ta kết thúc bằng ba lý do heavy-tail: under-training, tính chất mode-seeking của cross-entropy loss, và low-rank constraints của output layer.
 >
 > Khi giải thích Top-k và Top-p, cần nhấn mạnh sự khác biệt về threshold. Top-k luôn giữ đúng k token có xác suất cao nhất, nên nó không tự thích nghi với hình dạng phân phối. Top-p dùng cumulative probability, nên vùng được giữ có thể co giãn theo phân phối.
 >
@@ -314,7 +314,7 @@ y \sim q^* \propto r(y) \propto (p_\theta \cdot p_{\theta'})^\alpha
 `A sampling adapter takes a token distribution pθ(· | x) and re-adjusts`, `Temperature sampling [Ackley et al., 1985]y∼q(pθ) Rescale`, `Top-k sampling [Fan et al., 2018]y∼q(pθ) Truncation (top-k)`, `Nucleus sampling [Holtzman et al., 2020]y∼q(pθ) Truncation (cumulative prob.)`, `Epsilon sampling [Hewitt et al., 2022]y∼q(pθ) Truncation (probability)`, `ηsampling [Hewitt et al., 2022]y∼q(pθ) Truncation (prob. and entropy)`, `Mirostat decoding [Basu et al., 2021] Target perplexity Truncation (adaptive top-k)`, `Basis-aware sampling [Finlayson et al., 2024]y∼q(pθ) Truncation (linear program)`, `Contrastive decoding [Li et al., 2023a]y∼q(pθ) log pθ′ −logpθand truncation`, `• Contrastive decoding [Li et al., 2023a, Liu et al., 2021]`, `training [Kudo, 2018].`
 
 **Voiceover:**
-> Sampling adapter nhận phân phối token `pθ(. | x)` và điều chỉnh lại xác suất. Truncation và temperature là adapters, nhưng bảng của tác giả còn liệt kê nhiều phương pháp khác như typical sampling, epsilon, eta, Mirostat, basis-aware sampling, contrastive decoding, DExperts, inference-time adapters và proxy tuning. Với các công thức, chỉ dùng đúng các biểu thức trong bảng slide.
+> Sampling adapter nhận phân phối token `pθ(. | x)` và điều chỉnh lại xác suất. Truncation và temperature là adapters, nhưng bảng phân loại của chúng ta còn liệt kê nhiều phương pháp khác như typical sampling, epsilon, eta, Mirostat, basis-aware sampling, contrastive decoding, DExperts, inference-time adapters và proxy tuning. Với các công thức, chỉ dùng đúng các biểu thức trong bảng slide.
 >
 > Constrained decoding xuất hiện khi ta nhúng LLM vào hệ thống lớn hơn và cần output có cấu trúc, ví dụ JSON. Prompt yêu cầu format thông tin Taylor Swift theo schema `name: string`, `birth year: int`, nhưng output tự do của LLM không khớp JSON schema.
 >
@@ -380,7 +380,7 @@ Citations: `[Brown et al., 2024]`, `[Wei et al., 2022]`, `[Press et al., 2023]`,
 >
 > Formalization của slide là `y ~ G(y|x; g1, g2, ..., gG, φ)`. Design choices gồm strategy `G`, lựa chọn generators `g1...gG`, và các parameter khác như number of tokens. Token-level generators ở phần trước là special case: `y ~ g(y|x; pθ, φ)`.
 >
-> Chaining compose generators theo thứ tự: `y1 ~ g1(x)`, `y2 ~ g2(x,y1)`, `y3 ~ g3(x,y2)`. Chain-of-thought [Wei et al., 2022] là ví dụ điển hình: generate thought `z`, rồi generate answer `a`. Tác giả ví von CoT như một dải băng ghi chép (writeable tape) giúp tăng tính biểu diễn nhờ độ dài đầu ra linh hoạt (variable output length). Chaining có thể mở rộng sang Self-Ask [Press et al., 2023], Demonstrate-Search-Predict (DSP) [Khattab et al., 2022], System-2 Attention [Weston and Sukhbaatar, 2023] và Draft-Sketch-Prove [Jiang et al., 2023]. Takeaway: chaining phân rã quá trình sinh và tích hợp công cụ/mô hình, nhưng chaining đơn thuần không explore output space.
+> Chaining compose generators theo thứ tự: `y1 ~ g1(x)`, `y2 ~ g2(x,y1)`, `y3 ~ g3(x,y2)`. Chain-of-thought [Wei et al., 2022] là ví dụ điển hình: generate thought `z`, rồi generate answer `a`. Chúng ta ví von CoT như một dải băng ghi chép (writeable tape) giúp tăng tính biểu diễn nhờ độ dài đầu ra linh hoạt (variable output length). Chaining có thể mở rộng sang Self-Ask [Press et al., 2023], Demonstrate-Search-Predict (DSP) [Khattab et al., 2022], System-2 Attention [Weston and Sukhbaatar, 2023] và Draft-Sketch-Prove [Jiang et al., 2023]. Takeaway: chaining phân rã quá trình sinh và tích hợp công cụ/mô hình, nhưng chaining đơn thuần không explore output space.
 >
 > Điểm quan trọng của acceptability là nó không nhất thiết trùng với probability của mô hình. Một output có thể probable theo `pθ` nhưng không correct, không được con người thích, hoặc không đáp ứng yêu cầu của hệ thống. Meta-generation được đưa vào để tìm cách sinh ra sequences acceptable hơn, bằng cách dùng evaluator, verifier, tool, hoặc bằng cách gọi generator nhiều lần.
 >
@@ -472,7 +472,7 @@ Citations: `[Uesato et al., 2022]`, `[Lightman et al., 2024]`, `[Wang et al., 20
 >
 > Khác biệt lớn giữa parallel generation và tree search nằm ở thời điểm dùng evaluation. Parallel generation thường đợi đến khi có full sequence rồi mới dùng verifier hoặc reward model. Tree search dùng score ngay trên intermediate states. Nhờ vậy nó có thể dừng một nhánh xấu sớm, quay lui, hoặc phân bổ thêm budget cho nhánh hứa hẹn.
 >
-> Tác giả cũng cảnh báo tree search không phải lúc nào cũng phù hợp. Nếu tác vụ không decomposable thành states, nếu environment không cung cấp intermediate information, hoặc nếu reward signal kém, tree search có thể không đem lại lợi ích tương xứng với chi phí.
+> Chúng ta cũng cần cảnh báo tree search không phải lúc nào cũng phù hợp. Nếu tác vụ không decomposable thành states, nếu environment không cung cấp intermediate information, hoặc nếu reward signal kém, tree search có thể không đem lại lợi ích tương xứng với chi phí.
 
 ### Scene 3.4 - Refinement và self-correction
 **Thời lượng:** 77:00-86:30  
@@ -495,11 +495,11 @@ p_\theta(\mathrm{better}\mid \mathrm{bad})
 Citations: `[Aggarwal et al., 2024]`, `[Chen et al., 2024b]`, `[Asai et al., 2024]`, `[Madaan et al., 2023]`, `[Wang et al., 2024b]`, `[Huang et al., 2024]`, `[Welleck et al., 2023]`, `[Kumar et al., 2024]`, `16 [Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck. 81`, `• Verifiers [Aggarwal et al., 2024]`, `• Code interpreters [Chen et al., 2024b]`, `• Retrievers [Asai et al., 2024]`, `Re-prompt a single LLM, e.g. [Madaan et al., 2023]`, `• Easy to evaluate tasks: positive [Wang et al., 2024b]`, `• E.g., missing info [Asai et al., 2024]`, `17E.g., [Huang et al., 2024] Large Language Models Cannot Self-Correct Reasoning Yet`, `Takeaway: feedback is too noisy From [Huang et al., 2024]`, `17[Welleck et al., 2023], Generating Sequences by Learning to [Self-]Correct .`, `• Update corrector pθ(better|bad) using the collected data`, `Prone to behavior collapse`, `• [Kumar et al., 2024]: overcome with regularization + RL`, `18E.g., Self-corrective learning [Welleck et al., 2023], SCoRe [Kumar et al., 2024].`.
 
 **Voiceover:**
-> Refinement và self-correction cải thiện một generation bằng feedback. Trong thực tế, quality và source của feedback là crucial. Tác giả phân biệt extrinsic feedback và intrinsic feedback.
+> Refinement và self-correction cải thiện một generation bằng feedback. Trong thực tế, quality và source của feedback là crucial. Chúng ta phân biệt extrinsic feedback và intrinsic feedback.
 >
 > Extrinsic feedback cung cấp thông tin bên ngoài tại inference time, ví dụ external program verifier như AlphaVerus ([Aggarwal et al., 2024]). Slide liệt kê các thành công nhờ tích hợp verifiers ([Aggarwal et al., 2024]), code interpreters ([Chen et al., 2024b]), retrievers ([Asai et al., 2024]), cùng các công cụ trong môi trường agent. Trực giác là external feedback mang lại thông tin mới chưa có trong mô hình để phát hiện và định vị lỗi (detect/localize errors).
 >
-> Intrinsic feedback (phản hồi nội tại) không sử dụng thông tin bên ngoài lúc inference. Phương thức phổ biến là prompted-based re-prompting trên chính LLM đó, ví dụ như Self-Refine ([Madaan et al., 2023]). Kết quả của hướng đi này khá trái chiều: có phản hồi tích cực ở các tác vụ dễ đánh giá ([Wang et al., 2024b]) hoặc thiếu thông tin ([Asai et al., 2024]), nhưng với suy luận toán học thì kết quả rất hạn chế. Tác giả nhấn mạnh phát hiện cốt lõi từ nghiên cứu của [Huang et al., 2024] rằng "Large Language Models Cannot Self-Correct Reasoning Yet" vì feedback nội tại thường quá nhiễu (feedback is too noisy).
+> Intrinsic feedback (phản hồi nội tại) không sử dụng thông tin bên ngoài lúc inference. Phương thức phổ biến là prompted-based re-prompting trên chính LLM đó, ví dụ như Self-Refine ([Madaan et al., 2023]). Kết quả của hướng đi này khá trái chiều: có phản hồi tích cực ở các tác vụ dễ đánh giá ([Wang et al., 2024b]) hoặc thiếu thông tin ([Asai et al., 2024]), nhưng với suy luận toán học thì kết quả rất hạn chế. Chúng ta cần nhấn mạnh phát hiện cốt lõi từ nghiên cứu của [Huang et al., 2024] rằng "Large Language Models Cannot Self-Correct Reasoning Yet" vì feedback nội tại thường quá nhiễu (feedback is too noisy).
 >
 > Hướng thứ hai là học một bộ sửa lỗi nội tại (intrinsic trained corrector), ví dụ như Self-corrective learning ([Welleck et al., 2023]). Quy trình tổng quát là thu thập các cặp dữ liệu `(bad, better)` thông qua việc sinh mẫu và đánh giá reward, sau đó cập nhật bộ sửa lỗi `pθ(better | bad)` trên dữ liệu đã thu thập, rồi lặp lại. Phương pháp này rất dễ bị sụp đổ hành vi (behavior collapse); thuật toán SCoRe của [Kumar et al., 2024] đã giải quyết bằng cách áp dụng regularization kết hợp học tăng cường (RL). Summary: extrinsic feedback hoạt động tốt khi môi trường định vị được lỗi; prompted intrinsic cho kết quả lẫn lộn; trained intrinsic có triển vọng nhưng đòi hỏi chiến lược huấn luyện rất cụ thể.
 >
@@ -527,7 +527,7 @@ Citations: `[Aggarwal et al., 2024]`, `[Chen et al., 2024b]`, `[Asai et al., 202
 Citations: `[Wu et al., 2024b]`.
 
 **Voiceover:**
-> Sau khi giới thiệu các strategy, tác giả chuyển sang câu hỏi scaling: làm thế nào allocate test-time compute? Ta chọn strategy dựa trên task performance và compute cost. Cost là function của model size và number of generated tokens.
+> Sau khi giới thiệu các strategy, chúng ta chuyển sang câu hỏi scaling: làm thế nào allocate test-time compute? Ta chọn strategy dựa trên task performance và compute cost. Cost là function của model size và number of generated tokens.
 >
 > Với compute budget `C`, bài toán compute-optimal inference là chọn `N`, `T`, `S` để minimize error, subject to `cost(N,T,S)=C`. Ở đây `N` là number of model parameters, `T` là number of generated tokens, `S` là inference strategy, và cost được tính bằng floating-point operations (FLOP).
 >
@@ -577,7 +577,7 @@ Citations: `[Dao et al., 2022]`, `[Fedus et al., 2022]`, `• Communication Spee
 >
 > Hardware ảnh hưởng tới generation efficiency qua ba yếu tố: dung lượng dữ liệu trên thiết bị (on-device memory/VRAM), số phép tính trên giây (FLOP/s), và tốc độ truyền dữ liệu (Memory Bandwidth, GB/s). Các bottleneck bao gồm: loading inputs/activations, loading weights, performing computation, và communicating across devices.
 >
-> Tác giả mô hình hóa time per operation bằng công thức `Time = max(Operation FLOP / Device FLOP/s, Data Transferred / Memory Bandwidth)`. Lấy ví dụ với NVIDIA H100 SXM, sức mạnh tính toán BF16 dense tensor core đạt tới 1x10^15 FLOP/s, trong khi băng thông bộ nhớ là 3.35x10^12 byte/s. Tỷ lệ này cho thấy nếu một phép toán thực hiện trên 100 FLOP/byte thì chi phí tính toán gần như là "miễn phí" so với chi phí truyền dữ liệu!
+> Chúng ta mô hình hóa time per operation bằng công thức `Time = max(Operation FLOP / Device FLOP/s, Data Transferred / Memory Bandwidth)`. Lấy ví dụ với NVIDIA H100 SXM, sức mạnh tính toán BF16 dense tensor core đạt tới 1x10^15 FLOP/s, trong khi băng thông bộ nhớ là 3.35x10^12 byte/s. Tỷ lệ này cho thấy nếu một phép toán thực hiện trên 100 FLOP/byte thì chi phí tính toán gần như là "miễn phí" so với chi phí truyền dữ liệu!
 >
 > Với single decoding step, các hướng tối ưu là giảm memory bandwidth (bằng cách quantization, distillation), tăng FLOP/s (bằng FlashAttention [Dao et al., 2022] giúp tăng hiệu suất sử dụng phần cứng dù số phép toán không đổi), hoặc giảm FLOP (bằng Mixture-of-Experts [Fedus et al., 2022] sử dụng ít FLOP hơn cho mỗi token so với mô hình dense).
 >
@@ -605,7 +605,7 @@ Citations: `[Dao et al., 2022]`, `[Fedus et al., 2022]`, `• Communication Spee
 >
 > Speculative decoding dùng một smaller draft model để tạo guesses cho `N` token tiếp theo một cách rẻ. Sau đó các proposal tokens này được truyền song song vào main generator để thẩm định, được mô tả chi tiết trong công trình của [Xia et al., 2024]. Những token khớp với prediction của main generator được giữ lại, còn token không khớp bị discard.
 >
-> Tác giả nhấn mạnh decoding thường memory-bound. Speculative decoding có thể harm throughput ở low context, nhưng cải thiện cả throughput và latency ở long context lengths, theo kết quả MagicDec trong slide.
+> Chúng ta cần nhấn mạnh decoding thường memory-bound. Speculative decoding có thể harm throughput ở low context, nhưng cải thiện cả throughput và latency ở long context lengths, theo kết quả MagicDec trong slide.
 >
 > Khái niệm cần truyền tải là speculative decoding chuyển một phần công việc tuần tự thành công việc song song. Thay vì main model phải sinh từng token một, draft model đề xuất nhiều token trước. Main model sau đó kiểm tra các proposal này cùng lúc. Nếu các token dễ đoán, nhiều proposal được giữ lại và hệ thống tiết kiệm được nhiều bước decode tuần tự.
 >
@@ -658,13 +658,13 @@ Citations: `[Kwon et al., 2023]`, `[Zheng et= al., 2024]`, `[Juravsky et al., 20
 >
 > Với KV cache compression, mỗi hướng tác động vào một biến trong công thức size. Token dropping giảm effective context length, quantization giảm bytes, architectural modification giảm số Key/Value heads. Đây là lý do công thức size nên xuất hiện lặp lại trong visual để người xem thấy mỗi kỹ thuật giảm phần nào của bộ nhớ.
 >
-> Tổng kết lại, kịch bản tutorial gồm ba phần lớn: primitive generators sinh từng token một; meta-generators là cách gọi các generators; và efficient meta-generation giúp tối ưu hóa hệ thống phần cứng khi chạy các thuật toán đó.
+> Tổng kết lại, kịch bản chương trình gồm ba phần lớn: primitive generators sinh từng token một; meta-generators là cách gọi các generators; và efficient meta-generation giúp tối ưu hóa hệ thống phần cứng khi chạy các thuật toán đó.
 >
 > Để tối ưu hóa Meta-generation, chúng ta có nhiều chiến lược như chained, parallel, tree search hay refinement. Chúng ta phân bổ test-time compute để cải thiện performance và thiết kế dựa trên cost-performance trade-offs. Về mặt hệ thống, khả năng song song hóa (parallelizability) giúp giảm latency và tăng throughput. Cấu trúc câu nhắc và meta-generator quyết định phần lớn hiệu năng thực tế, vì vậy token budget chỉ là một sự đơn giản hóa.
 >
-> Hướng phát triển tương lai sẽ tập trung vào các hệ thống lai (hybrid systems) kết hợp song song và cải thiện tuần tự, học cách tự tìm kiếm (learning to search) với khả năng quay lui và tự sửa lỗi, tối ưu hóa agent để tương tác với môi trường bên ngoài, và tự động phân bổ compute linh hoạt. Slide kết thúc bằng lời khuyên: rất nhiều kết luận khoa học hiện nay chỉ dựa trên một vài tác vụ thử nghiệm và giới thiệu cuốn sách/tài liệu tham khảo "From Decoding to Meta-Generation: Inference-time Algorithms for Large Language Models" tại trang web cmu-l3.github.io/neurips2024-inference-tutorial.
+> Hướng phát triển tương lai sẽ tập trung vào các hệ thống lai (hybrid systems) kết hợp song song và cải thiện tuần tự, học cách tự tìm kiếm (learning to search) với khả năng quay lui và tự sửa lỗi, tối ưu hóa agent để tương tác với môi trường bên ngoài, và tự động phân bổ compute linh hoạt. Slide kết thúc bằng lời khuyên: rất nhiều kết luận khoa học hiện nay chỉ dựa trên một vài tác vụ thử nghiệm và giới thiệu tài liệu tham khảo "From Decoding to Meta-Generation: Inference-time Algorithms for Large Language Models" tại trang web cmu-l3.github.io/neurips2024-inference-tutorial.
 >
-> Câu `Science: many conclusions are based on a few tasks` cần được giữ trong voice vì nó là cảnh báo quan trọng của tác giả. Các kỹ thuật meta-generation cho thấy nhiều kết quả mạnh, nhưng mức độ tổng quát của kết luận vẫn phụ thuộc vào tasks, evaluator, generator và budget được thử nghiệm. Vì vậy phần looking ahead không chỉ là danh sách hướng nghiên cứu, mà còn là lời nhắc rằng lĩnh vực này cần thêm bằng chứng rộng hơn.
+> Câu `Science: many conclusions are based on a few tasks` cần được giữ trong voice vì nó là cảnh báo quan trọng của chúng ta. Các kỹ thuật meta-generation cho thấy nhiều kết quả mạnh, nhưng mức độ tổng quát của kết luận vẫn phụ thuộc vào tasks, evaluator, generator và budget được thử nghiệm. Vì vậy phần looking ahead không chỉ là danh sách hướng nghiên cứu, mà còn là lời nhắc rằng lĩnh vực này cần thêm bằng chứng rộng hơn.
 
 ---
 
@@ -725,4 +725,3 @@ Citations: `[Kwon et al., 2023]`, `[Zheng et= al., 2024]`, `[Juravsky et al., 20
 - Scene 4.3: phải có PagedAttention, RadixAttention, Hydragen, KV compression, token dropping, quantization, MQA/GQA, efficiency recap.
 - Scene 4.4: phải có recap/takeaways, looking ahead, survey paper và đúng URL thank-you.
 - Scene 5.1: panel chỉ dùng panelists từ slide 206 và ý chính từ subtitle panel; không gán quote nếu subtitle không rõ người nói.
-.

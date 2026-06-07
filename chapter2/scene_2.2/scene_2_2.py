@@ -31,6 +31,10 @@ class Scene2_2(MovingCameraScene):
         self.camera.background_color = "#111111"
 
         # =====================================================================
+        # LỜI THOẠI: "MAP decoding tìm chuỗi có xác suất cao nhất theo mô hình: arg max_x pθ[x].
+        # Hai thuật toán optimization phổ biến là greedy decoding và beam search, với các tài
+        # liệu tham khảo chính từ Freitag và Al-Onaizan năm 2017 và Shi cùng các cộng sự năm 2024."
+        # =====================================================================
         # BƯỚC 1: TIÊU ĐỀ PHÂN CẢNH CHÍNH & MỤC TIÊU MAP (00:00 - 00:30)
         # =====================================================================
         chapter_title = create_text("Tối ưu hóa trong Giải mã", font_size=24, color=BLUE_A)
@@ -104,6 +108,17 @@ class Scene2_2(MovingCameraScene):
         self.wait(1.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Greedy decoding chọn token có xác suất cao nhất tại từng bước: x_t = arg max_x pθ[x | x_<t].
+        # Nhưng giải mã tham lam không đảm bảo tìm được chuỗi có xác suất cao nhất. Slide minh họa một chuỗi greedy
+        # với các token xác suất là 0.80 ('an'), 0.02 ('American'), 0.05 ('singer'), và 1.0 ('<eos>') cho ra
+        # xác suất tích lũy chỉ là 0.0008. Trong khi đó, một chuỗi không tham lam bắt đầu bằng xác suất thấp hơn
+        # là 0.13 ('a'), tiếp nối bởi 0.90 ('singer'), 0.26 (','), và 0.80 ('songwriter') đạt xác suất tích lũy
+        # lên tới 0.0243, cao hơn giải pháp tham lam tới 30 lần!
+        #
+        # Chúng ta có thể thấy giải mã tham lam giống như một lựa chọn cục bộ: ở mỗi bước nó chỉ chọn token
+        # tốt nhất ngay lúc đó. Điều này tuy đơn giản và rẻ, nhưng không bảo đảm tối ưu toàn chuỗi, vì chuỗi tốt
+        # hơn có thể bắt đầu bằng một token không phải là token tốt nhất tại bước đầu tiên."
         # =====================================================================
         # BƯỚC 2: GIẢI MÃ THAM LAM (GREEDY DECODING) & TÍNH CẬN THỊ (01:45 - 03:00)
         # =====================================================================
@@ -441,6 +456,14 @@ class Scene2_2(MovingCameraScene):
 
 
         # =====================================================================
+        # LỜI THOẠI: "Beam search là thuật toán tìm kiếm theo chiều rộng có giới hạn (width-limited BFS). Ở mỗi
+        # bước, nó giữ lại một số nhánh tốt nhất theo độ rộng beam size K, rồi tiếp tục mở rộng. Với mô hình GPT2
+        # và beam size bằng 2, ở bước 1 chúng ta giữ lại 'an' (0.80) và 'a' (0.13). Ở bước 2, chúng ta tính toán
+        # và so sánh xác suất tích lũy của các nhánh con: 'a singer' (0.117), 'a songwriter' (0.104), 'an American'
+        # (0.016), và 'an artist' (0.008). Beam search sẽ giữ lại hai nhánh tốt nhất là 'a singer' và 'a songwriter',
+        # đồng thời cắt tỉa nhánh 'an American' - vốn bắt đầu bằng lựa chọn tham lam tốt nhất lúc trước!
+        # Lưu ý rằng khi beam size K = 1, beam search chính là giải mã tham lam."
+        # =====================================================================
         # BƯỚC 3: THUẬT TOÁN TÌM KIẾM CHÙM (BEAM SEARCH, K=2) (03:00 - 04:30)
         # =====================================================================
         beam_header = create_text("2. Tìm kiếm Chùm (Beam Search, K = 2)", font_size=13, color=YELLOW)
@@ -683,6 +706,11 @@ class Scene2_2(MovingCameraScene):
         self.wait(1.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Beam search đóng vai trò là điểm trung gian giữa giải mã tham lam và tìm kiếm cạn kiệt (exhaustive search).
+        # Tìm kiếm cạn kiệt sẽ phải mở rộng quá nhiều khả năng nên không thể khả thi với các mô hình ngôn ngữ lớn có
+        # từ vựng lên tới hàng chục hay hàng trăm nghìn token. Bằng cách giữ lại một số lượng chùm hữu hạn, beam search
+        # giúp chúng ta tìm kiếm qua nhiều nhánh hơn so với giải mã tham lam nhưng vẫn kiểm soát tốt chi phí tính toán."
         # =====================================================================
         # BƯỚC 5: TỔNG KẾT & QUY LUẬT CHÙM (05:00 - 05:30)
         # =====================================================================

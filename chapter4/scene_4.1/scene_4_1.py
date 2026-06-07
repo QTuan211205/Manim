@@ -45,9 +45,16 @@ def get_crossmark(color=RED, stroke_width=2.5):
 
 class Scene4_1(Scene):
     def construct(self):
+        # (Lời thoại đã được phân phối xuống từng phần cụ thể bên dưới)
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Phần hiệu năng (efficiency) chuyển dịch mối quan tâm từ thuật toán sang cấp độ hệ thống.
+        # Phạm vi nghiên cứu gồm các khái niệm cơ bản về sinh hiệu quả, cách tăng tốc bộ điều phối meta-generation,
+        # và tìm câu trả lời xem meta-generator nào có hiệu năng tối ưu nhất."
         # =====================================================================
         # BƯỚC 1: TIÊU ĐỀ PHÂN CẢNH CHÍNH
         # =====================================================================
@@ -70,6 +77,11 @@ class Scene4_1(Scene):
         )
         self.wait(3.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Hiệu năng hệ thống được đo lường bằng hai tiêu chí chính: độ trễ (latency) và thông lượng (throughput).
+        # Latency là khoảng thời gian người dùng phải chờ để nhận phản hồi; Throughput biểu thị số lượng yêu cầu hoàn thành
+        # trong mỗi giây. Latency, throughput và quality luôn tồn tại mối quan hệ đánh đổi trade-off sâu sắc."
         # =====================================================================
         # BƯỚC 1.2: ĐỘ TRỄ (LATENCY) VS THÔNG LƯỢNG (THROUGHPUT)
         # =====================================================================
@@ -113,6 +125,11 @@ class Scene4_1(Scene):
         )
         self.wait(1.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Phần cứng ảnh hưởng trực tiếp đến hiệu năng sinh qua ba yếu tố cốt lõi: dung lượng bộ nhớ trên thiết bị (VRAM),
+        # năng lực tính toán lý thuyết (FLOP/s), và băng thông truyền tải dữ liệu (Memory Bandwidth). Các điểm nghẽn (bottleneck)
+        # bao gồm: tải dữ liệu đầu vào/activation, tải trọng số mô hình (weights), thực thi tính toán, và giao tiếp giữa các GPU."
         # =====================================================================
         # BƯỚC 2: SƠ ĐỒ KHỐI PHẦN CỨNG (GPU CORE & VRAM BRIDGE)
         # =====================================================================
@@ -228,6 +245,14 @@ class Scene4_1(Scene):
         )
         self.wait(8.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Chúng ta mô hình hóa thời gian thực thi của một tác vụ bằng công thức: Time = max(FLOP / FLOP/s, Data / Bandwidth).
+        # Ví dụ với GPU NVIDIA H100, năng lực tính toán BF16 Tensor Core đạt tới 10^15 FLOP/s, trong khi băng thông bộ nhớ là 3.35x10^12 bytes/s.
+        # Tỷ số này cho thấy nếu cường độ số học trên 100 FLOP/byte thì chi phí tính toán gần như miễn phí so với truyền tải dữ liệu!
+        #
+        # Trạng thái Compute-bound nghĩa là thời gian chạy bị giới hạn bởi năng lực tính toán; còn Memory-bound nghĩa là processor phải chờ
+        # dữ liệu được truyền từ VRAM lên core. Phép tính max() cho thấy thời gian chạy bị chi phối bởi nhánh chậm hơn."
         # =====================================================================
         # BƯỚC 3.2: CÔNG THỨC THỜI GIAN TÍNH TOÁN CỦA PHÉP TOÁN
         # =====================================================================
@@ -402,6 +427,11 @@ class Scene4_1(Scene):
         self.wait(1.0)
 
         # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Ghép lô (batching) cực kỳ quan trọng vì nhiều thao tác giải mã thuộc nhóm memory-bound.
+        # Nếu đã mất công tải trọng số mô hình từ VRAM, chúng ta muốn tận dụng lượt tải đó để xử lý cho nhiều đầu vào cùng lúc.
+        # Nhờ vậy, batching mang lại khả năng xử lý song song gần như miễn phí cho các tác vụ bị nghẽn băng thông bộ nhớ."
+        # =====================================================================
         # BƯỚC 5.2: CƠ CHẾ GHÉP LÔ (BATCHING)
         # =====================================================================
         batch_title = create_text("Cơ chế Ghép lô (Batching) trong giải mã", font_size=13, color=YELLOW).move_to(UP * 2.5)
@@ -454,6 +484,11 @@ class Scene4_1(Scene):
         )
         self.wait(1.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "KV cache giải quyết vấn đề lặp lại phép tính bằng cách lưu trữ các vector Key và Value của tiền tố ở các bước trước.
+        # Giai đoạn Prefill tạo cache ban đầu cho prompt, còn giai đoạn Decode chỉ cần tính toán và bổ sung K, V của token mới sinh ra.
+        # Mặc dù KV cache giúp giảm thiểu lặp tính toán, bản thân nó cũng tiêu tốn rất nhiều VRAM, trở thành điểm nghẽn lớn khi batch size tăng cao."
         # =====================================================================
         # BƯỚC 6: CƠ CHẾ BẢN CHẤT CỦA KV CACHE
         # =====================================================================
@@ -662,6 +697,10 @@ class Scene4_1(Scene):
         )
         self.wait(1.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Tại bước giải mã đơn lẻ, các hướng tối ưu chính bao gồm: giảm băng thông bộ nhớ yêu cầu (thông qua quantization, distillation),
+        # tăng hiệu suất sử dụng FLOP thực tế (thông qua FlashAttention), hoặc giảm số lượng FLOP cần tính toán (thông qua Mixture of Experts)."
         # =====================================================================
         # BƯỚC 6.3: CÁC KỸ THUẬT TỐI ƯU HÓA SUY LUẬN (SLIDE 108)
         # =====================================================================

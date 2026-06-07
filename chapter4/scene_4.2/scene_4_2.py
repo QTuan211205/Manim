@@ -27,9 +27,16 @@ def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
 
 class Scene4_2(Scene):
     def construct(self):
+        # (Lời thoại đã được phân phối xuống từng phần cụ thể bên dưới)
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Quá trình sinh các chuỗi đầu ra dài (long outputs) bị nghẽn cổ chai bởi việc dự đoán
+        # tuần tự từng token một (sequential next-token prediction). Tuy nhiên, không phải token nào cũng khó dự đoán như nhau.
+        # Câu hỏi đặt ra là làm thế nào để chúng ta tốn ít thời gian hơn cho những token dễ đoán?"
         # =====================================================================
         # BƯỚC 1: TIÊU ĐỀ PHÂN CẢNH CHÍNH
         # =====================================================================
@@ -52,6 +59,16 @@ class Scene4_2(Scene):
         )
         self.wait(6.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Giải mã đầu cơ (Speculative decoding) sử dụng một mô hình nháp nhỏ hơn (smaller draft model)
+        # để đề xuất các dự đoán cho N token tiếp theo với chi phí rất rẻ. Sau đó, các proposal token này được truyền song song
+        # vào main generator để thẩm định, được mô tả chi tiết trong công trình của Xia năm 2024. Những token nào khớp với dự đoán
+        # của main generator sẽ được giữ lại, còn lại sẽ bị loại bỏ.
+        #
+        # Ý tưởng cốt lõi là speculative decoding chuyển một phần công việc tuần tự thành công việc song song.
+        # Thay vì mô hình chính phải sinh từng token một, mô hình nháp đề xuất trước một chuỗi. Mô hình chính sẽ kiểm tra
+        # các đề xuất này cùng một lúc. Nếu gặp các cụm từ dễ đoán, hệ thống sẽ tiết kiệm được rất nhiều bước decode tuần tự."
         # =====================================================================
         # BƯỚC 2: SỰ KẾT HỢP GIỮA DRAFT MODEL & TARGET MODEL
         # =====================================================================
@@ -550,6 +567,15 @@ class Scene4_2(Scene):
         )
         self.wait(1.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Chúng ta cần lưu ý rằng quá trình giải mã thường bị giới hạn bởi băng thông bộ nhớ (memory-bound).
+        # Giải mã đầu cơ có thể gây tổn hại cho thông lượng (throughput) ở ngữ cảnh ngắn (low context), nhưng cải thiện đáng kể
+        # cả throughput lẫn độ trễ (latency) ở ngữ cảnh dài (long context lengths), theo kết quả nghiên cứu MagicDec.
+        #
+        # Ở low context, chi phí quản lý (overhead) của draft model và bước kiểm chứng có thể làm thông lượng tệ đi.
+        # Nhưng ở ngữ cảnh dài, việc giải mã memory-bound trở nên cực kỳ nặng nề, khiến lợi ích của việc kiểm tra song song
+        # nhiều đề xuất nổi trội và rõ ràng hơn."
         # =====================================================================
         # BƯỚC 7: TỐC ĐỘ THỰC TẾ & ĐÁNH ĐỔI
         # =====================================================================

@@ -44,6 +44,8 @@ def get_crossmark(color=RED, stroke_width=2.5):
 
 class Scene3_3(Scene):
     def construct(self):
+        # (Lời thoại đã được phân phối xuống từng phần cụ thể bên dưới)
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
@@ -69,6 +71,20 @@ class Scene3_3(Scene):
         )
         self.wait(2.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Tree search giả định rằng quá trình tạo lập (generation process)
+        # có thể được phân rã thành tìm kiếm trên các trạng thái (states) và các bước chuyển
+        # (transitions). Khi sử dụng tree search, chúng ta phải lựa chọn các trạng thái s,
+        # các bước chuyển s -> s', điểm đánh giá v(s), và chiến lược duyệt cây như duyệt theo
+        # chiều rộng (BFS) hoặc duyệt theo chiều sâu (DFS).
+        #
+        # Sự khác biệt lớn nhất giữa việc tạo lập song song (parallel generation) và tìm kiếm
+        # trên cây (tree search) nằm ở thời điểm chúng ta sử dụng đánh giá (evaluation).
+        # Tạo lập song song thường chờ cho đến khi có toàn bộ chuỗi kết quả (full sequence)
+        # rồi mới dùng verifier hoặc reward model. Trong khi đó, tree search sử dụng điểm số
+        # đánh giá trực tiếp trên các trạng thái trung gian (intermediate states). Nhờ vậy,
+        # nó có thể dừng một nhánh xấu sớm, thực hiện quay lui (backtrack), hoặc phân bổ thêm
+        # tài nguyên (budget) cho các nhánh hứa hẹn."
         # =====================================================================
         # PHẦN 1: SỰ LÃNG PHÍ CỦA PHƯƠNG PHÁP SONG SONG & KHÁI NIỆM TREE SEARCH
         # =====================================================================
@@ -212,6 +228,12 @@ class Scene3_3(Scene):
         )
         self.wait(1.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Với các bài toán toán học và các tác vụ lập luận phức tạp, một phương pháp
+        # hiệu quả để chấm điểm cho từng bước trung gian là mô hình Process-based Reward Model (PRM).
+        # Mô hình này gán nhãn đúng hoặc sai cho từng bước lập luận trung gian cụ thể thông qua
+        # hàm đánh giá v(x, s_1, s_2, ..., s_t) -> [0, 1]. Phương pháp này được xây dựng dựa trên
+        # các nghiên cứu nền tảng của Uesato năm 2022, Lightman năm 2024 và Wang năm 2024."
         # =====================================================================
         # PHẦN 2: PROCESS-BASED REWARD MODEL (PRM)
         # =====================================================================
@@ -475,6 +497,12 @@ class Scene3_3(Scene):
         self.wait(1.0)
 
         # =====================================================================
+        # LỜI THOẠI: "Thuật toán Reward Balanced Search, viết tắt là Rebase, sử dụng điểm số
+        # đánh giá để phân bổ ngân sách tìm kiếm (exploration budget) cho các nút biên (frontier).
+        # Công thức này thực hiện phân bổ ngân sách theo phân phối softmax của tỷ số giữa v(s_i)
+        # và tham số nhiệt độ tau. Những nút có điểm số cao sẽ được cấp nhiều lượt tìm kiếm hơn,
+        # trong khi các nút có điểm số thấp sẽ nhận được ít hoặc thậm chí không được mở rộng."
+        # =====================================================================
         # PHẦN 4: GIẢI THUẬT REBASE (REWARD BALANCED SEARCH)
         # =====================================================================
         part4_title = create_text("4. Giải thuật Rebase (Reward Balanced Search)", font_size=13, color=BLUE_A)
@@ -593,6 +621,19 @@ class Scene3_3(Scene):
         self.wait(1.0)
 
         # =====================================================================
+        # LỜI THOẠI: "Sau khi hoàn thành tìm kiếm trên cây, chúng ta có thể thu thập các câu trả lời
+        # ứng viên để tiến hành tổng hợp (aggregation), ví dụ như thực hiện biểu quyết (voting).
+        # Ý tưởng cốt lõi ở đây là tree search tận dụng tối đa điểm số đánh giá trên các trạng thái
+        # trung gian, đồng thời hỗ trợ cả việc quay lui (backtracking) và khám phá (exploration).
+        # Tuy nhiên, các bộ điều phối tìm kiếm trên cây (tree-search meta-generators) đòi hỏi một
+        # môi trường tương thích, khả năng phân rã bài toán thành các trạng thái rõ ràng, và một
+        # tín hiệu thưởng (reward signal) đủ tốt.
+        #
+        # Chúng ta cũng cần lưu ý rằng tree search không phải lúc nào cũng là giải pháp phù hợp.
+        # Nếu một tác vụ không thể phân rã thành các trạng thái, nếu môi trường không cung cấp thông tin
+        # trung gian, hoặc nếu tín hiệu phần thưởng quá kém, tree search có thể không đem lại
+        # hiệu quả tương xứng với chi phí tính toán bỏ ra."
+        # =====================================================================
         # PHẦN 5: CÁC KỸ THUẬT DUYỆT CÂY & ỨNG DỤNG
         # =====================================================================
         part5_title = create_text("5. Các giải thuật duyệt cây & Ứng dụng thực tế", font_size=13, color=BLUE_A)
@@ -666,3 +707,4 @@ class Scene3_3(Scene):
             run_time=1.2
         )
         self.wait(1.0)
+        

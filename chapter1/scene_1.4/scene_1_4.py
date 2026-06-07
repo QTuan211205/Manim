@@ -27,6 +27,31 @@ def create_markup_text(text, font_size=24, font="Arial", **kwargs):
 
 class Scene1_4(Scene):
     def construct(self):
+        # =========================================================================
+        # VOICEOVER (Scene 1.4) [Trích từ full_video_script.md]
+        # Lời thoại:
+        #   - "Generator là bất kỳ thuật toán nào nhận một input sequence và language
+        #     model rồi sinh ra output sequence. Khi gọi một LLM API thông thường, ta
+        #     có thể xem đó là một generator."
+        # 
+        #   - "Meta-generator là chiến lược cấp cao hơn: gọi generator nhiều lần, dùng
+        #     external information, hoặc chọn output tốt nhất bằng một mô hình riêng.
+        #     Lý do dùng meta-generator là để generate more nhằm cải thiện task
+        #     performance, kết hợp nhiều mô hình như verifier hay retriever, và đưa
+        #     thông tin bên ngoài như tools hay feedback vào generation."
+        # 
+        #   - "Nội dung chính của chúng ta gồm ba phần: primitive generators,
+        #     meta-generators, và efficient meta-generation, tiếp theo là buổi thảo
+        #     luận panel. Chúng ta cũng có thể truy cập các tài nguyên trực tuyến để
+        #     xem slide, ví dụ code và danh sách tài liệu đọc thêm."
+        # 
+        #   - "Từ "primitive" ở đây không có nghĩa là các phương pháp này không quan
+        #     trọng. Chúng ta có thể hiểu chúng là các primitives theo nghĩa building
+        #     blocks – tức là những khối cơ bản để xây dựng các thuật toán
+        #     meta-generation phức tạp hơn. Vì thế, trước khi nói về meta-generator,
+        #     chúng ta phải hiểu cách một generator sinh ra một chuỗi đơn lẻ."
+        # =========================================================================
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
@@ -44,6 +69,10 @@ class Scene1_4(Scene):
 
         # =====================================================================
         # BƯỚC 2: DỰNG SƠ ĐỒ KHỐI GENERATOR (BỘ SINH CƠ BẢN g)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Generator là bất kỳ thuật toán nào nhận một input sequence và 
+        # language model rồi sinh ra output sequence. Khi gọi một LLM API thông thường, 
+        # chúng ta có thể xem đó là một generator."
         # =====================================================================
         # 1. Hộp Generator (g)
         gen_box = RoundedRectangle(width=2.8, height=1.1, color=BLUE_C, fill_color="#0e1b29", fill_opacity=0.9, corner_radius=0.08)
@@ -186,6 +215,12 @@ class Scene1_4(Scene):
 
         # =====================================================================
         # BƯỚC 4: CHUYỂN ĐỔI SANG META-GENERATOR (BỘ ĐIỀU PHỐI G)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Meta-generator là chiến lược cấp cao hơn: gọi generator nhiều lần, 
+        # dùng thông tin bên ngoài, hoặc chọn output tốt nhất bằng một mô hình riêng. 
+        # Lý do chúng ta dùng meta-generator là để sinh thêm nhằm cải thiện hiệu năng 
+        # của hệ thống sinh, kết hợp nhiều mô hình như verifier hay retriever, và đưa 
+        # thông tin bên ngoài như công cụ hoặc phản hồi vào quá trình sinh."
         # =====================================================================
         # 1. Biến đổi sơ đồ khối bên trái
         # Chuẩn bị hộp Evaluator (v) màu xanh lá
@@ -367,6 +402,15 @@ class Scene1_4(Scene):
 
         # =====================================================================
         # BƯỚC 5: ĐỀ CƯƠNG CHI TIẾT LOẠT VIDEO (SỰ KIỆN KẾT THÚC CHƯƠNG I)
+        # VOICEOVER [Trích từ full_video_script.md]
+        # Lời thoại: "Nội dung chính của chúng ta gồm ba phần: primitive generators, 
+        # meta-generators, và efficient meta-generation, tiếp theo là buổi thảo luận panel. 
+        # Chúng ta cũng có thể truy cập các tài nguyên trực tuyến để xem slide, ví dụ code 
+        # và danh sách tài liệu đọc thêm. Từ 'primitive' ở đây không có nghĩa là các 
+        # phương pháp này không quan trọng. Chúng ta có thể hiểu chúng là các primitives 
+        # theo nghĩa building blocks – tức là những khối cơ bản để xây dựng các thuật toán 
+        # meta-generation phức tạp hơn. Vì thế, trước khi nói về meta-generator, chúng ta 
+        # phải hiểu cách một generator sinh ra một chuỗi đơn lẻ."
         # =====================================================================
         outline_title = create_markup_text("ĐỀ CƯƠNG CHI TIẾT LOẠT BÀI HỌC", font_size=20, color=BLUE_A)
         outline_title.move_to(UP * 2.5)

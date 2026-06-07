@@ -36,6 +36,32 @@ def source_arrow(left, right, color=BLUE_B, stroke_width=3, buff=0.04, tip_ratio
 
 class Scene1_1(Scene):
     def construct(self):
+        # =========================================================================
+        # VOICEOVER (Scene 1.1) [Trích từ full_video_script.md]
+        # Lời thoại:
+        #   - "Chúng ta bắt đầu với chủ đề chính của video hôm nay: các thuật toán
+        #     sinh đầu ra bằng mô hình ngôn ngữ, đặc biệt là các thuật toán
+        #     meta-generation cho mô hình ngôn ngữ lớn (LLM). Lý do chủ đề này quan
+        #     trọng là vì hiện nay, chúng ta đang tìm cách dùng thêm năng lực tính
+        #     toán tại thời điểm chạy (test-time compute) – tức là sau khi mô hình đã
+        #     được huấn luyện – để cải thiện chất lượng của toàn bộ hệ thống tạo văn
+        #     bản."
+        # 
+        #   - "Mô hình ngôn ngữ có thể hỗ trợ nhiều tác vụ nếu tác vụ đó được biểu
+        #     diễn dưới dạng sinh một chuỗi tuần tự: từ việc giải các bài toán Olympic
+        #     phức tạp cho tới viết mã nguồn thực tế. Vì thế, chúng ta sẽ tập trung
+        #     vào câu hỏi: khi đã có một mô hình ngôn ngữ, chúng ta nên gọi nó, điều
+        #     khiển nó, và kết hợp nó với các thành phần khác như thế nào để sinh ra
+        #     kết quả tốt nhất?"
+        # 
+        #   - "Chúng ta cũng đặt chủ đề này trong bối cảnh các thuật toán suy luận
+        #     (inference algorithms) và hệ điều hành LLM (LLM OS). Điều này có nghĩa
+        #     là, chúng ta không chỉ xem mô hình ngôn ngữ như một bộ dự đoán token đơn
+        #     lẻ, mà xem nó như một thành phần trong một hệ thống sinh hoàn chỉnh: nơi
+        #     hệ thống có thể gọi mô hình nhiều lần, dùng công cụ bổ trợ, dùng bộ đánh
+        #     giá (evaluators), và quyết định cách tiêu compute tại thời điểm sinh."
+        # =========================================================================
+
         self.camera.background_color = "#111111"
 
         grid = NumberPlane(
@@ -50,6 +76,15 @@ class Scene1_1(Scene):
         )
         self.add(grid)
 
+        # =========================================================================
+        # VOICEOVER (00:00 - 01:00) [Trích từ full_video_script.md]
+        # Lời thoại: "Chúng ta bắt đầu với chủ đề chính của video hôm nay: các thuật toán 
+        # sinh đầu ra bằng mô hình ngôn ngữ, đặc biệt là các thuật toán meta-generation cho 
+        # mô hình ngôn ngữ lớn (LLM). Lý do chủ đề này quan trọng là vì hiện nay, chúng ta 
+        # đang tìm cách dùng thêm năng lực tính toán tại thời điểm chạy (test-time compute) 
+        # – tức là sau khi mô hình đã được huấn luyện – để cải thiện chất lượng của toàn bộ 
+        # hệ thống tạo văn bản."
+        # =========================================================================
         # Slide 1: title, presenters, date.
         title = create_text("Beyond Decoding", font_size=38, color=BLUE_B, weight=BOLD)
         subtitle = create_text(
@@ -82,6 +117,7 @@ class Scene1_1(Scene):
             run_time=1.0,
         )
 
+        # (Lời thoại tiếp tục phần giới thiệu và tầm quan trọng của test-time compute)
         # Slides 2-3: today's talk and why test-time compute matters.
         talk_box = RoundedRectangle(
             width=6.2,
@@ -156,6 +192,7 @@ class Scene1_1(Scene):
             self.play(FadeIn(token, shift=RIGHT * 0.12), run_time=0.25)
         self.wait(1.2)
 
+        # (Lời thoại tiếp tục giải thích vì sao test-time compute giúp tối ưu hóa hiệu năng)
         why_title = create_text("Why?", font_size=19, color=YELLOW, weight=BOLD)
         why_text = create_text(
             "Use test-time compute\nto improve performance",
@@ -190,6 +227,14 @@ class Scene1_1(Scene):
         self.play(Flash(moving_dot, color=YELLOW, flash_radius=0.28), run_time=0.7)
         self.wait(2.0)
 
+        # =========================================================================
+        # VOICEOVER (01:00 - 01:30) [Trích từ full_video_script.md]
+        # Lời thoại: "Mô hình ngôn ngữ có thể hỗ trợ nhiều tác vụ nếu tác vụ đó được 
+        # biểu diễn dưới dạng sinh một chuỗi tuần tự: từ việc giải các bài toán Olympic 
+        # phức tạp cho tới viết mã nguồn thực tế. Vì thế, chúng ta sẽ tập trung vào câu hỏi: 
+        # khi đã có một mô hình ngôn ngữ, chúng ta nên gọi nó, điều khiển nó, và kết hợp nó 
+        # với các thành phần khác như thế nào để sinh ra kết quả tốt nhất?"
+        # =========================================================================
         # Slide 4: language-model tasks are sequence-generation tasks.
         self.play(
             FadeOut(title_group),
@@ -236,6 +281,15 @@ class Scene1_1(Scene):
                 self.play(FadeIn(token, shift=RIGHT * 0.1), run_time=0.18)
         self.wait(2.0)
 
+        # =========================================================================
+        # VOICEOVER (01:30 - 02:00) [Trích từ full_video_script.md]
+        # Lời thoại: "Chúng ta cũng đặt chủ đề này trong bối cảnh các thuật toán 
+        # suy luận (inference algorithms) và hệ điều hành LLM (LLM OS). Điều này có nghĩa là, 
+        # chúng ta không chỉ xem mô hình ngôn ngữ như một bộ dự đoán token đơn lẻ, mà xem nó 
+        # như một thành phần trong một hệ thống sinh hoàn chỉnh: nơi hệ thống có thể gọi 
+        # mô hình nhiều lần, dùng công cụ bổ trợ, dùng bộ đánh giá (evaluators), và quyết 
+        # định cách tiêu compute tại thời điểm sinh."
+        # =========================================================================
         closing = create_text(
             "One viewpoint: generating an output sequence with a language model.",
             font_size=17,

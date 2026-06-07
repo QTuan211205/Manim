@@ -44,6 +44,8 @@ def get_crossmark(color=RED, stroke_width=2.5):
 
 class Scene3_4(Scene):
     def construct(self):
+        # (Lời thoại đã được phân phối xuống từng phần cụ thể bên dưới)
+
         # Thiết lập màu nền tối đặc trưng 3B1B
         self.camera.background_color = "#111111"
 
@@ -69,6 +71,19 @@ class Scene3_4(Scene):
         )
         self.wait(3.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Refinement và self-correction cải thiện một generation bằng feedback.
+        # Trong thực tế, chất lượng và nguồn của feedback là tối quan trọng. Chúng ta phân biệt
+        # phản hồi ngoại sinh (extrinsic feedback) và phản hồi nội tại (intrinsic feedback).
+        #
+        # Extrinsic feedback cung cấp thông tin bên ngoài tại inference time, ví dụ chương trình kiểm chứng
+        # bên ngoài như AlphaVerus. Slide liệt kê các thành công nhờ tích hợp verifiers, code interpreters,
+        # retrievers, cùng các công cụ trong môi trường agent. Phản hồi ngoại sinh mang lại thông tin mới
+        # chưa có trong mô hình để giúp phát hiện và định vị lỗi (detect/localize errors).
+        #
+        # Từ feedback trong refinement cần được giải thích rõ. Feedback extrinsic có thể cung cấp thông tin
+        # mới mà model không tự có, ví dụ một verifier hoặc code interpreter phát hiện lỗi."
         # =====================================================================
         # PHẦN 1: PHẢN HỒI NGOẠI SINH (EXTRINSIC FEEDBACK LOOP)
         # =====================================================================
@@ -295,6 +310,15 @@ class Scene3_4(Scene):
         self.wait(2.0)
 
         # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Intrinsic feedback (phản hồi nội tại) không sử dụng thông tin bên ngoài lúc inference.
+        # Phương thức phổ biến là prompted-based re-prompting trên chính LLM đó, ví dụ như Self-Refine.
+        # Kết quả của hướng đi này khá trái chiều: có phản hồi tích cực ở các tác vụ dễ đánh giá hoặc thiếu thông tin,
+        # nhưng với suy luận toán học thì kết quả rất hạn chế. Chúng ta cần nhấn mạnh phát hiện cốt lõi từ nghiên cứu
+        # của Huang rằng các mô hình ngôn ngữ lớn chưa thể tự sửa lỗi lập luận do feedback nội tại thường quá nhiễu.
+        #
+        # Feedback intrinsic dựa vào chính mô hình, nên rủi ro là mô hình vừa tạo lỗi vừa không đánh giá đúng lỗi của mình."
+        # =====================================================================
         # PHẦN 2: PHẢN HỒI NỘI SINH DẠNG PROMPT (SELF-REFINE & NOISY FEEDBACK)
         # =====================================================================
         part2_title = create_text("2. Phản hồi nội sinh dạng Prompt & Cạm bẫy Nhiễu phản hồi (Noisy Feedback)", font_size=13, color=BLUE_A)
@@ -502,6 +526,12 @@ class Scene3_4(Scene):
         )
         self.wait(2.0)
 
+        # =====================================================================
+        # LỜI THOẠI: "Ví dụ minh họa Generate TAYLORSWIFT cho thấy refinement ở dạng đơn giản: generator
+        # sinh từng ký tự, feedback chỉ ra ký tự sai, corrector sinh lại phần sai. Ví dụ này giúp chúng ta
+        # hiểu vì sao feedback localize error quan trọng: nếu biết sai ở đâu, quá trình sửa dễ hơn nhiều
+        # so với chỉ biết toàn bộ kết quả chưa tốt."
+        # =====================================================================
         # Generate "TAYLORSWIFT" Toy Example
         toy_title = create_text("Ví dụ minh họa: Sinh chuỗi \"TAYLORSWIFT\"", font_size=12, color=YELLOW).to_edge(UP, buff=1.0)
         self.play(FadeIn(toy_title), run_time=0.8)
@@ -558,6 +588,16 @@ class Scene3_4(Scene):
         self.play(FadeOut(letter_boxes), FadeOut(final_lbl), FadeOut(toy_title), run_time=0.8)
         self.wait(1.0)
 
+        # =====================================================================
+        # =====================================================================
+        # LỜI THOẠI: "Hướng thứ hai là học một bộ sửa lỗi nội tại (intrinsic trained corrector), ví dụ như
+        # Self-corrective learning. Quy trình tổng quát là thu thập các cặp dữ liệu (bad, better) thông qua
+        # việc sinh mẫu và đánh giá reward, sau đó cập nhật bộ sửa lỗi pθ(better | bad) trên dữ liệu đã thu thập,
+        # rồi lặp lại. Phương pháp này rất dễ bị sụp đổ hành vi (behavior collapse); thuật toán SCoRe của Kumar
+        # đã giải quyết bằng cách áp dụng regularization kết hợp học tăng cường (RL).
+        #
+        # Tóm lại: extrinsic feedback hoạt động tốt khi môi trường định vị được lỗi; prompted intrinsic cho
+        # kết quả lẫn lộn; trained intrinsic có triển vọng nhưng đòi hỏi chiến lược huấn luyện rất cụ thể."
         # =====================================================================
         # PHẦN 3: HUẤN LUYỆN TỰ SỬA LỖI (TRAINED CORRECTOR) & THUẬT TOÁN SCORE
         # =====================================================================

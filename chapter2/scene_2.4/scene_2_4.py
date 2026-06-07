@@ -90,6 +90,15 @@ class Scene2_4(MovingCameraScene):
 
 
         # =====================================================================
+        # LỜI THOẠI: "Bây giờ objective chuyển sang sampling. Ancestral sampling sinh từng
+        # token bằng cách lấy mẫu từ phân phối điều kiện của mô hình: y_t ~ pθ(· | x, y_<t).
+        # Điều này tương đương với sequence sampling theo tích các xác suất điều kiện.
+        #
+        # Vấn đề là greedy decoding gây repetition traps, còn ancestral sampling có thể
+        # gây incoherence do các token có xác suất thấp lại có quá nhiều cơ hội được sinh ra
+        # (do phân phối có đuôi nặng - heavy tail). Giải pháp của chúng ta là cắt bỏ phần đuôi
+        # này bằng cách sử dụng truncation sampling."
+        # =====================================================================
         # BƯỚC 1B: LẤY MẪU TỔ TIÊN & ĐUÔI NẶNG (HEAVY TAIL) (00:00 - 00:45)
         # =====================================================================
         step1_title = create_text("1. Lấy mẫu tổ tiên (Ancestral Sampling) & Đuôi nặng", font_size=13, color=BLUE_A)
@@ -272,6 +281,14 @@ class Scene2_4(MovingCameraScene):
         self.wait(0.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Temperature là một adapter khác: nó không cắt đuôi mà rescale logits
+        # bằng công thức softmax chia cho tau. High tau (>= 1) tăng tính đa dạng nhưng dễ incoherent;
+        # low tau (< 1) tăng tính mạch lạc (coherent) nhưng dễ bị lặp (repetitive).
+        #
+        # Lưu ý rằng Temperature không quyết định token nào bị cắt, mà chỉ rescale logits trước
+        # khi lấy mẫu. Vì vậy trong visual, temperature được thể hiện bằng phân phối trở nên
+        # peaked hơn hoặc gần uniform hơn, còn truncation thì được thể hiện bằng vùng token được giữ lại."
         # =====================================================================
         # BƯỚC 2: NHIỆT ĐỘ (TEMPERATURE SAMPLING) (00:45 - 01:30)
         # =====================================================================
@@ -502,6 +519,15 @@ class Scene2_4(MovingCameraScene):
 
 
         # =====================================================================
+        # LỜI THOẠI: "Truncation sampling chọn threshold xác suất ở mỗi time step. Slide 55
+        # liệt kê: Top-k, Top-p, epsilon (giữ token có prob >= epsilon), eta, và Min-p.
+        # Khi so sánh prefix 'Taylor Swift' và 'My name' ở các slide 56-58, chúng ta thấy Top-k=5
+        # luôn giữ cố định số lượng token, trong khi Top-p=0.9 tự co giãn theo tổng xác suất tích lũy.
+        #
+        # Khi giải thích Top-k và Top-p, cần nhấn mạnh sự khác biệt về threshold. Top-k luôn giữ đúng
+        # k token có xác suất cao nhất, nên nó không tự thích nghi với hình dạng phân phối. Top-p dùng
+        # cumulative probability, nên vùng được giữ có thể co giãn linh hoạt theo phân phối."
+        # =====================================================================
         # BƯỚC 3: TRUNCATION SAMPLING (TOP-K vs. TOP-P) (01:30 - 02:30)
         # =====================================================================
         step3_title = create_text("3. Cắt đuôi phân phối: Top-k vs. Top-p (Nucleus)", font_size=13, color=BLUE_A)
@@ -709,6 +735,13 @@ class Scene2_4(MovingCameraScene):
         self.wait(0.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Phần code trong slide 61 minh họa các thuật toán: greedy dùng argmax; ancestral
+        # lấy mẫu trên toàn bộ vocab; Top-k chọn k giá trị hàng đầu; Top-p sắp xếp logits giảm dần rồi tính
+        # cumsum dưới p; epsilon lọc theo ngưỡng cứng; temperature điều phối qua logits/temp trước khi softmax;
+        # và cuối cùng dùng random.choices để lấy mẫu token. Slide 62 cũng giới thiệu cách dùng framework vLLM
+        # và HuggingFace. Chúng ta kết thúc bằng ba lý do dẫn đến hiện tượng heavy-tail: under-training,
+        # tính chất mode-seeking của cross-entropy loss, và low-rank constraints của output layer."
         # =====================================================================
         # BƯỚC 4: BẢNG MÃ PYTHON IMPLEMENTATION (02:30 - 03:00)
         # =====================================================================

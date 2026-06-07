@@ -67,6 +67,15 @@ class Scene2_5(Scene):
         self.wait(2.0)
 
         # =====================================================================
+        # LỜI THOẠI: "Sampling adapter nhận phân phối token pθ(. | x) và điều chỉnh lại xác suất.
+        # Truncation và temperature là adapters, nhưng bảng phân loại của chúng ta còn liệt kê nhiều
+        # phương pháp khác như typical sampling, epsilon, eta, Mirostat, basis-aware sampling,
+        # contrastive decoding, DExperts, inference-time adapters và proxy tuning.
+        #
+        # Với sampling adapters, chúng ta cần hiểu rằng adapter không thay thế language model. Nó nhận
+        # phân phối từ model và re-adjust probabilities trước khi chọn token. Vì vậy các kỹ thuật
+        # đều có thể được trực quan hóa như các lớp biến đổi đặt sau phân phối gốc pθ."
+        # =====================================================================
         # PHẦN 1: SAMPLING ADAPTERS & CONTRASTIVE DECODING
         # =====================================================================
         part1_title = create_text("1. Bộ điều chỉnh lấy mẫu & Giải mã tương phản (Contrastive Decoding)", font_size=13, color=BLUE_A)
@@ -343,6 +352,18 @@ class Scene2_5(Scene):
         self.wait(2.0)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Constrained decoding xuất hiện khi chúng ta nhúng LLM vào hệ thống lớn hơn và
+        # cần output có cấu trúc, ví dụ JSON. Prompt yêu cầu format thông tin Taylor Swift theo schema
+        # name: string, birth year: int, nhưng output tự do của LLM không khớp JSON schema.
+        #
+        # Với constrained decoding, khái niệm cốt lõi là state machine biến schema thành tập token
+        # hợp lệ tại mỗi bước. Nếu token không đưa hệ thống sang state hợp lệ, token đó bị filter khỏi
+        # next-token distribution. Đây là cách ép LLM giao tiếp với hệ thống bằng structured outputs."
+        #
+        # "Cách làm gồm hai bước: compile schema thành state machine, rồi filter next-token distribution
+        # để chỉ giữ token hợp lệ. Khi state machine yêu cầu dấu {, token khác bị loại; khi đang trong
+        # trường name, chỉ token phù hợp mới được đi tiếp. Nhờ vậy chuỗi cuối cùng sẽ thành cấu trúc JSON chuẩn."
         # =====================================================================
         # PHẦN 2: GIẢI MÃ RÀNG BUỘC (CONSTRAINED DECODING)
         # =====================================================================
@@ -708,6 +729,10 @@ class Scene2_5(Scene):
         self.wait(2.0)
 
         # =====================================================================
+        # LỜI THOẠI: "Constrained decoding có side effects: có thể speed up generation (tăng tốc độ sinh)
+        # do tự động điền các đoạn mã chỉ có một lối đi hợp lệ, nhưng cũng có thể reduced performance (giảm hiệu năng)
+        # do ép buộc ranh giới token không tự nhiên."
+        # =====================================================================
         # BƯỚC MỚI: TÁC DỤNG PHỤ CỦA CONSTRAINED DECODING (Slide 82)
         # =====================================================================
         side_effects_title = create_text("Tác dụng phụ của Giải mã ràng buộc", font_size=13, color=BLUE_A)
@@ -767,6 +792,11 @@ class Scene2_5(Scene):
         self.wait(1.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Token healing xử lý trường hợp templated generation ép boundary không tự nhiên,
+        # ví dụ 'The url is http:' rồi đến '://'. Token healing rewinds tokenizer và enforce untokenized text
+        # như prefix cho token tiếp theo. Một giải pháp thay thế khác trong slide là tokenizer regularization
+        # trong lúc huấn luyện."
         # =====================================================================
         # PHẦN 3: LỆCH RANH GIỚI TOKEN & CHỮA LÀNH (TOKEN HEALING)
         # =====================================================================
@@ -942,6 +972,11 @@ class Scene2_5(Scene):
         self.play(Write(regularization_note), run_time=1.2)
         self.wait(8.0)  # Kết luận ranh giới chữa lành hoàn chỉnh
 
+        # =====================================================================
+        # LỜI THOẠI: "Tóm tắt lại phần primitive generators: chúng ta có hai góc nhìn về decoding là
+        # optimization và sampling; chúng ta có trade-off giữa diversity và coherence; và constrained decoding
+        # giúp ép buộc cấu trúc lên đầu ra LLM. Đây chính là những viên gạch nền móng cho các phương pháp sinh
+        # văn bản hiện đại."
         # =====================================================================
         # KẾT THÚC VIDEO (Bổ sung FadeOut sub_title để màn hình đen hoàn toàn)
         # =====================================================================

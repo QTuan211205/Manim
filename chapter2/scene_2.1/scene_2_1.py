@@ -77,6 +77,10 @@ class Scene2_1(MovingCameraScene):
         self.camera.background_color = "#111111"
 
         # =====================================================================
+        # LỜI THOẠI: "Trong primitive generators, chúng ta bắt đầu với token-level
+        # generation. Auto-regressive language modeling dùng causal language model,
+        # định nghĩa một phân phối có điều kiện trên token tiếp theo: pθ[x_t | x_<t]."
+        # =====================================================================
         # BƯỚC 1: TIÊU ĐỀ PHÂN CẢNH CHÍNH & VOCABULARY GRID (00:00 - 00:30)
         # =====================================================================
         chapter_title = create_text("CHƯƠNG II: BỘ SINH CƠ BẢN", font_size=24, color=GREEN_A)
@@ -409,6 +413,10 @@ class Scene2_1(MovingCameraScene):
         self.wait(0.5)
 
         # =====================================================================
+        # LỜI THOẠI: "Ở mỗi bước decoding, mô hình nhìn prefix x_<t và đưa ra
+        # phân phối cho token kế tiếp. Thuật toán decoding ở cấp token chủ yếu
+        # quan tâm đến việc chọn token tiếp theo như thế nào."
+        # =====================================================================
         # BƯỚC 2A: MẶT NẠ NHÂN QUẢ (CAUSAL ATTENTION MASK) (02:00 - 02:50)
         # =====================================================================
         step2a_title = create_text("Mặt nạ nhân quả (Causal Mask) chặn nhìn trộm tương lai", font_size=13, color=BLUE_A)
@@ -734,6 +742,13 @@ class Scene2_1(MovingCameraScene):
 
 
         # =====================================================================
+        # LỜI THOẠI: "Khi trực quan hóa phần này, điều quan trọng là chúng ta thấy
+        # sự khác biệt giữa language model và decoding algorithm. Language model cung cấp
+        # phân phối xác suất cho token tiếp theo; decoding algorithm mới là quy
+        # tắc quyết định lấy token nào từ phân phối đó. Cùng một mô hình có thể
+        # được dùng với greedy decoding, beam search, sampling, hoặc constrained
+        # decoding."
+        # =====================================================================
         # BƯỚC 3: VÒNG LẶP TỰ HỒI QUY 4 BƯỚC (02:50 - 04:10)
         # =====================================================================
         step3_title = create_text("Vòng lặp giải mã tự hồi quy qua 4 bước sinh liên tục", font_size=13, color=BLUE_A)
@@ -896,6 +911,12 @@ class Scene2_1(MovingCameraScene):
 
 
         # =====================================================================
+        # LỜI THOẠI: "Cây lựa chọn ở slide 'Decoding is search' cho thấy vì sao vấn
+        # đề này không chỉ là lấy một token rồi dừng. Một lựa chọn local ở bước hiện tại
+        # sẽ thay đổi prefix, và prefix mới lại tạo ra phân phối mới cho bước sau.
+        # Do đó thuật toán decoding phải nối các lựa chọn local thành một sequence
+        # cuối cùng theo objective đã chọn."
+        # =====================================================================
         # BƯỚC 4: BÙNG NỔ TỔ HỢP CỦA KHÔNG GIAN TÌM KIẾM (04:10 - 04:50)
         # =====================================================================
         step3_title_new = create_text("Sự bùng nổ tổ hợp cấp số nhân của cây quyết định", font_size=13, color=BLUE_A)
@@ -1035,6 +1056,12 @@ class Scene2_1(MovingCameraScene):
         self.wait(0.5)
 
 
+        # =====================================================================
+        # LỜI THOẠI: "Vì mỗi time-step đều yêu cầu một lựa chọn, decoding có thể
+        # được xem như search. Nhưng search để làm gì? Objective là gì? Và làm thế
+        # nào các lựa chọn cục bộ dẫn đến objective đó? Phần tiếp theo chia primitive
+        # generators thành ba hướng: optimization, sampling, và constrained
+        # generation hoặc structured outputs."
         # =====================================================================
         # BƯỚC 5: BA NHÓM MỤC TIÊU GIẢI MÃ CHÍNH (04:50 - 05:30)
         # =====================================================================
