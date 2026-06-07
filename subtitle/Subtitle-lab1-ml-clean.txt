@@ -1,0 +1,2119 @@
+All right.
+
+So let's get started.
+
+Um So we're still having more people come in and I think it will be pretty full by the end.
+
+Um Today, we are very excited to give a tutorial on L OS and inference algorithms and specifically meta generation algorithms for large language models.
+
+So at its core, today's tutorial is about algorithms for generating outputs with a language model.
+
+And so why should you be as excited and as interested in this topic?
+
+Um as, as we all are?
+
+Well, a lot of people in the field right now are thinking very hard about how we can use compute at test time after a language model has been trained in order to improve the performance of the generation system.
+
+And it's actually exactly this will be the topic of today's tutorial.
+
+And also language models themselves are just incredibly exciting.
+
+It seems like every day they have some new capability ranging from solving Olympiad problems to writing really complex code in your code base.
+
+And essentially anything that you could frame as um any task that you could frame as generating a sequence language models might be able to help you with And when we think about the progress in language models, we can think about it from the perspective of scale.
+
+So the first wave of scale was centered around scaling the amount of computation that is used to pretrain a model.
+
+So here's a really famous result from opening I and what they show is that as you increase the amount of compute that's used to pretrain a language model, which is related to the size of the model as well as the number of tokens that the model is trained on the performance of the model predictably improves in terms of Teslas.
+
+And so this is really exciting.
+
+But since then, at least so far, this hasn't been sufficient to get these language models to perform all the tasks that we want them to.
+
+So there's been a second wave focused on what's called post training.
+
+And here's an example where you, for instance, collect as many input output pairs as you can and then you fine tune the language model on them and it can do better at these tasks and even generalize to new ones.
+
+And so this has led to these incredibly flexible, incredibly useful assistance that many of you may have used.
+
+But similarly, at least so far, this hasn't proven sufficient for all of the tasks that people want to use language models for.
+
+And so currently, the field is undergoing a kind of third shift and it's focused on test time scaling.
+
+So here we take a model that's already trained and we want to design methods that can improve its performance at test time or inference time or generation time.
+
+And so here's a really stunning result recently from open A I.
+
+And you can see that they've developed some method where here on the X axis, they're increasing the amount of test time compute and on the Y axis, they're seeing these improvements in this pretty difficult mathematical reasoning benchmark.
+
+And so how might this be possible?
+
+Well, when you think about it, these language models um are kind of token generators and you can increase the amount of computation that you're using by just generating more with them.
+
+I mean, after all, when you generate one token, you're doing a feed forward pass through a neural network and that is in some sense spending computation.
+
+And so here's a really influential method called chain of thought and they simply ask the model to generate these intermediate thought tokens which are shown in green.
+
+And it turns out that although this might sound simple, it can have a kind of profound effect on how these models scale on different tasks.
+
+So for example, on the right hand side, um you can see that if you just use standard prompting, which is asking the model to answer directly.
+
+The models didn't seem to do too well on these kind of reasoning style tasks.
+
+However, if you use this intermediate thought, now the scaling behavior completely changes.
+
+Second, you can just call these generators multiple times.
+
+So here's a famous example called alpha code.
+
+And here they were trying to generate uh programs.
+
+And you can see on the right hand side that at test time, they don't just have the model generate one output program.
+
+Instead they have it generate thousands or even millions of output programs and then they filter them and cluster them and eventually just consider a small set to be the output of the system.
+
+And this as well can have a huge impact on the success rate.
+
+So you can see here on the X axis as the number of samples is scaled up the pass rate um is increasing a lot for a wide range of model sizes.
+
+And we've seen these types of curves appearing in more and more domains recently ranging from mathematical reasoning to digital agents and even in these very flexible general purpose um uh instruction following models.
+
+And then third, another shift that's occurring in the field is moving from just a language model operating on its own to a more compound A I system where you have the language model.
+
+But now also things like a learned evaluation model, you might have the model calling out the tools like a calculator or a code interpreter.
+
+And so all of these things give you ways of potentially offloading some of the computation to these more reliable tools.
+
+And so today's tutorial will give you a conceptual framework for thinking about um how to bring these three things together into a generation system.
+
+And we'll look at some of the uh the common patterns and techniques that have been designed um for creating these generation algorithms and scaling them up.
+
+So what is a meta generator?
+
+Well, first a generator just refers to any algorithm that takes in an input sequence in a language model and gives you an output sequence.
+
+If you've ever used one of these LLM API S, you can think of this as being a generator.
+
+And so in the first part of the talk, we'll go over what are the kind of traditional algorithms for just generating one sequence with a language model, then we can use those algorithms and treat them as a black box.
+
+And we could design these higher level strategies for calling generators and incorporating external information like other models or tools.
+
+And so a really simple example is you could instead call your API multiple times and then select the best output with some other model that you have.
+
+And again, why would you want to do this?
+
+Well, if you design your meta generator correctly, we'll see that you can use it to improve task performance by just generating more and more.
+
+Um it gives you some way of um describing these systems that have multiple models and that incorporate information that's outside of the language model.
+
+So the tutorial is structured into three different parts.
+
+In the first part, we'll go over um primitive generators.
+
+So how you just generate one sequence from a language model?
+
+Then we'll talk about these higher level meta generation strategies for calling generators multiple times and incorporating external information.
+
+And then finally, we'll talk about a, an an extremely important aspect for scaling these up, which is efficiency.
+
+How do you generate quickly and efficiency efficiently and even take advantage of the particular form of some meta generators?
+
+Then we'll have a panel session at the end.
+
+So please be sure to stick around for the whole time in terms of the presenters.
+
+Um Matt who's a phd student at us.
+
+C will present the first part, then I'll come back and present the second part on Meta generation.
+
+Uh and Haley who did this work while at Luther A I and is now at Anthropic um will present the third part on efficiency.
+
+We're also incredibly honored to have this amazing panel we'll hear from be Chen from CMU Nha Ziri from A I two Rishab Gerwal from Deep Mines, and mcgill, Jacob Forrester from Oxford and Meta A I, Noam Brown from Open A I and Ilya Kulakov from Meta A I who's also part of the tutorial team will be the moderator.
+
+Um So this tutorial is ultimately based on a survey paper that was just published at TMLR.
+
+You can see it at the bottom here and all of the authors um shown here, um really contributed to everything in this tutorial.
+
+So all of the thanks goes to all the people shown here.
+
+We also have a website with all of the resources.
+
+You can see the slides.
+
+If you're sitting in the back of the room and the fonts, too small, you could open it up in your laptop.
+
+We also have code examples that we won't even have time to go into today as well as a pretty long reading list.
+
+So we really want it to be someplace that you go not only during the tutorial but even after for further study.
+
+So with that, I'll hand it off to Matt to talk about primitive generators.
+
+I'm Matthew Finlayson, I'm a phd student at US C and today I'll be talking to you about primitive generators.
+
+And when I say primitive here, uh I don't mean like simple, I guess these are simple methods.
+
+But what, what this primitive means is these are the primitives with which we're going to build these meta generation algorithms.
+
+These are kind of like the, the building blocks of um of generation with language models.
+
+OK.
+
+So let's see, somehow I've gone on to, there we go.
+
+Um Great.
+
+So primitive generators are the building blocks that we're going to use for these uh more and more complex, more sophisticated uh generation algorithms.
+
+So to start, let's talk a little bit about how um how token level generation works with auto regressive language models.
+
+So if you go to your favorite language model, api uh almost all of these language models are causal language models, which means they take an input sequence and they produce a probability distribution over what the vocabulary of the model, the vocabulary being the, the all the tokens that could come next in the sequence.
+
+And so based on this score that's assigned to each token by the language model, you have to choose one of these tokens and append it to the sequence and then autoregressively feed this um the sequence back into the language model, uh which will give you again a probability distribution over next tokens and see.
+
+So all of the generation algorithms I'll be talking about today are concerned with how do you choose the next token?
+
+Uh Basically, at each point in this decoding algorithm, you have, you're given a like a huge set of choices uh and some guidance from the language model in the, in the form of scores for which path you're going to take.
+
+And so this becomes basically a massive search problem.
+
+Uh one that's so huge that you can't exhaustively check every sequence.
+
+And so we have to basically come up with some kind of objective like what, what are we trying to do here?
+
+How do we make these choices to get a good generation out of our, out of our language model?
+
+So there's a few different ways of conceptualizing generation from language models.
+
+Uh One of the kind of the earliest and and historically, very popular ways of thinking about decoding is as an optimization problem where you want to maximize some score.
+
+Maybe it's the, the probability of the sequence.
+
+Then we're gonna talk a little bit about sampling, which is basically the the dominant method for uh primitive generators today.
+
+And then lastly, we'll talk a little bit about constrained generations.
+
+So what happens when you want to generate according to some kind of structural constraint in the outputs?
+
+All right.
+
+So let's just start with, with decoding as optimization.
+
+So kind of one of the the earliest and and for a long time, very popular way of decoding from language models was to try to maximize the probability of the output sequence from the language model.
+
+This is kind of a, I guess maybe a naive but like there is a very straightforward objective, you want to find the most likely continuation given the prefix.
+
+Um So a a and, and kind of like the, the first most obvious way of doing this is is greedy decoding where at each step during generation you just take the most, the highest scoring token, the most likely token.
+
+Um This is, this is for a long time.
+
+Uh I guess this is still a very popular way of generating from your language model.
+
+It's very straightforward.
+
+Um It doesn't guarantee you the most likely sequence.
+
+So um here we have our, our prefix Taylor Swift is A and the, the continuation, the most likely continuation at each step is former, followed by contestant and then followed by on.
+
+And it gives you this, uh you can basically score the probability of this continuation by multiplying the probabilities together.
+
+Um Unfortunately, this does not give you necessarily the most probable sequence because for instance, if you took singer, which is less probable at that second, at that first generation step, and then you decode greedily after that, you actually end up with a probability which is higher.
+
+So the basically the locally most likely token might not give you a globally most likely sequence.
+
+So for computer scientists here, you might recognize this as kind of like, oh that's just the greedy algorithm for.
+
+Uh and, and the more exact algorithm would be like some kind of breath first search or, or exhaustive search.
+
+Um Because we can't feasibly do that for a language model with tens or hundreds of thousands of tokens in its vocabulary.
+
+Uh kind of a middle ground here is to use beam search.
+
+So beam search is uh historically, very popular.
+
+What you do is you basically every generation step, you choose the top K most likely tokens and then you expand on, on these tokens, basically throwing away pruning your, your search tree.
+
+Uh So here we have a and the as the most likely next tokens, uh you expand both of them and then take the, the two most likely continuations which actually both come from the uh the, the branch and you continue on uh until you have generated a sequence.
+
+And, and this basically the, the bigger your beam size, the more likely you are to get the most likely sequence out of this um cool.
+
+And, and this kind of uh probability maxim maximization objective uh can be very effective, especially for closed ended tasks.
+
+You can see here that beam search outperforms greedy for all of these uh translation and question answering tasks.
+
+Uh And for other tasks like basically blue score can increase with, with your beam size.
+
+So it seems like this is a pretty good way of generating from language models.
+
+Uh Unfortunately, map is has a certain, has a few drawbacks and, and for that reason, it's actually not always, it's not actually that popular today.
+
+And, and so one of some of these uh kind of drawbacks from from probability maximization are as follows.
+
+So the first of these is repetition traps.
+
+So the, the model especially for older models will kind of fall into this um pattern where they, they generate very repetitive sequences.
+
+It here G BT two finds the word, the the phrase singer songwriter and it just loves this phrase and we will keep repeating it uh ad nauseam.
+
+Uh So people deal with these types of repetition traps in various ways.
+
+One is repetition penalty.
+
+So basically penalizing words you can see this in like open A is api uh you can also account for this during training.
+
+So Sean's work, actually, uh we tried out uh actually during training time discouraging the model from repeating tokens.
+
+The second pitfall we're going to talk about is uh short sequences.
+
+So because as the sequence grows, it monotonically decreases probability, uh you can end up with the most likely sequence at the end of the day being the empty sequence.
+
+Uh People have dealt with this by basically normalizing the probability of sequences by their length.
+
+This is not very well theoretically motivated, but it's kind of a stop gap in practice.
+
+And then the third reason pitfall of probability maximization is actually uh information theoretic argument about the most likely sequence.
+
+And I think this is actually one of the most interesting reasons why you should be aware when you're using probability maximization.
+
+And to do this, let's think about a kind of a thought experiment.
+
+Let's say you had a coin that was just slightly biased towards head and you flipped this coin 100 times.
+
+The most likely outcome from this sequence is actually 100 flips with heads.
+
+That's the most likely outcome.
+
+Uh But if you actually saw that in practice, you'd be, you might be a little bit surprised because the probability of heads is only slightly greater than the probability of tails.
+
+So this is an example of an outcome that's atypical and there's actually like an information theoretic concept of atypical where like the, yeah, the the most likely is not necessarily something that you would expect.
+
+And in terms of actual like linguistics, you can also think about when you speak, uh you're you're trying to convey information and the most likely sequence is actually going to contain the least amount of information.
+
+So at the end of the day, um there have been numerous studies have found that actually probability maximization isn't good unto itself.
+
+But in practice, approximate map.
+
+So greedy decoding and like uh narrow beam sizes usually works pretty well for for language models.
+
+So it's kind of uh this probability maximization may have looked like a good uh good choice, but maybe it did well for other reasons.
+
+So let's talk about some of those other reasons.
+
+Um So we're going to get into sampling now.
+
+So sampling is kind of the the dominant way of generating from language models these days.
+
+Here's an example from the together A I playground where you can see these uh parameters that you can play with.
+
+So right, immediately you see temperature top P and top K, these are all sampling methods for language models.
+
+So the the kind of the the basic the most simple uh sampling algorithm that you can use for a language model is called ancestral sampling, which is where you just trust the language model's probability distribution and you sample the next token according to that distribution.
+
+Uh And this, this is actually equivalent to sampling sequences directly from the language model.
+
+So the seq the language model defines an implicit probability distribution over sequences.
+
+This is equivalent to sampling directly from that probability distribution.
+
+So ancestral sampling is, is is not without its own drawbacks.
+
+So we saw with greedy decoding or other map methods, you you get a lot of repetition, ancestral kind of has this opposite problem where uh you get very diverse outputs, but they tend to be incoherent.
+
+They, they can kind of take random paths and, and end up not reading very well.
+
+And the, the, the reason for this is that it's the, the language model, probability probability distribution tends to assign too much probability to the tail of the distribution.
+
+So these low probability tokens, somehow the model is assigning too much probability to them.
+
+So even though each individual token doesn't have that much probability on it in aggregate, you end up being very likely to sample a low probability token.
+
+This is known as like a heavy tail on the distribution.
+
+So the, the, the sampling parameters that you saw on that API example, uh one of them was top K and the other ones are kind of similar to top k.
+
+And in that what they do is they chop off the tail of the distribution and make it so that you can only sample from the most likely tokens.
+
+So this kind of chopping off the tail uh is known as truncation sampling.
+
+And there are a plethora of truncation sampling methods.
+
+If I have a few listed here, they all have kind of a different heuristic for how to, how to choose that threshold below which you will truncate all the tokens.
+
+Uh and, and to kind of get an idea of why you might, you might need all these different heuristics.
+
+Uh Let's look at these two probability distributions.
+
+So one of the earliest truncation sampling methods, uh top K sampling is you just choose uh an integer and you only consider the top K tokens in the distribution.
+
+And no matter what the distribution looks like, you still, you always use this heuristic um oops sorry.
+
+Uh With top P on the other hand, uh you use the cumulative distribution and you basically mandate that the cumulative distribution of the ordered tokens doesn't add up more than P.
+
+So for instance, here is top P is 0.9 the sum of these top tokens is 0.9.
+
+Whereas with this distribution, the sum of the probabilities of all of these tokens is 0.9.
+
+And so you kind of get this dynamic choice of your uh threshold for truncation.
+
+And this, this has been shown to outperform simpler methods like top K and all of the other um soling methods that I've shown are, are basically variants of this.
+
+OK.
+
+So an alternative to truncation sampling which is also very popular is called temperature sampling.
+
+So what, what sampling of, what temperature does is instead of truncating the distribution, it just adjusts how peaky the distribution is.
+
+So you do this by basically adding a, a coefficient to the uh to the logits.
+
+And when you, after you take the soft max, that results if you have a high temperature, it makes the distribution more uniform.
+
+If you have a low temperature, then you get more peaky distribution.
+
+And if you uh if you set the temperature to be zero, what you end up with is greedy decoding, only the most likely token will have probability on it.
+
+And you can see this in this uh in this example, um you've probably heard enough of Taylor Swift recently, but all our examples are Taylor Swift.
+
+Uh So with temperature at 0.5 you see this very peaky distribution uh with higher temperatures, you see this very uniform distribution.
+
+And all of these uh sampling sampling algorithms are, are, are very simple.
+
+You just require maybe like one line of code to implement them.
+
+I have several of them implemented here.
+
+Uh You can check out our code uh to uh for, for reference implementations later.
+
+Uh And you probably don't even need to write that one line of code because most modern generation frameworks such as VLLM or hugging face, uh You can basically just pass the uh the sampling parameters directly to the, the generation function.
+
+OK.
+
+So kind of one of the big mysteries here uh in in decoding research is why the, the model puts too much probability on the tail of the distribution.
+
+There's a few different theories, a few different explanations.
+
+Uh One is under training.
+
+So the model just doesn't know what the true next token distribution should be.
+
+So it, it um if you trained it for longer, maybe this problem would go away.
+
+Um Another explanation is this behavior of the cross entropy loss function.
+
+So uh during training, the, if you underestimate the probability of a token, then you get a much larger penalty than if you overestimate it.
+
+So the model does better during training, if it, if it basically covers all the tokens that might come next, even if they, they won't actually uh the another kind of explanation this comes from my own research uh is that the, the model architecture itself puts constraints on what the model can output.
+
+And these constraints can also cause uh basically misalignment between the model's output distribution.
+
+Uh just because it can't express the, the correct distribution.
+
+All right.
+
+So we've seen a few different kind of uh ways of adjusting the output distribution of the model.
+
+These all kind of fall under this this framework of sampling adapters.
+
+So a sampling adapter is when you take the model distribution and you make some adjustment to the probabilities and um it's, you can also incorporate knowledge from outside of the model's distribution.
+
+So for instance, in contrastive decoding, you adjust the next token probability distribution by um basically adjusting it by an anti expert model.
+
+So a model, you have a model that you want to emulate the behavior of and you have a model that you don't want to emulate.
+
+And you combine those two distributions to, to move the distribution more towards the desirable model.
+
+Uh In our survey paper, we cover a ton of different sampling adapters.
+
+And so I recommend you take a look there, uh lots of them have different properties that are favorable for different types of tasks.
+
+All right.
+
+And uh now we're going to kind of go over the uh kind of the third part of this section which is constrained decoding.
+
+So when you're embedding a language model into a larger system, say into a kind of a larger program, you want the language model to be able to communicate with other parts of the program.
+
+And by nature, language models are trained to output natural language, which doesn't always play well with your Python program.
+
+So one thing that you can do here is you can constrain the language model to output something that the rest of your program can understand.
+
+For instance JSON, uh this is, you see this in a lot of uh API S where you have some type of JSON mode where you can specify a Json schema and the outputs of the model will have to adhere to that schema.
+
+And we're gonna get a little bit into how that works.
+
+OK.
+
+So here's our kind of example that we're gonna work through.
+
+Uh let's say you want to extract the name and birth year of a celebrity from some natural language.
+
+So you give the, the language model, this instruction to follow the schema and encode the information in the sentence Taylor Swift was born December 1319 89.
+
+So if you just feed this to a language model, you might get something like this where the information is now in a Json format.
+
+But it doesn't necessarily quite match the format that you wanted it to, to, to take.
+
+And uh for like a well trained model, maybe you would get it most of the time, but there's just that, that small rate of error when you're going to get something that doesn't match the schema.
+
+So how do we force the model to follow the schema?
+
+Well, one approach uh which is taken in a few different libraries such as guidance uh is to take the schema and compile it into some kind of parser.
+
+So in this case, we've taken the, the JSON schema and we've encoded it as a state machine and the state machine can tell you what the list of like valid next generations are.
+
+So for instance, here, when you start, there's only one valid generation, which is the open brace.
+
+So the model generates the, the open brace and then you get to the next state and there's kind of a AAA fork in the road here where it can either generate name or birth year.
+
+Uh It chooses to generate name and then it fills out what that name is.
+
+Um And then it chooses birth year.
+
+And, and here you can see that basically, if there's the, the model wants to generate things like the most likely tokens don't match the um don't match the JSON schema.
+
+So for instance, it wants to open a parenthesis or sorry, open, open quote.
+
+Um But by constraining the model to only generate integers at this point, you can get it to generate the correct output and eventually you get to the end and you have your valid JSON, even though you might be using a weak model like G BT two, suddenly it's able to follow this instruction to generate valid JSON.
+
+So uh this type of templated hybrid generation where you have a parser plus a language model can actually end up giving you speedups in performance.
+
+So if there's only one valid path, you can just automatically take that path.
+
+Um But it can also reduce the performance of your, of your model.
+
+And we'll see why.
+
+So templated generation can force these types of unnatural token boundaries.
+
+So for instance, if your template gives it this input, you might see something like this where the model generates like a space before the, the double forward slash.
+
+And that's because during training, the, the tokenizer has given the model examples of, of, of this kind of two token version, but it hasn't really seen this three token version during training.
+
+So uh so some language model uh constrained generation libraries do this thing called token healing where it rewinds the tokenizer and then enforces that the next token has to start with um this like the the remaining text.
+
+So you hear it, it basically eliminates the http S generation, but it selects the, the correct next token.
+
+Uh Another way you could fix this in a language model is during training, you could apply tokenizer regularization where you kind of randomize the way that the the tokenizer uh tokenizes the sequence during training.
+
+And this can make it more robust to kind of gas like this.
+
+All right.
+
+So to kind of summary, summarize what we've talked about here.
+
+Uh We've looked at basically the the building blocks for generation.
+
+These are the kind of the low level generation algorithms that you're going to use in your meta generation algorithms.
+
+There's kind of two ways to, to look at generation.
+
+Uh One is optimization.
+
+The other is sampling.
+
+Uh both have their uses most uh language models today that you see uh will use sampling.
+
+Uh And, and basically there's this diversity coherence tradeoff.
+
+When you're sampling, you can either be more greedy or you can be more diverse uh more uniform in your, in your distributions.
+
+And then thirdly, you can use uh kind of parsers or state machines to constrain your outputs in order to conform to structural constraints.
+
+So yeah, these are our building blocks and Sean will come back up here and talk a little bit more about meta generation.
+
+Thank you.
+
+OK.
+
+So um yeah, as Matt mentioned, now we'll move to meta generators which will kind of treat the algorithms that we just talked about as a black box.
+
+And these will be kind of higher level strategies for calling the generators as well as incorporating different types of external information.
+
+So let's think about like how we could formalize the goal that you might have when you're designing a generation system, you could say that your goal is to design a system that gives you acceptable sequences for some notion of acceptability.
+
+So let's say you're solving math problems, then you want your output to be correct.
+
+Um Or if you're deploying a chatbot, maybe you want the responses to be preferred by the humans that are reading it.
+
+And in some sense, we could think of the algorithms that we just saw as different ways of getting outputs that are probable according to a language model.
+
+But then there's this issue which is like what if there is a kind of misalignment, what if these outputs that we get are not actually acceptable for what we want.
+
+The the generator to be doing.
+
+So the techniques that I'll I'll talk about in a bit try to get at this with kind of two different underlying ideas.
+
+So one is that we can somehow incorporate information that is outside of the language model into the generation procedure.
+
+So one example of this is let's say you learn an evaluator model and your evaluator model will take in an output and it will actually approximate this notion of acceptability.
+
+Then uh oh yeah.
+
+And so these evaluator models, if you read through the literature can go through uh go by different names.
+
+So I'll try to use the term reward model throughout the talk.
+
+But if you read through papers, you'll see all of the different names listed here.
+
+And then second, you could think about like we don't just have to call the generator once we can actually keep calling it over and over.
+
+And in some sense, try to search for a good sequence.
+
+And for example, if we combine that with our evaluation model, we might eventually generate an output that our evaluation model says is acceptable.
+
+And now we have a good output from our generation system.
+
+So let's look at a concrete example.
+
+Um So here we want to solve this math problem, you don't have to read through the whole problem or solution.
+
+Um But we have the input X and we asked the model to generate um the solution Z and then finally an answer Y at the end.
+
+And let's look at what happens if we have an oracle verifier or evaluator model.
+
+So the oracle would tell us, you know, definitively is the answer to this um is the answer to this question, correct or not?
+
+Well, if we had that, we can actually design this pretty simple procedure.
+
+We could repeatedly ask the model to generate a solution and then generate an answer and then just stop if the, if the oracle says the answer is correct or not, and then you can just keep running this forever until you eventually get a correct answer.
+
+And it turns out if you do this with actual language models, um you can have this huge, huge impact on the number of problems that are solved.
+
+So this is showing for a variety of models.
+
+Um what happens if you run this procedure with more and more generations and you can see that some of the models are actually getting to 100% on this kind of difficult math benchmark.
+
+Now, I know what you're thinking.
+
+We don't usually have this oracle that tells us whether things are are good or not.
+
+And probably the strategy that I described in the previous slide is like the first thing you would think of, it's maybe the most naive kind of strategy you could use.
+
+And so in fact, there there have been other ways and other strategies developed and we formalize these using the term meta generation.
+
+So a meta generator takes in uh some input X and then it will also take in these sub generators that it's kind of calling to generate sequences.
+
+Um And then it takes in other parameters like other models like a reward model um as well as the number of tokens or number of sequences that you want to generate.
+
+And then the algorithm itself will design some strategy for combining all of these things such as the one we just saw on the previous slide.
+
+And you can kind of see that the the the previous algorithms are a kind of special case where you just provide the algorithm with a language model.
+
+Your strategies are things like you know which sampling adapter should you use?
+
+Should you use beam search or not?
+
+And your parameters are things like temperature and and beam width.
+
+So we're going to, we're going to go over four different um higher level strategies that have been developed.
+
+Uh These are called chaining parallel generation research and refinement or self correction.
+
+And then I'll briefly talk about um scaling meta generators and in particular like how you can choose a good configuration for a compute budget that you have.
+
+So the first pattern called chaining is kind of simple and intuitive.
+
+You basically take a generator, create some intermediate output and then call another generator and just keep doing this until you get some final output.
+
+So a motivating example is uh the chain of thought method that I talked about earlier.
+
+And you can kind of view this method as being a two part decomposition or two part chain.
+
+Where first we ask the um the generator to generate these intermediate thought tokens in green, then we call it again to finally generate an answer to the question.
+
+And again, this, this might seem like kind of simple, but there's been a lot of cool work uh since, since the chain of thought came out showing that like at an actual like pretty deep level, you can formally show that this increases the expressivity of the generation system.
+
+So some like takeaway intuitions are that like when you add in these thoughts, um you now enable this uh output length that is variable.
+
+And you can think of this as being similar to a tape in a turning machine or a form of memory that the model now has access to.
+
+You could also think of this again as this two part decomposition.
+
+And then think about like what if you had more uh more steps or if you incorporated um some external tool.
+
+So here's an example of that called self ask.
+
+And they essentially frame a generation as um they first generate this query, then they call an external tool.
+
+So in this case, a search engine, the search engine comes back with a response and then you can repeat the process and eventually get an answer at the end, you can kind of view these uh sequential um uh uh meta generators as a kind of program where the outer level program is your meta generator and then your inner level calls and calls the tools and things like that um are these inner functions of the program.
+
+And this idea has actually come up in several different ways in the literature.
+
+Um So here's showing one called, demonstrate search predict programs.
+
+It's also known as language model cascades LLM programs.
+
+Um And yeah, so this, this idea pops up uh in different places.
+
+And then you could imagine like for whatever you're trying to solve, um you could design one of these chains.
+
+So it could be everything from rewriting an input before you perform your final generation.
+
+Um Or here's one from our work where we were generating these uh verified formal proofs and we broke it apart into a kind of three step process.
+
+OK.
+
+So chaining gives you this really natural way of decomposing generation and incorporating calls to like external functions or external tools or models.
+
+But if you kind of think about it, if you just run one of these chains uh once, then it's not really exploring the space of possible outputs.
+
+And so that kind of motivates the next uh meta generation pattern that I'll talk about uh which is called parallel generation.
+
+So, parallel generation again, fairly simple idea, you have your generator and now you call it um and instead of just generating one output, you generate an output, then you have some function which you call the aggregator.
+
+And that takes in these N outputs and produces the final output of the system.
+
+So these methods will vary based on your choice of the aggregator.
+
+Uh And I'll tell you about two that are really common and actually really effective in practice.
+
+So the first option is to just take the maximum.
+
+So here you assume that you have this uh uh reward model and the reward model gives you a score for each output sequence.
+
+So like you know, this one says two plus two equals five.
+
+So hopefully our reward model gets at a low score, this one says two plus two equals four.
+
+So it gets a high score and then we just take the maximum and that's the output.
+
+And so this goes by the name of best event or rejection sampling.
+
+And you can probably see that a really key part of it is this reward model.
+
+So let me just give you some flavor of how you train one of these reward models.
+
+Let's say you're solving these math problems.
+
+Then what you can do is you can generate a bunch of solutions, uh save the ones that have the correct answer and ones that have the incorrect answer.
+
+And then you essentially just train a classifier to classify whether a given output is correct or not.
+
+Sometimes you only have this uh preference based data.
+
+So you only know that one sequence is preferred over the other.
+
+You don't really have a notion of correctness.
+
+Um So you can also train a reward model to assign uh you know, high scores to things that are preferred and lower ones to things that aren't as preferred.
+
+And so training the reward model um obviously has a lot of details and itself is a really interesting active area of research.
+
+Um So I'm not gonna go into further details here, but hopefully, this gives you some flavor of where this reward model comes from because it will be used in the later methods as well.
+
+So why would you want to do this best event uh procedure?
+
+Um It, it's kind of cool in some sense, what it's doing is it's approximating the search for the most acceptable uh sequence.
+
+And you can see this through this like two step argument.
+
+So in the first step, we're saying that by using N sequences, we're approximating the maximization over all possible sequences.
+
+And this is really good because this approximation will get better as you increase the number of samples.
+
+So as you scale up your, your inference compute, then in the second step, we can actually run into issues.
+
+Uh because what it's saying is that our reward model is actually approximating your notion of acceptability.
+
+And so what can happen is that um the best event can actually find outputs that get really high reward model scores but aren't actually kind of good outputs.
+
+And you can see this in practice and it could be kind of striking.
+
+Um So here's a really cool paper, uh one of the early papers doing this for the math problems.
+
+Um And so you can see as they increase the number of generations on the X axis, um their solve rate is going up, which is good.
+
+But then eventually the best event starts finding these outputs that are getting high scores from their reward model, but they aren't actually correct solutions to the uh mathematical problems.
+
+So another thing you could do is to use a different type of aggregation.
+
+And so another common one that's used is majority voting.
+
+It's also called self consistency.
+
+And here again, the idea is really intuitive.
+
+So let's say we're solving math problems.
+
+Um then we generate this initial sequence which is like a reasoning path and then we end in some answer and then majority voting says basically return the answer that occurs the most often, it's a really kind of intuitive idea, then you can incorporate your reward model into the uh majority voting.
+
+So what you can do is basically weight each vote by the reward model score.
+
+And so this is nice because it can break ties.
+
+Uh Like in the example here, if you have a really good reward model, it can also kind of favorably bias the voting procedure.
+
+Um so that you can do a bit better than if you just, you know, don't have the reward model.
+
+So in practice, these kinds of methods can have a huge impact on performance.
+
+Uh Here's an example on um this mathematical reasoning benchmark.
+
+And you can see that as the number of generations being scaled up on the X axis, uh the solve rate is uh is increasing.
+
+And then what's really interesting is like especially as you get to these later um higher inference budgets, you do see this gap opening up.
+
+So like the specific strategy that you use can actually make a difference.
+
+And in particular here, this weighted voting is actually doing better than the majority voting or the best event.
+
+So let's maybe try to think about like what is this way to vote in uh doing and why might it be a good thing to use and to do that, we can think about like what happens if I was to send the number of generations to infinity.
+
+So like if you had an infinite compute budget, what what would happen?
+
+So it turns out this is kind of cool result.
+
+You can show that the accuracy that you get with the wage voting would converge to uh the accuracy that's shown here.
+
+And so let me, let me step you through this.
+
+What it's saying is that it's the accuracy that you get if you were to sum over or marginalize out these intermediate reasoning paths before the final answer.
+
+And so this is a really nice intuition.
+
+It's essentially saying that like the weighted voting is taking into account all of the different paths that your, your model has to get into a particular um uh answer.
+
+And then you can also like stare at this for a bit and get kind of three nice takeaways.
+
+Uh So one question is like, if we keep generating more and more, will we kind of solve everything?
+
+Um In general, unfortunately not because this result is basically saying we'll converge to this accuracy that's shown here.
+
+Second, you can see when weighted voting is better than voting.
+
+And it's essentially when your reward model is kind of slightly better than your generator uh at assigning mass to a solution solutions that have correct answers.
+
+Oops.
+
+And then the third one is like, how can we possibly keep improving performance?
+
+Um Well, if you look at it, there's kind of two options, you can improve the performance of your reward model and or you can improve the uh the underlying generator that's generating these candidates.
+
+And so we'll see in the next part, how we can design a meta generator that actually causes majority voting to do better.
+
+Um But let me just briefly comment on this uh the reward model.
+
+So this itself is a very active and really interesting area of research.
+
+Uh Here's a kind of fun example where um they improve the reward model by actually using the techniques that I just told you about.
+
+So they use this chain of thought reasoning, they use parallel sampling and then they use this aggregation at the end.
+
+And so it's kind of a meta meta in the sense that like they're using these techniques to improve the reward model.
+
+And then you can use that reward model within um the majority voting itself.
+
+So the parallel meta generators um give you some way of exploring the space of outputs by generating full sequences.
+
+And in practice, this can actually lead to really large performance gains.
+
+However, these methods are ultimately bounded by um the quality of your evaluator and the generator model.
+
+So one insight is that you only use your reward model or your verifier kind of at the very end.
+
+And so possibly can we do better by somehow leveraging um uh the reward model at kind of intermediate stages of generation.
+
+And that motivates the next methods which are based on uh research.
+
+So research assumes that you decompose your generation process into this um uh search over like states and transitions.
+
+So in the case of the math problems, you might call your generator to give you multiple options for the first step of the solution, then you come up with some way and I'll tell you in a bit how of coming up with scores for each one of these uh these states.
+
+And then once you have the scores.
+
+You can like run a search algorithm to say, you know, pick the one with the highest score, choose that one to expand next and eventually get some uh full output.
+
+So in general, if you're going to try using research, you have to think about what are your states, uh what does it mean to transition from one state to the next?
+
+And then um how do you get these scores?
+
+And then what actual like search algorithm are you using?
+
+So let's look at a concrete example with the math problems again.
+
+So here we're going to generate one step of the solution at a time.
+
+And so our transitions are going to be pretty simple.
+
+We're basically just going to like append the next step to the previous steps and move through the tree in that way.
+
+So one key question is like, how do we score each node of the tree?
+
+And so for that, you can use what's called a process based reward model.
+
+So the reason it's called process based is instead of taking in the full solution, it'll just take in the solution uh generated so far.
+
+And then it's essentially trained to predict whether the solution is eventually correct.
+
+So you can see this as being like the expected return from your current state.
+
+Um And you can train these in different ways.
+
+So you could have humans uh try to annotate, you know, is this stuff correct?
+
+Or not.
+
+And this is done in some papers or you can actually generate a bunch with your model and get some approximation of, you know, whether the solution will eventually be correct from this current state that you're at.
+
+So then you have to design some research procedure for incorporating these scores.
+
+Uh Here's one that we designed recently and it's called reward balance search.
+
+And it uses a really intuitive idea.
+
+So it basically takes the uh the scores that you get from your reward model.
+
+And then the question is like, how do you decide what to explore next when you're doing the research?
+
+And so what it says is you want to allocate your exploration budget according to your reward model scores.
+
+So concretely, we look at the current search frontier, uh take the soft max of the scores and then you can decide you can use those to kind of allocate this budget.
+
+So like in this case, this one got a low score, so you wouldn't explore it at all.
+
+This one had this, you know, two plus two equals four.
+
+So maybe you explore it a bit more, this one we're not really sure about.
+
+So we allocate some exploration budget to it but not, not too much.
+
+Then you can actually incorporate the research into um majority voting.
+
+You basically run the tree search, get n different outputs and then take the majority answer.
+
+And so the key idea here is that unlike parallel sampling, the tree search can use these intermediate scores like on individual steps.
+
+And so possibly it can do a bit better.
+
+So it is possible to get better performance.
+
+Uh with the research here's one example where um even if you adjust for the amount of compute that you're using uh so like same number of, of generations um that's on the x axis you can see here that the test error.
+
+So lower is better um is actually better with this research algorithm uh versus using the parallel sampling.
+
+And so, aside from these math word problems, um we do see research coming up in in different domains.
+
+So a famous one that didn't necessarily use language models is go so tree search was a kind of key part of Alphago and the later variants um in formal theorem proving which uh today does use language models, essentially any state of the art system uh will use a research at inference time.
+
+The reason there is that you have this uh formal proof assistant.
+
+And essentially after each step of generation, the proof assistant will give you new information.
+
+And so if your search algorithm kind of takes advantage of this intermediate information, you can do a lot better than just generating the proof in one shot.
+
+And then similarly, um in some of these more recent agent environments, you often have an environment that you're interacting with.
+
+And so every time you kind of take an action, the environment will give you new information.
+
+And so this again, gives you some opportunity of exploiting these kind of intermediate states to perform some kind of research.
+
+And in fact, like we've seen some papers starting to explore this.
+
+So the tree search meta generators, um they can backtrack and explore using these intermediate scores.
+
+Um However, if you're going to use research in your problem, it is worth thinking about actually like whether research is a good fit.
+
+So in particular, you really want your generation to decompose into these kind of multiple states.
+
+Ideally, you want an environment which is giving you extra information at each state and then you really want a good reward signal um so that you can train this really good scoring function um for performing the research.
+
+So the final meta generation pattern that I'll talk about is called refinement and or self correction.
+
+So here the idea again is very uh kind of simple.
+
+Let's say that we're generating and we make a mistake or we go down some kind of bad generation path like we generate two plus two equals five.
+
+Then a refinement or self correction method will try to produce a, a path that's kind of better.
+
+So maybe it cracks this into two plus two equals four.
+
+It turns out that there's several ways you can think about designing a system like this.
+
+One way is to actually assume that you have some additional uh module that gives you feedback.
+
+So like what if we had some module, which said that two plus two equals five is wrong, then it seems like performing the correction might be, you know, a bit easier.
+
+And as you may imagine the quality and where you get this feedback uh can be incredibly important.
+
+And so you can think about the the feedback in kind of two different two different categories.
+
+One is whether you have kind of external information uh at generation time, those are called extrinsic methods.
+
+The other is if you try to build one of these refinement or self correction systems using just a single model, so you're just like rep prompting it to maybe like give its own feedback and then regenerate.
+
+So really classic example of the extrinsic feedback is in code generation.
+
+So here's an example from one of our recent papers that um incorporates a program verifier into generation.
+
+So in particular for some of these Rust programs, you can actually get this formal verifier which tells you whether your program is cracked or not.
+
+And then it can also give you these kind of detailed error messages that can sometimes even localize the error.
+
+So then what we do is we feed back in the output of this verifier to a correct, which is a LLM and then hopefully the model generates some improved program.
+
+And of course, you can just like keep running it longer and longer until you eventually find some uh some verified program and doing this can have a huge impact on the number of programs that you're able to successfully generate.
+
+So here's showing what happens if you just keep running this like parallel generation without any refinement for longer and longer.
+
+And you can see that the system is able to like do some of this verified programming.
+
+But then eventually it just reaches its kind of capabilities limit.
+
+Then if you start out with 256 generations and start doing refinement, then you can get this additional jump in performance that you otherwise can't get, you know, without the feedback.
+
+So how you do the refinement?
+
+Um There's, there's different ways and you have to um you have different design choices so you can check out the paper here.
+
+Um But the high level takeaway is that like if you have these external sources of feedback, you can also get, you can often get benefits um with these refinement methods.
+
+Uh We also have some tutorial code demo where we have a simplified version of, of this that you can check out.
+
+So yeah, this idea comes up in other areas like code interpreters um incorporating retrieval model um or uh Graham New Big who's on the tutorial team has a kind of fun tweet where he um yeah, does this kind of interactive refinement with an agent and is able to do better than the 01 model for like generating a summary of a paper.
+
+So the other extreme is to just have a kind of fully self contained refinement system.
+
+So here what you would do is you would prompt your model to provide feedback on the output and then you would send that feedback back into the same model and try to produce a better one.
+
+So this uh at least so far has had results that are more mixed, it's more nuanced.
+
+So in general, like with tasks that are easy for the model to evaluate, like let's say it gets nine out of 10 citations and has to just like refine the output to include one more.
+
+Uh Then these kind of intrinsic refinement methods have been um uh pretty good in terms of expanding the underlying kind of reasoning capability of the system.
+
+This is more active area of research and the results are sometimes more mixed.
+
+So here's an example um where uh yeah, they, they essentially show that like if you use GP T 3.5 to do the self refinement, then it would just as often go from a cracked to an incorrect solution as it would from an incorrect to a cracked solution.
+
+So in some sense, it was having trouble kind of evaluating the correctness of its own outputs.
+
+So here's a kind of fun toy example, we might not have time to like fully um go into the details here, but you can basically simulate this idea of having noisy feedback and basically control the performance of one of these refinement systems.
+
+So here we're using a really simple language model that just generates uh one character independently of all the other ones.
+
+And then let's say you have a oracle feedback which tells you exactly which characters are incorrect.
+
+Um Then if you have this, you can build a refinement system that can actually perfectly generate uh this output sequence.
+
+And then based on how much noise you add to the the feedback stage, you can basically adjust the performance of the refinement system.
+
+So intuitively like when these language models might be failing to do the self refinement, maybe it's that they look like this, this green curve down here where their kind of own feedback on their own generations is just too noisy to do anything meaningful with a third case is um to just discard the uh the feedback module altogether.
+
+And so here the goal is to actually train a model to directly learn to correct outputs.
+
+So why might this be possible?
+
+Well, you can imagine like if you're training this um with some kind of reinforcement learning where the model is encountering all these different examples of like going from a worse output to a better output, then you know, these language models are pretty flexible.
+
+Maybe there is some hope of learning this kind of correction behavior.
+
+So there's been a few different attempts at doing this uh and they usually take the following form.
+
+So you generate uh you collect these bad and then better pairs by generating and then um ranking them using some reward function, then you train this correct model to generate a better output, given the bad one and then you repeat the process.
+
+So like keeps training online and hopefully improves over time.
+
+It turns out that doing this, um it can be difficult to get this to work.
+
+And there's a really cool paper called score uh which shown that which shows that sometimes the correct can actually have these uh degeneracy.
+
+So for instance, like it can just completely ignore the intermediate output and in some sense, learn to just solve the problem.
+
+Um but they were able to overcome it with some specific uh reinforcement learning and regularization techniques and get this kind of promising result where you can see as the number of generations is scaled up, their self correction or sequential method is actually doing better than the parallel sampling.
+
+So in summary, the refinement or self correction um will depend a lot on whether you have this kind of external source of feedback.
+
+Um And if you're trying to train the model to directly correct if you do have this extrinsic high quality source, uh then you know, like as a first approximation, it's it's probably promising uh for the intrinsic methods.
+
+It's more of an open question.
+
+Uh And then if you're trying to train a method to self correct.
+
+This is also a very active kind of open question to get a model that's trained to self correct in a very kind of general setting.
+
+So those are the four key patterns or strategies that have kind of emerged for these meta generators.
+
+Um Let me just briefly talk about some aspects of scaling meta generators.
+
+So one aspect is um you know, I've talked about all these different strategies but how do you actually choose a particular meta generator in practice?
+
+Well, a really important thing to notice is that like all of these involve generating many, many times with models.
+
+And so a really important thing to take into consideration is the cost of the the meta generator.
+
+So you can think about the cost being dependent on the size of the model you have as well as the number of generated tokens that you're doing to, to to get an output.
+
+And so you can kind of formalize this as the problem of compute optimal inference where you want to, you have some compute budget and you want to choose the configuration.
+
+So the number of model parameters, the number of generated tokens and the inference strategy that gives you the best performance.
+
+So the lowest error uh subject to your compute budget.
+
+And then once you have this problem set up, you can try to come up with these different uh curves that look like this.
+
+And if you've seen these kind of scaling curves for pretraining, they start to look somewhat similar.
+
+So here you have this compute budget on the X axis and then what you can do is try various different configurations.
+
+So for instance, you can uh take different model sizes and then scale up their inference budget.
+
+And then at each point evaluate you know how well they're doing on some tasks.
+
+And then what your goal is is to get something which is on this compute optimal frontier.
+
+So you want like for a given budget to select the configuration that has the lowest error or best performance.
+
+So an example question you can ask is like is a smaller model and generating more um actually better than using a larger model and generating less if I have the same compute budget.
+
+And so you can actually create one of these curves uh empirically.
+
+And here's an example one.
+
+So this is showing on the X axis, the compute budget in terms of the flops that are used at inference, then each color line is a different model size.
+
+And then on the Y axis, we see the performance on this uh this benchmark.
+
+And it's pretty cool because it's basically saying that like, OK, let's say you have this medium sized compute budget, then it's actually more optimal to use this uh medium sized model and maybe generate more than to use the larger 12 billion perimeter model.
+
+On the other hand, at least in this case, if you want to get the lowest possible test error, it does appear beneficial to just like spend as much compute as you can.
+
+So use the largest model you have and then keep, keep generating.
+
+Uh if you're not compute constrained, you could also try to vary the meta generation strategy additionally.
+
+Um So here this is also varying whether we're using a sampling this kind of expensive research, Monte Carlo research uh or the Rebase algorithm that I told you about.
+
+And here you can uh again get this kind of cool result, which is like the meta generation strategy that you use can actually have a big impact on um you know the compute optimal configuration.
+
+So in particular, in this case, using this research algorithm um turned out to be compute optimal across all the different uh inference budgets that were tested.
+
+So for example, if you have a small inference budget, you would use the tree search with 7 billion parameter model.
+
+If you have a larger inference budget, you would use the larger model.
+
+Uh And with the tree search.
+
+So zooming back out.
+
+Um what this is kind of saying is that um performance with these meta generators can improve with your uh with increased compute, but then it can still vary based on the strategy that you're using or the size of the model that you have.
+
+Um And so in particular, like if you have a certain compute budget, you um you want to decide like what is the best configuration for your inference setting.
+
+And so sometimes smaller models can actually be better for some budgets.
+
+Um And ultimately, we would want some strategy where you kind of don't have to worry about this and it's just always optimal uh for all budgets.
+
+So to recap, I talked about meta generators which are kind of higher level strategies for calling generators and incorporating external information.
+
+Um I talked about four different patterns and these patterns can also be combined and uh mixed together.
+
+And in general, we want to choose and design methods that um both give us good task performance.
+
+But then also, um you know, we, we need to take account the inference cost because inherently these methods involve, you know, potentially generating a lot.
+
+And so on that note, next Haley will tell us about another aspect where we don't just look at the token budget that we have, but we actually look like at a systems level, whether we can use techniques to speed up the generation or the meta generation.
+
+And in turn, make these methods more scalable and more useful in practice.
+
+So with that, I'll hand it off to Haley for the section on efficient metal generation.
+
+Great.
+
+Yeah, thanks so much Sean for that intro.
+
+Um Yeah.
+
+So as mentioned before, we've talked about sort of how generators work and how to stitch them together into more complex programs in the form of meta generators.
+
+Uh In this section, I'm going to talk about how that maps onto actual real world efficiency.
+
+Uh There is sort of a lot to cover in this area.
+
+So I'm going to try and tightly scope it to the relation to meta generation.
+
+I'm going to do this by first going over some of the basics of how we make language model inference efficient.
+
+Uh Then talk about how this maps on to making meta generation specifically faster.
+
+And what this means for the interaction between uh meta generator algorithmic design and efficiency.
+
+So first off when I say efficiency, what exactly does this mean?
+
+Uh two metrics that often come up are first latency, uh which measures uh basically for a given user submitting an input to some language model API or instance how long they wait to get a response fully formed out or throughput, which measures the volume that a system can serve in terms of something like 20 requests per second or returns to a user in aggregate.
+
+There are other metrics as well that people use uh like time to first token.
+
+But we won't cover that here because that's not as well suited for meta generators, which don't just generate uh one token autoregressively at a time.
+
+Uh importantly, latency and throughput often but not always are at odds with each other and often also a tradeoff against model quality.
+
+Uh For example, we can imagine that a language model that uh arbitrarily returns the, the empty string upon every user input uh would be easy to serve with minimal latency and maximal throughput.
+
+But for a given model, like say Lama 3 70 billion, uh we'll have limitations based on our hardware of how many requests we can serve and given the volume of requests, uh how much uh latency we can tolerate.
+
+Uh Another thing that I'm going to bring up, which might not be controversial to people who worked with optimizing LM.
+
+Inference from the systems perspective is the importance of hardware to serving these models over the past decade plus GP US and other ML accelerators have gotten way way better.
+
+Uh And uh the way that uh one achieves sort of a maximally efficient system is by respecting these hardware designs and choosing optimizations which take advantage of this of the hardware strengths while avoiding other pitfalls related to the hardware.
+
+So a few key quantities to keep in mind about uh machine learning accelerators like GP us that impact uh inference efficiency include the total amount of memory we have per device measured in gigabytes terms.
+
+VRM or HBM had been with memory.
+
+Uh The actual compute capability of the device, uh how many operations per second it can perform at maximum measured in flops per second floating point operations.
+
+Uh And uh another factor memory bandwidth measured in gigabytes per second uh which represents sort of how long it takes to shuttle uh operands around the chip.
+
+When we want to perform a matrix multiplication, our inputs will be stored in the global device memory in VRM.
+
+But we'll actually have to send them to the processor cores to perform computation and send the output back to device memory.
+
+Uh these quantities come up uh in many ways.
+
+Uh When we're trying to perform LLM inference such as memory bandwidth coming up when we want to load model weights from memory for performing matrix multiplications or loading activations.
+
+Uh the actual compute capability of the device coming up when we want to leverage our flops per second to perform matrix multiplications and other factors like communication speeds across multiple devices when we're serving larger models.
+
+So a simplistic view of how these different accelerator quantities trade off against each other uh is to measure the amount of time taken for a single step of LM inference such as performing a relu nonlinearity or performing a matrix multiplication in our feed forward layer.
+
+Um Here, the time that a single operation takes will be determined by the maximum of either how many uh floating point operations.
+
+This step takes divided by how many floating point operations per second we can deliver uh or the amount of data that must be transferred around the chip divided by how fast we can transfer that data.
+
+Um And depending on which one of these rules, the maximum will either uh if the, the Flops factor is what is larger, then operations will be called compute bounds.
+
+Meaning that if we had a higher compute capability, we could perform the operation faster or our memory bounds in that if we could transfer data around the chip faster, uh the operation would become uh speedier.
+
+Uh So uh keeping this sort of memory bound versus compute bounds uh distinction in minds.
+
+One fundamental optimization performed in LM inference is batching in which instead of just running a single input through the model at a time, we stitch together b different input vectors and pass them through a model um all at once, uh achieving uh inference on a single batch altogether.
+
+Um Often our weight matrix will be much larger in size than our input activations at a small batch size.
+
+And so the memory bandwidth cost of loading the weights from memory is much larger than loading these inputs from memory.
+
+What this means is that when we have a large batch, we only load this weight matrix into memory a single time.
+
+Uh And if the operation is memory bounds, then even though we're performing uh more operations to use a larger batch size, we might still see a constant amount of time that this operation takes uh to perform.
+
+Uh since we're sort of amortizing this loading of the weight matrix.
+
+Uh However, when we have a large batch size, this might change to a compute bound regime.
+
+Uh another core concept in LM inference is KV caching.
+
+Uh In inference is typically structured in two stages.
+
+First is a prompt processing stage called prefill uh in which uh given sort of an end token prompts will perform attention using all end tokens.
+
+Um And then save these key and value vectors computed over the course of attention for later.
+
+Then when we want to generate a new token from our model, after we've already processed the prompts, we perform something called the decode stage in which we've retained the key and value vectors from attention of our prompts and the prior generated tokens, and we only have to compute the new key query key and value vectors for this single new token at once and perform attention for this new query token.
+
+Um This KV cache can actually become quite large at large batch sizes and its size is determined by the number of key or value vectors that we're storing measured in terms of the context length times the batch size, a sort of model uh inherent size factor measured in terms of two because we have both a key and a key and a value vector that we're storing times the number of layers.
+
+Since we have to store this cache for each layer in our model times the number of attention heads times the dimension per head, which measures the width of our model as well as a factor of the number of bytes per element in these vectors two.
+
+For example, if we're storing these in 16 bit mhm uh with, with these sort of basics in mind, let's think about how we might speed up a single sort of sampling of a token uh the the decode stage.
+
+Uh Here we want to work around our uh sort of hardware bottlenecks.
+
+Typically uh again, coming in the form of either memory bandwidth, the total compute capability or flops per second, our device can deliver and the total number of operations we have to perform uh in terms of working around memory bandwidth bottlenecks.
+
+Um We do this by reducing the amount of data transferred around the chip.
+
+Uh uh We can uh the typical amounts of data that we have to transfer during a single inference step is on the order of the total number of parameters that must be loaded uh in for memory in the model uh times the size of each parameter value in bytes.
+
+So one option is to reduce this bytes per parameter factor by in which we take our floating point values in the weights or activations and bucket them into a smaller storage size data type like in four.
+
+For example, another option is to also compress or distill the model to reduce the factor of the total number of parameters that we have to load while keeping the bytes constant via, for example, dropping a layer from the model and training further otherwise distilling it or compressing it in other ways and so on.
+
+Uh another way to improve a single token decoding efficiency is to maximize our utilization of the devices compute capability um improving the hardware utilization.
+
+One key example of this is flash attention in which although flash attention performs the same logical operations that regular vanilla attention does uh by optimizing the implementation in a single kernel that reduces memory loads.
+
+Uh it performs it using a far greater number of flops per second effectively and completed it in a lower amount of time.
+
+So although the total number of flops that we must perform for a given uh decoding step remains the same.
+
+The number of flops per second that we execute uh increases, reducing the time.
+
+Finally, we can reduce the absolute number of operations that are required in general.
+
+Uh One example of this is mixture of experts models in which instead of having one single large feed forward layer, we split the the feed forward layer into a number of different chunks called experts where each token will only activate one or a couple of these experts um using many fewer flops than it would if it passed through every single expert.
+
+Uh Now we're going to think a little bit about how we can speed up a single generator call and where we might generate end tokens from a given input.
+
+Uh One key observation here is that when we're generating uh N tokens from a language model for very large N A key bottleneck here is that we can only generate the next token N plus one after we've generated token N.
+
+Uh however, tokens, uh some tokens might be easier to predict than others.
+
+Uh intuitively, for example, when we're generating punctuation, uh this might be very easy for a weak model to guess that the next token is a period.
+
+Um Whereas other sort of structural elements might be trickier.
+
+So is there any way that we can spend less time on the these easier tokens like punctuation much like we did with constrained generation?
+
+Uh One option here is speculative decoding.
+
+Um In speculative decoding, we maintain our main, our main target model that we want to generate from and also initialize a much smaller and more efficient draft model uh at each step instead of just sampling a single token from our large model, uh We'll first generate end tokens using our draft model that we treat as guesses for what the next for what our large model might produce?
+
+Uh We'll then feed these uh end tokens from the draft model into our larger model.
+
+And in parallel, much like a small prefill stage, uh get the logits for our model across all of these N guesses.
+
+Then we'll iterate through these guesses starting from the first one and going forward um determining whether they match up with what our larger model would have predicted if we just asked it to produce one token uh until we get to the point where one of our guesses doesn't line up, uh we can accept all of the, the preceding guest tokens.
+
+And ideally an expectation generate many more than one token per step through our large model.
+
+Uh because our large model is uh uh large in size and its weights uh take a lot of memory to store and load in.
+
+Uh the decoding step is typically memory bound.
+
+And so passing in N uh guess tokens can take, can take the same amount of time as just passing in a single new token, uh a loss over this for now, but we also have a code example of speculative decoding in our repository.
+
+Um So definitely check that out if you're interested in how speculative decoding not only operates but also maintains the output distribution of the larger model.
+
+Uh Another core thing about speculative decoding however, is that its efficiency is variable, for example, on easier distributions um where a small draft model can more frequently guess the correct token.
+
+Uh We can get a larger acceptance rate of these guesses and a higher efficiency as compared to a harder distribution.
+
+Uh is another factor in speculative decoding is that it's often helpful for latency in cases where we only have a batch size of one or a very small batch size.
+
+Um reducing the number of calls to our larger model and the number of times we have to load its weights from memory can speed things up massively.
+
+But when we have to optimize a decoding, an inference setting for throughput, uh speculative decoding can hurt this even if it improves latency.
+
+However, recent work called Magic de uh has shown that because the KV cache is so large and so costly to load from memory at each step.
+
+Uh When we have a long context length, um like for example, uh 16 thousands speculative decoding, not only can help uh latency, but it can also increase the throughput quite significantly.
+
+So now let's come to how these efficiency techniques and basics uh map onto speeding up the meta generators that we've talked about previously.
+
+Uh in particular here again, we're interested in how these uh meta generator algorithms interact with sort of real world wall clock time and utilization of our accelerators.
+
+Um And we'd like to answer questions like which sort of algorithmic patterns for meta generators are the fastest and also use this to inform, designing more efficient meta generators in future.
+
+Uh One key pattern that pops up especially in parallel meta generators.
+
+But across many different algorithms is uh the existence of a shared prefix uh content in these sort of inputs in the sort of calls to our language model generators.
+
+Uh in the setting.
+
+For example, when we have chat GB with the long system prompts, uh and many different user requests, all which are stuck onto the end of the system prompts.
+
+Uh this uh system prompts basically remains unchanging.
+
+And because language models are autoregressive, uh it's like KV, cache vectors are unaffected by whatever might follow it.
+
+And so this shared prefix doesn't necessarily have to be processed by our language model every time.
+
+Uh One way to take advantage of this is via page detention introduced in the VLLM library.
+
+Um in which when we have a sort of consistent shared prefix that we use across many different language model calls, we can map this shared prefix across many different logical requests onto the same specific physical block in GP U memory.
+
+Whenever possible, this helps a lot because it means that we can store a larger batch size on the same GP U.
+
+Um But we might want to do better.
+
+Uh Another thing that can happen as well is that we can have a sort of structure in our requests to our language models beyond just a single level of a shared prefix.
+
+Uh For example, this figure shows uh what we might have if we have both a long few shot prompts uh plus many different sort of questions or user queries or questions we might want the model to answer and then we perform best event or majority voting for each question that we feed into the model.
+
+Um Here we have sort of two tiers of shared prefix content and we'd like to leverage this as well uh methods like radix attention introduced in SG Lang uh deal with this by setting up a sort of tree structure of KV cash blocks um mapping sort of the, the dependency of uh which thing uh precedes which other thing.
+
+Uh And uh holds this as a tree which eventually maps onto physical GP U memory.
+
+Uh only evicting sort of leaves of the tree when they're not used enough and more GP U memory storage is needed.
+
+However, the optimizations uh like like the previous one which allow a bigger batch size by reducing GPU memory overhead aren't all we can do a paper called hydrogen from gassy at all.
+
+Um improves the actual speed at which we can compute a 10 on these sort of shared prefixes like system prompts by noting that not only can we store the KV cache for the shared prefix in memory a single time, but we can also only load it into the GP U processors a single time.
+
+Um And also cast this as a matrix matrix multiplication rather than many matrix vector multiplications with the same matrix because GP us are optimized so heavily for matrix multiplication, we get huge speedups from modern hardware by doing this matrix matrix form of prefix attention.
+
+Um What this allows is for massive throughput increases especially at large batch sizes, all of which share the same long prefix as seen by this comparison of VLM speed versus a hydrogen speed.
+
+But also the speed when using hydrogen almost competes with this blue line, which is sort of the upper bounds in speed if we spent zero time at all on the actual attention operation.
+
+Uh What this means is that attention on sort of a shared prefix that we reuse frequently, uh like a like a few shot prompt or system prompt is very, very cheap almost to the point of being free.
+
+Uh Now going back to uh dig deeper onto this idea of reducing the memory that the KV cache uses beyond just shared prefix settings.
+
+Um How can we sort of reduce the KV cache size?
+
+Uh Even when we are not able to, to do this via using shared prefix structure.
+
+One option is something called token dropping which acts on the number of KV vectors that we store um for each input in a batch.
+
+Um token dropping or eviction approaches look at the statistics of attention on the previous tokens in the prefix and whenever a token is judged by some heuristic or algorithm to be unimportant in that tokens, new tokens we generate often do not attend to it.
+
+Uh We evict it from the KV cache no longer storing it in memory.
+
+This has some downsides in that.
+
+Maybe if we evict the wrong tokens for memory and change the topic of our conversation with the model or we just sort of try to evict too many tokens, then our generation might become brittle or unable to refer ever to these new drops tokens.
+
+Again, since we've gotten rid of their KV vectors uh but can keep KV cache, especially for a long context length in check.
+
+Another option is to act on the data type of the KV cache by reducing this number of bytes per vector element factor.
+
+Uh Again, we can use quantization where we take the floating point elements of our KV cache vectors and map them into a lower bit with data type to reduce storage.
+
+Um uh This can allow us to again store more KV cache vectors on a given GP U and fit a larger batch in increasing throughput.
+
+Finally, we can act on the sort of model inherence.
+
+A factor of KV cache size uh by reducing for a given model size, how large its KV cash state will be.
+
+Um This is typically done via architectures like multi query attention or groups query attention in which instead of typical attention where we have the same number of key and value heads as with query heads, uh we reduce the number of key and value heads and share them across these queries.
+
+Thus, even though our model has approximately the same number of parameters, uh the actual number of KV vectors that we need to store um for a long sequence is drastically reduced.
+
+Uh Now to recap what we've covered.
+
+Uh And think about which meta generators are the most efficient.
+
+Uh The ones that are most efficient are ones that have a parallel pattern where we can run uh if we're running sort of N trajectories and calls to a language model, we can do all N in parallel and not sequentially bottleneck our generation speed uh by sort of waiting for the results of one call to perform another call based on it.
+
+Um And also uh generations which are prefix shareable where if we do have some sort of like long state or input to our model, um It's viewed as sort of a static long input where we have the same system prompt or rag retrieved context in the same order or same long Fuschia examples presented to the model across calls where within a batch, we can just reuse this uh encoded state across the prompt and generate these calls much faster than we could otherwise.
+
+And so, in conclusion, if we want to sort of holistically view meta generator efficiency and decide which algorithms are the fastest, we have to look a little bit deeper than token budget and think about sort of what the program structure is and how to set up these generator meta generation algorithms.
+
+And 11 very surprising insight is that prefix share means that uh meta generator efficiency depends on the structure of your prompts, which seems quite surprising.
+
+A priori cool.
+
+Uh Yeah.
+
+Now Sean will be taking it away for some recap.
+
+OK.
+
+Thanks everyone for your attention.
+
+It's awesome to see everyone here.
+
+So just as a recap of some things we've talked about today.
+
+Um It looks like we'll have um a few minutes to do a Q and A and then a panel session.
+
+Um But first, yeah, let's look at what we talked about.
+
+So um the tutorial was on these algorithms called meta generation algorithms.
+
+And we started out by looking at how you just generate kind of one token at a time to do something like implement the LL MA PS or LLM inference libraries that you might be familiar with.
+
+Then we looked at some higher level patterns for calling these generators repeatedly and incorporating external information.
+
+So that might be a reward model.
+
+Um It might be some external tool um or, or things like that.
+
+And then finally, um hay just talked about strategies for efficient generation and meta generation which are really critical for scaling these methods up um or deploying them in basically any setting that you have.
+
+Um So some takeaways are um so far, there's been, you know, different patterns that have emerged from these meta generators and each one is kind of turned into its own uh you know, sub area of research.
+
+Um And so some of these patterns were beginning to understand better and better.
+
+Um And one common theme is that um often we can kind of spend test time compute to improve the task performance that we have.
+
+And then when we want to either design a new meta generator or choose one for our task or our deployment setting.
+
+Uh We want to take into account not just the task performance, but also the cost because these do involve um kind of by their nature, potentially spending a lot of inference time compute in terms of efficient meta generation.
+
+Uh We saw this kind of core idea of leveraging different forms of parallelism um in order to decrease the latency and boost the throughput of the system.
+
+Um And then one key idea that kind of kept showing up is figuring out kind of clever ways of exploiting the fact that you have these shared prefixes.
+
+So a simple case is, you know, you're doing best event and your prompt is shared.
+
+Um But then even, you know, recent methods uh support these kind of more diverse typologies like a tree search where you do have this shared structure in some of the search codes.
+
+And then as Haley mentioned, um the at, at the kind of systems level, the optimizations that you have uh can actually make some meta generators more feasible or uh you know, less costly than others.
+
+So sometimes the just looking at the token budget uh could be useful like let's say you're, you're comparing um you know, best event and refinement and you just use the token budget and, and it's fine.
+
+But then if you're really looking to do an exact comparison of the runtime of your system this token budget can often be an oversimplification due to the underlying optimizations that you have.
+
+So I think this area of uh of LLM inference and uh meta generation uh really has a lot of exciting research going on as well as some outgoing paths.
+
+Uh One thing that I think we'll see um a lot of is combining some of these kind of primitives that I talked about.
+
+So things like refinement parallel sampling research into these kind of hybrid systems.
+
+So here's an example of a paper that I mentioned earlier.
+
+Uh Well, it's actually just released today and we have uh combined parallel sampling and refinement and research into a kind of single algorithm that gives us pretty good performance on this uh verified code generation task.
+
+And then there's a lot of other really exciting directions and I think we'll discuss a lot of them in the in the panel session today.
+
+Um One is kind of thought provoking.
+
+It's like I've been telling you about these different search algorithms, but could you actually have a system that just learns to search on its own?
+
+And then at inference time, you use a fairly simple algorithm like you just ask it to just keep generating and searching on its own and how you enable that is um kind of an active area that a lot of people are interested in.
+
+Another are these agent environments that I mentioned earlier?
+
+Um So these are really cool because, you know, every time your agent takes some action, then you could potentially get a lot of information from the environment.
+
+And then oftentimes we kind of train a system and then, you know, try to use it as an agent.
+
+And so figuring out what the right patterns are and how we can kind of leverage things like search and what auxiliary models we need to train uh for these agent environments is a really exciting and interesting direction.
+
+And then finally, just broadly, there's a lot of open questions on just how we should best allocate compute.
+
+Um I started off the talk by talking about, you know, pretraining compute, post training, compute and test time compute and how all of these things interact is really still being figured out.
+
+And then at a very fine grained level, like I talked about these compute optimal meta generators, but really we want to go even more specific, we might want to say like for a given input, uh what strategy should we use or how much compute should we spend on this on this input?
+
+And basically everything in between.
+
+And then I should say that many of the conclusions that we draw about different methods and strategies are often based on just, you know, a small number of tasks.
+
+And so just testing these out and investigating wider distribution of tasks is also incredibly important for uh and and practical reasons.
+
+So as I mentioned, um all of the content of this tutorial um was derived from the survey paper that was just published at TMLR.
+
+Um So you can check it out here if you want some uh some additional reading and you can also check out our web page, which as I mentioned has all of the information related to the tutorial.
+
+So we have all the slides there.
+
+Uh We have additional code, uh many of the code snippets.
+
+Uh We didn't even have time to present here.
+
+So you can check those out for further study and, and a deeper understanding.
+
+In addition to the survey paper, we also list the papers that were mentioned in the slides.
+
+So you can quickly see a kind of relevant reading list.
+
+Um If you want to look deeper into the specific topics, uh all of us are also accessible by email and uh many of us are here at nes.
+
+So we're all of us love talking about all of this stuff.
+
+So um do find us throughout the conference.
+
+Uh feel free to, to send us questions that you have.
+
+Um And uh with that, we do have a bit of time before our panel session.
+
+So we'll start the panel session at 330 so we'll have 30 minutes.
+
+Um And we have this amazing group of panelists.
+
+Uh and we have Ilya from the tutorial team who is at meta A I uh as moderator.
+
+Um I'll let Ilya actually introduce the panelists.
+
+Um But in the meantime, for the next um 14 minutes, we're happy to take any of us are happy to take questions that you have.
+
+And um I think to maximize the time with the panelists, we'll stop right before uh uh 330.
+
+So thank you so much for your attention and do stick around for the panel because it's gonna be awesome.
+
+So, while they take seats, uh let me introduce our participants.
+
+Um Betty from CMU uh she's going to um present some views on these recent libraries like Gang.
+
+She has been working on NU from A I two, Rishab, Jacob and Noam.
+
+So Rishab is from uh Deep Mind or, and MGI Jacob from Oxford and Meta A I and Noam Brown from OPEN A I and I'm from Meta I I do some research in Fair.
+
+Yeah.
+
+So can we get some mic check with you folks?
+
+Hello.
+
+OK.
+
+That's great.
+
+I think we'll go over some questions and we'll try to get all the um discussion from participants.
+
+The first one is about um to and usability.
+
+So there has been a lot of excitement progress on inference related to link and the progress has unlocked the ability to design new algorithms.
+
+Uh for instance GL makes using its research more feasible.
+
+Um While several other libraries allow for easily chaining to get the model calls in different sort of model agent like agentic way and moving forward.
+
+How do you see the two link around inference and meta generation evolving.
+
+Will we see some sort of standardization of that like api do for inference?
+
+And right now, I would like to start with Betty and Richard and let me go over everyone else like for everyone.
+
+Oh, from me.
+
+OK, I am be.
+
+Um so we were like our group work on a particular area that is very related to this question which is long context generation.
+
+So I guess like a paradigm shift except for test time scaling in general is like from the system level, you can see um like there are many open models, you try claims to have like 128 K where like 512 this kind of lens, but their generation lens where the quality starts to degrade.
+
+So you usually don't have this kind of request, but we know that in a test and training, uh I don't know if it's based on rumors or I kind of get the information, but it's kind of like in the generation lens is actually pretty long and informative.
+
+So that kind of we shift this um like system time like challenge.
+
+Um And for example, from the hardware perspective, uh we know that for usual um generation which is covered in the tutorial that um the bandwidth matters, but the loan generation will make it even worse, right?
+
+Because like um the CC management um on the RS is more complicated and there are other hardware, for example, uh in a heterogeneous way, for example, CPU is like really large on the memory size.
+
+Um like bandwidth is 10 X slower than GP U which is fine.
+
+Um Because this is is 100 times worse, right?
+
+So they are different algorithm co design new opportunity here.
+
+Um And the test no matter for training or for the survey.
+
+And second of all, like we work on a lot of approximation and um kind of a compression algorithms which is also interesting here.
+
+Um So you used to just evaluate a model which is like compressed or Q spars um with no matter activation wise or um the model wise.
+
+And you see, oh I get this benchmark of like 90% and I kind of maintain it with like 88 right, you usually do it in that way.
+
+Uh But now like if you see the repeated sampling and also like changing the model will make this scaling a little bit different.
+
+So, um and sometimes you want some diversity there which might be enforced by, for example, sparsity.
+
+So uh here, like in this era, maybe there's a co-sign between uh the efficiency and um the ability.
+
+So I think that's like a pretty interesting um era for the algorithm and system, including the hardware co-sign.
+
+Thanks.
+
+Um That, that's great, Richard.
+
+Um So I think I have just one thing.
+
+So if you look at, let's say the research on test time computer and what not historically, we have focused more on like optimizing single generations so that the techniques and like, let's say the frameworks we get optimized for so that we get things like speculative decoding or V LMS.
+
+But now let's say we are starting to focus more on this test time compute thing.
+
+And I think in the tutorial presented like there are existing methods that are optimal for simple things like best N or let's say prefect sharing, which is really good for things like many short ICL.
+
+But then there is a lot of other kind of test time computer methods that are not optimized yet.
+
+And I think that's where a lot of the potential is.
+
+So to answer your question, I think there will be a lot of research and probably frameworks coming up that will be optimized for these new other methods that have not been focused on yet.
+
+But now because of the research focus, so it's possible that some frameworks might pop up.
+
+Yeah, I mean very, very quickly on this.
+
+Um I think this will probably happen, but I think we're also at a very, very early stage of exploration and I don't think anybody has quite understood of what isn't, isn't possible using test time compute and also how the what what the long term architectures will look like in terms of averts test time compute back into the models when to deploy more compute.
+
+And um when when to just give answers.
+
+So I probably equate this not to say deep learning in 2015 or 16 where the first frameworks come along that actually are usable.
+
+And even then tensor flow happened, which I think was not very usable, but something like deep learning in, you know, 1995 or 1997 when the very, very early days of the exploration and just to give you an idea, I'm not even sure that it will make sense in the long run to think about static frameworks and static scaffoldings because maybe the methods that we will want to use in the future ones that actually adapt the exact structure of how they deploy, test time compute and how they arrange themselves much like we humans do.
+
+None of us operate in study corsets of exact message passing and this number of steps in this and this, we operate in flexible teams, we can readjust, we can try new things we can adapt on the fly.
+
+So I guess I'm not convinced we're going to stop at one level of meta generation.
+
+Maybe we're going to kick the can down the road a little bit and go meta meta and it's very difficult to convince myself right now that it's going to be a framework that you and I could design design today.
+
+Given what we know that will be flexible enough for those new approaches.
+
+So do I think there will be something like porch down the line for test time compute.
+
+Yes.
+
+Do I think that I would know anybody would know how to design this right now to be robust to future innovations.
+
+Absolutely not.
+
+It sounds great.
+
+So, I have follow up, what do you think at what meta level will be?
+
+T So, I don't know.
+
+I think if you ask me in the limit, I think we would just go all the way.
+
+I think there is no sort of finite bound on meta cognition for humans.
+
+I think we can really optimize ourselves quite, quite extensively in the way that we reason our own reasoning processes and so on.
+
+And I think in the limit of computer infinity, I do think we will not stop.
+
+We will just keep optimizing, become self referential in the limit.
+
+So I wasn't here for the rest of the day by the way.
+
+So in case this were covered in old news, apologies, I just flew in.
+
+All right.
+
+Yeah, I think we can move on to the next question.
+
+Uh Thanks just to the time constraint.
+
+And the next one will be um about some of the system two videos, apparently the strongest performing model right now um do not operate in this vanilla left to right, regressive decoding where we have a prompt and we just generate an answer right away.
+
+Um But that one is the most attractive one because it's so simple.
+
+And the question is will better performing pretrained LMS which means larger scale, larger data um kind of eliminate the need for such meta generation algorithms or eliminates the need of using multiple agents and so on in like future.
+
+Or would you be on that?
+
+Um Yeah.
+
+And right now I would like to start with an and Jacob and then go for other like uh feedback from others.
+
+Hi, everyone.
+
+Great question.
+
+Um So about whether we need to um there is this need to eliminate the meta generation algorithm.
+
+I don't think so.
+
+Now the question is that um how do we define this very capable pretrained language model?
+
+Now, if we're talking about the model that was already pretrained, that was pretrained with the same uh infrastructure, the same algorithm, uh the same post training recipe.
+
+Sfsft and then followed with an A I don't think that we would need to remove inference time algorithm because even though this model will be more capable with more scale data and parameter, it will suffer from the same limitation that existing language models suffer from.
+
+There has been lots of work that show empirically and theoretically this limitation.
+
+And in my view, there are two key limitations that these systems suffer from.
+
+The first one is the snowballing of error.
+
+So one mistake that happened early on in the can derail the rest of the reasoning.
+
+And the second issue is the difficulty, look ahead task.
+
+So these large language model, they struggle with predicting the consequences of their actions several steps ahead.
+
+And so this is where meta generation algorithm can come in.
+
+And it's you can sort of think of them as an addition and added layer on top of structure of search, backtracking and evaluation.
+
+And so I see them very, very essential in enhancing the capability of large language model.
+
+Now, if you tell me that these large language models are more capable, but they were trained with more novel way of search, an innovative way of how to do you know, search during training, even in this case, even though they are going to be more capable, I do think that we will still need to complement them with inference time algorithm.
+
+Um And but in this case, I think we would need to spend much less computer at inference time compared to previous model.
+
+Um And why I think that it's because if the language model learned to explicitly search during training, it will learn on how to recover from mistakes and search through different options.
+
+And so at inference time, they would know how to solve problems on their own without too much reliance on inference time algorithm.
+
+Now, how I think about inference time algorithm for me is like a sort of a maintenance form rather than doing the heavy lifting.
+
+Um And so you can so instead of generating thousands and millions of candidates to choose from, we can just be more smart about it.
+
+And um you can think of it as a form of refining and extending the capabilities of these language model to their full extension without necessarily like just, you know, exploring exhaustively the output searches.
+
+Um I can talk more about it but I'll stop here.
+
+Great points.
+
+Thanks and Jacob.
+
+Yeah, I think there is obviously benefits to having tree like structures that we can expand rather than having a single line of thought that we go down having said this, I haven't thought too deeply about if there is ever a way of um flattening sort of everything into a single stream of consciousness, which I guess maybe what I'm doing right now.
+
+I'm just decoding token by token by token step by step.
+
+And without searching too much for whether or not this is going to make any sense.
+
+So I don't have a very good answer for you, but I think there is someone in this podium who might be able to help us because maybe they worked on or one.
+
+I, I want to pass on this question to Noam Brown.
+
+Yeah.
+
+So, I mean, I think those are two great responses.
+
+I guess the main thing I would add is that um I think we're still very early in this direction.
+
+Um And I think that there are, you know, 01 is, is one way to scale inference compute.
+
+It's not the only one and it might not be the best one.
+
+So I think there's a lot of opportunities especially for the academic community to explore different ways of doing this and um showing promise at small scale and showing that the trend lines look really good can have a follow up on the of course, if you were to do this as an academic, as a phd student, how would you frame this problem?
+
+So it's tractable, tractable academic compute.
+
+I mean, I think the way to frame it is to show that you're getting better performance as the amount of compute spent at inference time goes up.
+
+Um And I think that there's a, there's a lot of different ways to accomplish that.
+
+Um you know, including architectural.
+
+So uh you showing, showing the trend lines and I think showing promise in that.
+
+Um There's, I think a lot of different ways to go about it and what do you think is like a minimum number of GP US and what type you have to have to, you trust that of trend line going up?
+
+Do you have any intuition around this?
+
+I don't think there's like a hard cut off.
+
+I mean, certainly the GP U you have the better, but I think that it is something that can be investigated at like, you know, an academic budget because just for 30 seconds background, we had a ground at, at F and on self improvement for reasoning for LMMS.
+
+And basically, I was a few months project and turned out that my students didn't manage to make the progress.
+
+We were hoping for a year and a half ago.
+
+Um because one of them is compute in academia.
+
+So I was just curious if there is something that we can do to really try and guide the community and help academics be more effective in this space.
+
+Because I agree it's early days and we really benefit from a lot of exploration, but I'm not sure that we have the right guidance even right now in the community to do this effectively.
+
+So anyone else want to share their results, Betty or Aisha, um I guess maybe two things.
+
+So one for the original question about um the pretrain better pretrained models with that, like basically they will get rid of infant time compute.
+
+So I think what I've heard often is that you can, let's say you have a pretrained model now and you'll have, let's say a better pretrain model in the future in time computer lets you get a glimpse of that better model.
+
+So it seems like basically this is always going to be true for even maybe the future models that you can always apply in this time compute, but that's what it seems like.
+
+So I guess they are complementary and I guess to the comment from Jacob about academic and compute, do you think the challenge there was of tasks?
+
+Because maybe what we in academia, what we need to do is like do all these things on small scale and then only go to larger scale and we're willing to burn the computer rather than let's say, trying to compete on the same kind of task which industry labs focus on.
+
+Yeah, I think, I think what's probably missing is better ideas about scaling what experiments at small scale are indicative of progress when scaled up.
+
+And I don't think I've seen sort of and this is quite surprising major calls from industry labs saying, hey, these are the kind of benchmarks you have to hit at a small scale within academic compute.
+
+These are the sub problems that we would like to see solved.
+
+And if you do this, we scale up for you, right.
+
+So it's it's very surprising that there's this large effort across all industry labs to try and replicate a one and no one has said let's actually go and leverage all the talent in academia to make this a decentralized large scale effort.
+
+And this is how you can most and most effectively help.
+
+That sounds, sounds great.
+
+Yeah, I do something to add up for these two questions.
+
+Uh The one is uh we just heard about if the task actually required to like look back and backtracking and all the rest like it's hard to do that everything in the in the training, sometimes you need the feedback or see what's going on to do it.
+
+Another example might be like uh collaboration.
+
+Um So sometimes like you need others feedback to react or sometimes like uh I want to make a knowledge on like speculative decoding, right?
+
+So uh one or not maybe 01 but repeated sampling with like reward model verification a little bit similar to like uh like um speculation because you have a draft model, you just like spit out if you are decoding a tree spin out a lot of uh kind of possibilities.
+
+And you have an oracle model.
+
+Uh which because like the for the speculation, your task is exactly output the distribution aligned with the original large model.
+
+But in I, I guess like in um kind of repeated sampling with verification, this case is slightly like object is slightly different, but it's a very sys uh very simple in a systematic way.
+
+Um And in the speculation, I think there works uh people trying to do like with different small draft model and then which you can in the end construct a tree or um do it together and then get a better answer.
+
+So I think maybe in the like maybe in the Asian or collaboration and it's very hard to embed everything in a, in a training or you rely on one model process to, yeah, I just wanna add 11 thing I do agree with all of you and something that I want to put more on is like doing search during pretraining.
+
+Um And why I want to do to mention this because if this can be possible and if we can do it efficiently, this can be a paradigm shift in data efficiency, efficiency, and training very efficient models.
+
+And here I really want to quickly draw an analogy between how we human uh learn and how machine learns.
+
+And I know lots of people will say, ah come on, you can do that.
+
+Machines are different for humans.
+
+So we don't do, we cannot draw this analogy.
+
+But I think let's agree to disagree today.
+
+And the way we, you know, learn, we just uh you know, do mistakes and we receive feedback and we adjust and we continue learning, we are adjusting and iterating.
+
+So it's just our learning is very rooted in experience.
+
+And I know that can be computationally very expensive.
+
+It's gonna be algorithmically very, very expensive.
+
+But I think why not?
+
+Um you know, having a model that can train over years similar to humans that we acquire and master skills over years and see what happens out of that.
+
+Those are amazing points.
+
+Thanks.
+
+Um Let's move to the next question about the limits of inference scaling.
+
+Um How far will scaling up the inference time budget will take us?
+
+Um For instance, we will be only relevant for some tasks where we have this sort of clear verification pipeline where things are verifiable, meaning that we can more easier kind of navigate within the search space and will the granularity of search space scale up further because now we see how things go up from tokens to sentences, sometimes part of sentences.
+
+We, we see the same going for paragraphs or even to documents.
+
+Um And if so then how soon that might happen?
+
+And we will this depend on the size of the pretrained model we use or anything else.
+
+And right now, I would like to start with no M and then rub and everyone else.
+
+Yeah, I mean, I think the only way that I think about scaling up, you know, the in first time compute paradigm is just in terms of dollar value.
+
+So if you think about how much it costs to query tr BT for like the 40 model, you know, ballpark plus or minus order magnitude a penny.
+
+Um How much would people be willing to pay for answers to some of the most important problems that they care about?
+
+I would say at least $1000 for like really hard problems up to, you know, probably past a million dollars for, for like some of the most important research problems that we care about.
+
+I mean, the, the prize for proving the Roman hypothesis is a million dollars.
+
+So you can spend at least that and still come out break even.
+
+So that's eight orders of mat itude to go from one penny to a million dollars.
+
+So, you know, we've already scaled up to some extent with a one like 01, you can look at the, you know, the api cost, it's like more expensive than it is to, to, uh, to query 40, but it's still nothing compared to what it could be.
+
+So I think there's a lot of room to scale that further.
+
+All right, rich up.
+
+Um, so I think there was a mention of tasks.
+
+So I guess maybe coming back to like, let's say it works really well on things like math puzzles and coding and what not.
+
+But then there's a lot of these open ended tasks which are hard to verify which I, I guess it is a challenge and maybe I'll just say a controversial statement here that it seems like verification or learning these reward models is still one of the main bottlenecks of getting systems like Owen because let's say if you do have that, then we can use methods like Owen or other things to optimize that reward, right?
+
+So, so it does seem like that that is the one of the main bottlenecks and that does limit the potential of this in time compute.
+
+That said, maybe it's not that hard to find that signal like we already.
+
+So there are currently like a few ways we do things, either we copy humans or we ask human for preferences.
+
+And I guess one question worth asking is what happens when these things don't work.
+
+Like when, let's say humans are not able to tell is this good or not?
+
+Like for the really hard problems, no one was mentioning that we really care a lot about.
+
+What do you do then?
+
+And I think that's where we want to really use this time computing on, but I don't think it's, it's a solved problem yet.
+
+It still seems a bit further.
+
+All right.
+
+And everyone else who want to jamming.
+
+Yeah.
+
+So, so I think that's, I think for everything where we have a ground reward and we sort of touched on this, it's more of budget, right?
+
+If you give me enough samples, I will eventually find the right answer for you.
+
+If I can verify it, I think for the case are not verifiable.
+
+My intuition is that it goes back to what we discussed earlier.
+
+The question of meta, right?
+
+What if you optimized yourself to be better at searching in those domains?
+
+And this also goes back to the proposals made earlier, which is can we learn to search during pretraining?
+
+Um because there was a project we tried to do my lab, which was not trying to search only for specific domains, but instead learn to reason at the pretraining scale.
+
+And I believe if you self improve for chain of thought on the data of the pretraining where basically every token is a every to prediction is a task, then I would expect that this would generalize downstream just like pretraining itself has generalized to a lot of downstream tasks.
+
+And I think at that point, probably the limit will be, will be compute and in particular, being able to deploy all these compute resources during pretraining.
+
+Um Because then the question is, can you actually scale beyond what you've learned to reason if I only learn to reason for a chain of thought of 10,000 tokens?
+
+Can I go to a million tokens?
+
+And that part, I think I have, I have no idea if that will work.
+
+Great.
+
+Thank you.
+
+I think there's one limitation on the training data for this models, like for mass and reasoning or code generation, it's actually very easy to generate a massive, like it's a matter of uh yeah, there's a bottleneck for the computation, but uh it's very easy to generate such data for training.
+
+And then uh you might realize that uh when you're training with this data for the model, um it's hard to generate on other tasks, not only for like the ones that are not verified, but it's more of a bias towards uh solving those problems uh like better, but the other ones like there's auto distribution problem too, right?
+
+People might observe like um if you like see the feedbacks from using those models, um many users will say, oh it's so great because like the tasks they they use it for are great.
+
+Um But there are other ones, OK?
+
+It doesn't even solve the problem used to solve.
+
+So I think there's a value like it's probably about the training data problem.
+
+Uh So, yeah, I think currently uh except for the computation, I think it's a limitation on that too.
+
+I see.
+
+Um Yeah, very quickly.
+
+I think ARL plus search can be relatively easy to scale in domains where um outcome supervision is available like exactly for math and code, but it's not the case for tasks like writing biology, drug discovery, etcetera.
+
+And these are the tasks I think we need to really spend more time and effort thinking about how to do uh you know, meta generation on.
+
+And I think this is because just these algorithms work very well on task where structured step by step reasoning is available and verification is easy.
+
+And so there is also the other problem of ambiguity and correctness of the response.
+
+And so I guess, you know, and there is also the cost of a human verification.
+
+And I and, and so basically, I expect that there, there will be lots of divergence between what these models, what these systems and algorithm can do on math versus other domains.
+
+The other thing I want to mention even for math and reasoning as was mentioned during the tutorial, there are bottlenecked by the verifier quality.
+
+And so I think if you cannot distinguish between false positive and true positive, even scaling the compute, we don't solve that.
+
+Um And yeah, I want to stop here to um I have actually one more set of tasks where this might fail.
+
+So, so, so far there was an implicit assumption that verification is easier than generation.
+
+And that's generally true like NP problems and a lot of other problems.
+
+But then there are other problems where verification could be harder than generation.
+
+So think of tasks where you have to verify for a large set inputs or a combinatorial set of inputs, for example, determining whether a program is safe for all possible inputs.
+
+This is like verification is actually harder than generation in this case.
+
+And I don't know how would we actually tackle these kind of problems because they're like, you can't just apply RL because learning your verify or getting a reward function is not that easy.
+
+I I agree very, very quick thing.
+
+So, so um I think, OK, so we're talking all the time about very complex reasoning problem and how these systems can be amazing in solving them as long as you have a constrained domain.
+
+Um And uh so the model can solve that.
+
+Now, actually, I want to ask this question, how about a very complex system that can do have reasoning step by step reasoning?
+
+But these are things that humans haven't been successful yet in solving like very complex societal issues like poverty or like climate change, would these models be able to solve?
+
+Would they be able to solve something that humans haven't yet?
+
+So Yeah, I think that's another limitation to these algorithms.
+
+Yeah.
+
+Yeah.
+
+Yeah.
+
+So we are looking at the architecture like transformer architecture kind of limitation.
+
+Uh So I think there's a paper last year or earlier this year about the illusion of SSM kind of like a talking about the state tracking problems should be easily solved with one layer RNS.
+
+Um But for um the other like linear models and including transformer models um is just like the number of layers you need and the sequence lens or like the states that you need for solving this problem is growing uh not constantly.
+
+So um I hypothesize that this is might be related to like even coding reasoning, those complex tasks as well because they might need like when we talk about a model scaling and test time scaling or cot is intrinsically adding more steps uh to like result in those states.
+
+Um But maybe they're gonna be like research on the architecture side uh trying to get a both of both worlds too great.
+
+That was a great discussion.
+
+Thanks a lot for all the inputs.
+
+Um And now I want to go over to the efficiency part of inference because as you know, recently we've got so many awesome advances with VOM and other engines, we couldn't think about generating that fast like a couple of years ago.
+
+And I'm curious how do you think is there a wide space for further optimizations within that architecture we have or we kind of just waiting until NVIDIA release new accelerators with even faster frequencies.
+
+So, because I think it's really interesting how this was addressed from different perspectives, page attention, continuous batching, uh context like this pre sharing or caching and so on.
+
+And I would like to start with Betty and I'm here.
+
+Yeah.
+
+So for uh I think my answer to the first question are related to this.
+
+So if you don't want to change anything about your uh like model and the way that you do repeated assembling and uh you um like nothing was changed is a little bit hard to like completely optimize from the system perspective.
+
+Uh However, if you are uh like uh like what, what I mentioned before um now the test scaling give you another degree of freedom to redesigning the algorithm or the modeling part.
+
+If you don't get some answers with one try, like multiple tries will, might have a better scaling.
+
+We actually see that uh in the early experiments.
+
+Uh So from that, if you are willing to change your model and your architecture kind of co-sign, then there's a wide spectrum of co-sign with the hardware as well.
+
+All right.
+
+And um could you say about transformers?
+
+Yeah, I think to go down to the lowest level, talk about hardware, I think there's a lot of opportunity at the hardware level to uh to reimagine things.
+
+I think a lot of the hardware that's been developed, was designed in a world where there would be a lot of compute SPN during training.
+
+And then inference would be relatively cheap.
+
+And I suspect that we're going to head towards a world where inference is going to be a large fraction, a much larger fraction um than the total computes that is spent for these models um than it was before.
+
+So, uh I, I think in many ways, some of the most exciting research to be done is at the hardware level and I would love to see uh creative ideas for how to, how to make inference a lot cheaper.
+
+And you know, in a world where you don't have to worry so much about the constraints of the pretraining paradigm.
+
+All right, I think we are officially out of time right now, but we could get some other um like other thoughts if uh if you want, just kind of short, what was that?
+
+I mean, we're out of time.
+
+But if you, if anyone has other thoughts so I can, I can always speak so, so I think another place we see a lot of games outside of hardware is are you going to use an LLM or you can do something else?
+
+Right.
+
+So it came up in the toy, I think the question of tool use.
+
+But what if we had integrated systems that could use code whenever it's useful and use infants passes where that's the most efficient solution.
+
+So I think these hybrid architectures of code and trained components will be absolutely amazing.
+
+And I do also agree that just rethinking the algorithms we use for work where we do trillion times more infer tokens, then we do compute training time tokens is really, really exciting.
+
+And I can imagine we will completely reinvent the entire pipeline for this.
+
+Um I guess one thing to add to that is I guess there was a lot of talk about verifier and I think that recently there is this line of work which says that rather than treating them as classifiers or scoring models, why not use, just treat it like a language model, generative verifier, generative reward models.
+
+And now all the things you do to language models like the inference time compute for generators.
+
+Now they should be applied for verifier.
+
+So what if we have an open style model but just for verification?
+
+And now we can go to the meta meta thing, Jacob was mentioning that this could be just a single model which is a verifier and generator and it's doing its own thing.
+
+We are not there yet, but hopefully at some point, we might get there.
+
+Probably a concluding.
+
+Not for me, I think over the past five years or less, we have spent a lot of time thinking about scaling the training law.
+
+What's that?
+
+The pretraining scaling law?
+
+And we haven't focused at all on inference scaling law.
+
+And so I think there is something very important now to really invest time effort on is the balance between pretraining compute and also inference time compute.
+
+And what is more very exciting for me is that what these algorithm can actually enable smaller, more efficient, more compact you know model that are specialized, but they can be complemented with this algorithm to unlock more capabilities.
+
+The other thing I want to say is that probably we have to think more about the training.
+
+I mentioned that earlier.
+
+But I would love if we think about that as a community and also the open source community is lacking lots of these tools.
+
+So it would be great if also the open source community focus on that over the next few months years.
+
+OK.
+
+I'd like to thank our panelists again.
+
+Thanks a lot for attending this panel and we wrap it up at this point.
+
+Thanks everyone for attending.

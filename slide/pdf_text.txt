@@ -1,0 +1,2895 @@
+--- PAGE 1 ---
+Beyond Decoding: Meta-Generation Algorithms
+for Large Language Models
+Presenters: Matthew Finlayson, Hailey Schoelkopf, Sean Welleck
+December 11, 2024
+--- PAGE 2 ---
+Today’s talk
+Algorithms for generating outputs with a
+language model
+Why? Use test-time compute to improve performance
+1
+--- PAGE 3 ---
+Today’s talk
+Algorithms for generating outputs with a
+language model
+Why? Use test-time compute to improve performance
+1
+--- PAGE 4 ---
+Language models
+Solving olympiad problems
+Writing code
+Tasks framed as generating sequences: many other applications
+2
+--- PAGE 5 ---
+Approach 1: scale pretraining compute
+[2020-]Scaling pretraining: larger model, larger dataset
+Scaling Laws for Neural Language Models [Kaplan et al., 2020]
+3
+--- PAGE 6 ---
+Approach 2: scale post-training compute
+[2022-]Scaling post-training: e.g., fine-tune on (input, output) pairs
+Scaling Instruction-Finetuned Language Models [Chung et al., 2022]
+4
+--- PAGE 7 ---
+Approach 3: scale test-time compute
+[Now] Test-time scaling: increase compute at generation time
+Test-time compute vs. accuracy ([OpenAI, 2024])
+5
+--- PAGE 8 ---
+Approach 3: scale test-time compute | How?
+1. Generate extra tokens
+[Wei et al., 2022]
+6
+--- PAGE 9 ---
+Approach 3: scale test-time compute | How?
+1. Generate extra tokens
+[Wei et al., 2022]
+6
+--- PAGE 10 ---
+Approach 3: scale test-time compute | How?
+1. Generate extra tokens
+2. Call generator multiple times
+AlphaCode [Li et al., 2022]
+7
+--- PAGE 11 ---
+Approach 3: scale test-time compute | How?
+1. Generate extra tokens
+2. Call generator multiple times
+AlphaCode [Li et al., 2022]
+7
+--- PAGE 12 ---
+Approach 3: scale test-time compute | How?
+1. Generate extra tokens
+2. Call generator multiple times
+Math [Brown et al., 2024]
+ Agents [Nebius, 2024]
+ Chat [Ankner et al., 2024]
+8
+--- PAGE 13 ---
+Approach 3: scale test-time compute | How?
+1. Generate extra tokens
+2. Call generator multiple times
+3. Incorporate other models/tools
+[Zaharia et al., 2024]
+Verifiers, code interpreters, search engines, ...
+9
+--- PAGE 14 ---
+This tutorial
+This tutorial: How? Meta-Generation Algorithms
+10
+--- PAGE 15 ---
+This tutorial | Generation Algorithms
+Generator: Generates a sequence with a language model.
+• Example: calling an LLM API
+• Traditional algorithms
+• Greedy decoding
+• Temperature sampling
+• ...
+11
+--- PAGE 16 ---
+This tutorial | Meta-Generation Algorithms
+Meta-generator: High-level strategies for calling generators and
+using external information.
+• Example: call API multiple times, select the best sequence with a
+separate model
+12
+--- PAGE 17 ---
+This tutorial | Meta-Generation Algorithms
+Meta-generator: High-level strategies for calling generators and
+using external information.
+Why?
+• Generate more to improve task performance
+• Combine multiple models (verifiers, retrievers, . . .)
+• Incorporate external information (tools, feedback, . . .)
+12
+--- PAGE 18 ---
+This tutorial
+Beyond Decoding: Meta-Generation Algorithms for LLMs
+• I: Primitive generators: Generating one token at a time
+• II: Meta-generators: High-level strategies for calling generators
+• III: Efficient meta-generation: Generating quickly and efficiently
+Panel session at the end!
+13
+--- PAGE 19 ---
+Presenters
+Part I
+Matthew Finlayson
+USC
+@mattf1n
+Intro/Part II
+Sean Welleck
+CMU
+@wellecks
+Part III
+Hailey Schoelkopf
+EleutherAI
+@haileysch__
+14
+--- PAGE 20 ---
+Panel
+Beidi Chen
+CMU
+@BeidiChen
+Nouha Dziri
+AI2
+@nouhadziri
+Rishabh Agarwal
+DeepMind/McGill
+@agarwl_
+Jakob Foerster
+Oxford/Meta AI
+@j_foerst
+Noam Brown
+OpenAI
+@polynoamial
+Ilia Kulikov (Moderator)
+Meta AI
+@uralik1
+15
+--- PAGE 21 ---
+This tutorial | team and survey
+Survey (TMLR 2024): From Decoding to Meta-Generation:
+Inference-time Algorithms for Large Language Models [Welleck et al., 2024]
+16
+--- PAGE 22 ---
+This tutorial | resources
+cmu-l3.github.io/neurips2024-inference-tutorial
+Code examples, reading list, slides
+17
+--- PAGE 23 ---
+I. Primitive Generators
+--- PAGE 24 ---
+I. Primitive Generators
+Generating one token at a time
+--- PAGE 25 ---
+This tutorial
+Beyond Decoding: Meta-Generation Algorithms for LLMs
+• Primitive Generators
+• Meta-generators
+• Efficient meta-generation
+18
+--- PAGE 26 ---
+Token-level generation
+Auto-regressive language modeling uses a causal language model,
+which defines a conditional distribution over tokens pθ[xt | x<t].
+Taylor Alison Swift (born December 13, 1989) is
+x<t
+an
+a
+the
+best
+one
+…
+LM
+American
+actress
+English
+actor
+award
+…
+Token-level decoding algorithms are primarily concerned with how
+to choose the next token.
+19
+--- PAGE 27 ---
+Token-level generation
+Auto-regressive language modeling uses a causal language model,
+which defines a conditional distribution over tokens pθ[xt | x<t].
+Taylor Alison Swift (born December 13, 1989) is
+x<t
+an
+a
+the
+best
+one
+…
+*
+an
+xt
+American
+actress
+English
+actor
+award
+…
+Token-level decoding algorithms are primarily concerned with how
+to choose the next token.
+19
+--- PAGE 28 ---
+Token-level generation
+Auto-regressive language modeling uses a causal language model,
+which defines a conditional distribution over tokens pθ[xt | x<t].
+Taylor Alison Swift (born December 13, 1989) is an
+x<t
+American
+actress
+English
+actor
+award
+…
+Token-level decoding algorithms are primarily concerned with how
+to choose the next token.
+19
+--- PAGE 29 ---
+Token-level generation
+Auto-regressive language modeling uses a causal language model,
+which defines a conditional distribution over tokens pθ[xt | x<t].
+Taylor Alison Swift (born December 13, 1989) is an
+x<t
+American
+actress
+English
+actor
+award
+…
+Token-level decoding algorithms are primarily concerned with how
+to choose the next token.
+19
+--- PAGE 30 ---
+Decoding is search
+Each time-step during decoding requires a choice.
+Taylor Swift is
+the
+a
+writer
+singer
+and
+song
+producer
+who
+has
+is
+was.
+actress
+- song writer
+former
+contestant
+on
+the
+“ The
+of
+member
+But a search for what? What is our objective? How do we make local
+choices that achieve the objective?
+20
+--- PAGE 31 ---
+Token-level generation (outline)
+Objectives for decoding
+• Optimization
+• Sampling
+• Constrained generation, structured outputs
+21
+--- PAGE 32 ---
+I. Primitive Generators
+Decoding as optimization
+--- PAGE 33 ---
+Maximum A Posteriori (MAP)
+MAP decoding seeks to find the most likely sequence
+arg max
+x
+pθ[x]
+• Greedy decoding
+• Beam search
+22
+--- PAGE 34 ---
+Greedy decoding
+• Choose the most-likely token at each step.
+xt = arg max
+x
+pθ[x | x<t]
+• Does not guarantee the most-likely sequence.
+Prefix Continuation Prob.
+Greedy Taylor Swift is a former contestant on
+Token prob. 0.023 0.022 0.80 0.0004
+23
+--- PAGE 35 ---
+Greedy decoding
+• Choose the most-likely token at each step.
+xt = arg max
+x
+pθ[x | x<t]
+• Does not guarantee the most-likely sequence.
+Prefix Continuation Prob.
+Greedy Taylor Swift is a former contestant on
+Token prob. 0.023 0.022 0.80 0.0004
+23
+--- PAGE 36 ---
+Greedy decoding
+• Choose the most-likely token at each step.
+xt = arg max
+x
+pθ[x | x<t]
+• Does not guarantee the most-likely sequence.
+Prefix Continuation Prob.
+Greedy Taylor Swift is a former contestant on
+Token prob. 0.023 0.022 0.80 0.0004
+Non-greedy Taylor Swift is a singer , song
+Token prob. 0.012 0.26 0.21 0.0007
+23
+--- PAGE 37 ---
+Beam Search
+Beam-search is a width-limited breadth-first search (BFS).
+Taylor Swift is
+a
+0. 13 former
+0.003
+writer
+0.003
+an
+0.03
+the
+0.06 latest
+0.004
+to
+0.0004 be
+0.00002
+join
+0.00002
+in
+0.0003
+only
+0.003 person
+0.0004 who
+0.00008
+to
+0.00008
+one
+0.0002
+GPT2, beam size 2
+Note: Beam search with beam size 1 is greedy decoding.
+24
+--- PAGE 38 ---
+Beam Search
+Beam-search is a width-limited breadth-first search (BFS).
+Taylor Swift is
+a
+0. 13 former
+0.003
+writer
+0.003
+an
+0.03
+the
+0.06 latest
+0.004
+to
+0.0004 be
+0.00002
+join
+0.00002
+in
+0.0003
+only
+0.003 person
+0.0004 who
+0.00008
+to
+0.00008
+one
+0.0002
+GPT2, beam size 2
+Note: Beam search with beam size 1 is greedy decoding.
+24
+--- PAGE 39 ---
+Beam Search
+Beam-search is a width-limited breadth-first search (BFS).
+Taylor Swift is
+a
+0. 13 former
+0.003
+writer
+0.003
+an
+0.03
+the
+0.06 latest
+0.004
+to
+0.0004 be
+0.00002
+join
+0.00002
+in
+0.0003
+only
+0.003 person
+0.0004 who
+0.00008
+to
+0.00008
+one
+0.0002
+GPT2, beam size 2
+Note: Beam search with beam size 1 is greedy decoding.
+24
+--- PAGE 40 ---
+Beam Search
+Beam-search is a width-limited breadth-first search (BFS).
+Taylor Swift is
+a
+0. 13 former
+0.003
+writer
+0.003
+an
+0.03
+the
+0.06 latest
+0.004
+to
+0.0004 be
+0.00002
+join
+0.00002
+in
+0.0003
+only
+0.003 person
+0.0004 who
+0.00008
+to
+0.00008
+one
+0.0002
+GPT2, beam size 2
+Note: Beam search with beam size 1 is greedy decoding.
+24
+--- PAGE 41 ---
+Beam Search
+Beam-search is a width-limited breadth-first search (BFS).
+Taylor Swift is
+a
+0. 13 former
+0.003
+writer
+0.003
+an
+0.03
+the
+0.06 latest
+0.004
+to
+0.0004 be
+0.00002
+join
+0.00002
+in
+0.0003
+only
+0.003 person
+0.0004 who
+0.00008
+to
+0.00008
+one
+0.0002
+GPT2, beam size 2
+Note: Beam search with beam size 1 is greedy decoding.
+24
+--- PAGE 42 ---
+Benefits of MAP
+MAP decoding works well for closed-ended tasks like translation,
+question answering.
+[Freitag and Al-Onaizan, 2017]
+ [Shi et al., 2024]
+25
+--- PAGE 43 ---
+Pitfalls of MAP
+Probability maximization causes decoding problems.
+• Repetition traps
+• Short sequences [Stahlberg and Byrne, 2019]
+• Atypicality [Meister et al., 2022]
+26
+--- PAGE 44 ---
+Pitfalls of MAP
+Probability maximization causes decoding problems.
+• Repetition traps
+• Short sequences [Stahlberg and Byrne, 2019]
+• Atypicality [Meister et al., 2022]
+GPT2, Beam size 32.
+Taylor Alison Swift (born December 13, 1989) is an American
+singer-songwriter, singer-songwriter, songwriter, and song-
+writer. She is best known for her work as a singer-song-
+writer, songwriter-songwriter, songwriter-songwriter, song-
+writer-songwriter…
+Remedies:
+• repetition penalty
+• unlikelihood training [Welleck et al., 2020]
+26
+--- PAGE 45 ---
+Pitfalls of MAP
+Probability maximization causes decoding problems.
+• Repetition traps
+• Short sequences [Stahlberg and Byrne, 2019]
+• Atypicality [Meister et al., 2022]
+Pr[Taylor Swift is <eos>] > Pr[Taylor Swift is an American singer-… ]
+Remedy: length normalization
+26
+--- PAGE 46 ---
+Pitfalls of MAP
+Probability maximization causes decoding problems.
+• Repetition traps
+• Short sequences [Stahlberg and Byrne, 2019]
+• Atypicality [Meister et al., 2022]
+• Biased coin Pr[ H ] = 0.6, Pr[ T ] = 0.4.
+• Most likely outcome from 100 flips is all heads
+H H H H H H H H H H …
+• But this outcome is atypical.
+• Similarly, the most likely generation may also be atypical.
+Remedy to all of the above: sampling
+26
+--- PAGE 47 ---
+Pitfalls of MAP
+Probability maximization causes decoding problems.
+• Repetition traps
+• Short sequences [Stahlberg and Byrne, 2019]
+• Atypicality [Meister et al., 2022]
+Takeaway: Approximate MAP (e.g., narrow beam search) works better
+than exact MAP [Meister et al., 2020] .
+26
+--- PAGE 48 ---
+I. Primitive Generators
+Sampling
+--- PAGE 49 ---
+Objective: Sampling
+Modern LLM APIs like Together.AI
+offer settings for sampling.
+Together.ai playground.
+27
+--- PAGE 50 ---
+Ancestral sampling
+• y1 ∼ pθ(· | x)
+• y2 ∼ pθ(· | x, y1)
+• y3 ∼ pθ(· | x, y2, y3)
+• …
+Ancestral sampling is equivalent to sequence sampling.
+pθ(y) = pθ(y1)pθ(y2 | y1)pθ(y3 | y1y2) . . . pθ(yT | y<T)
+28
+--- PAGE 51 ---
+Ancestral sampling
+• y1 ∼ pθ(· | x)
+• y2 ∼ pθ(· | x, y1)
+• y3 ∼ pθ(· | x, y2, y3)
+• …
+Ancestral sampling is equivalent to sequence sampling.
+pθ(y) = pθ(y1)pθ(y2 | y1)pθ(y3 | y1y2) . . . pθ(yT | y<T)
+28
+--- PAGE 52 ---
+What is wrong with ancestral sampling?
+• Greedy decoding causes repetition traps
+• But ancestral sampling causes incoherence. Why?
+• Low-probability tokens are too likely
+• I.e., the distribution has a heavy tail.
+• Solution: chop off the tail!
+Greedy
+(repetition trap)
+Taylor Swift is a former contestant on the
+reality show … “I think it’s a very sad day
+for the show, ” he said. “It’s a very sad day
+for the show. It’s a very sad day for the
+show. It’s a very sad …
+29
+--- PAGE 53 ---
+What is wrong with ancestral sampling?
+• Greedy decoding causes repetition traps
+• But ancestral sampling causes incoherence. Why?
+• Low-probability tokens are too likely
+• I.e., the distribution has a heavy tail.
+• Solution: chop off the tail!
+Greedy Ancestral
+(repetition trap) (incoherent)
+Taylor Swift is a former contestant on the
+reality show … “I think it’s a very sad day
+for the show, ” he said. “It’s a very sad day
+for the show. It’s a very sad day for the
+show. It’s a very sad …
+Taylor Swift is a huge fan of her latest
+album ‘Famous. ’ The singer got her first
+reaction when she uploaded to Twitter a
+video of her dancing and singing at a re-
+ception for a Grammy-nominated female
+songstress, Beyoncé.
+29
+--- PAGE 54 ---
+What is wrong with ancestral sampling?
+• Greedy decoding causes repetition traps
+• But ancestral sampling causes incoherence. Why?
+• Low-probability tokens are too likely
+• I.e., the distribution has a heavy tail.
+• Solution: chop off the tail!
+Greedy Ancestral Top-k
+(repetition trap) (incoherent) (acceptable)
+Taylor Swift is a former contestant on the
+reality show … “I think it’s a very sad day
+for the show, ” he said. “It’s a very sad day
+for the show. It’s a very sad day for the
+show. It’s a very sad …
+Taylor Swift is a huge fan of her latest
+album ‘Famous. ’ The singer got her first
+reaction when she uploaded to Twitter a
+video of her dancing and singing at a re-
+ception for a Grammy-nominated female
+songstress, Beyoncé.
+Taylor Swift is a writer for IGN and a mem-
+ber of IGN’s Television Critics Association.
+You can follow her on Twitter at @_MsS-
+wift, IGN at MsSwiftIGN, Facebook at MrsS-
+wift, or subscribe to her video channels.
+29
+--- PAGE 55 ---
+Truncation sampling
+Truncation sampling interpolates greedy and ancestral sampling by
+choosing a minimum probability threshold at each time step.
+Method Threshold strategy
+Top-k Sample from k-most-probable
+Top-p Cumulative probability at most p
+ϵ Probability at least ϵ
+η Min prob. proportional to entropy
+Min-p Prob. at least pmin scaled by max token prob.
+30
+--- PAGE 56 ---
+Truncation sampling
+','
+' and'
+' is'
+' ('
+'\n'
+' said'
+' in'
+' had'
+' at'
+' will'
+' &'
+' of'
+"',""'"
+'/'
+' says'
+' recently'
+' also'
+' (@'
+' ,'
+' for'
+' told'
+' released'
+' can'
+' performed'
+' made'
+Logprob
+Taylor Swift
+' is'
+','
+' and'
+' has'
+' here'
+'?'
+' means'
+' in'
+' would'
+' as'
+"'?""'"
+' you'
+' may'
+' sounds'
+' Is'
+' are'
+' can'
+' goes'
+' now'
+' came'
+' might'
+' starts'
+"'!""'"
+' of'
+' really'
+My name
+31
+--- PAGE 57 ---
+Truncation sampling
+','
+' and'
+' is'
+' ('
+'\n'
+' said'
+' in'
+' had'
+' at'
+' will'
+' &'
+' of'
+"',""'"
+'/'
+' says'
+' recently'
+' also'
+' (@'
+' ,'
+' for'
+' told'
+' released'
+' can'
+' performed'
+' made'
+Logprob
+Taylor Swift
+' is'
+','
+' and'
+' has'
+' here'
+'?'
+' means'
+' in'
+' would'
+' as'
+"'?""'"
+' you'
+' may'
+' sounds'
+' Is'
+' are'
+' can'
+' goes'
+' now'
+' came'
+' might'
+' starts'
+"'!""'"
+' of'
+' really'
+Top-k = 5
+My name
+31
+--- PAGE 58 ---
+Truncation sampling
+','
+' and'
+' is'
+' ('
+'\n'
+' said'
+' in'
+' had'
+' at'
+' will'
+' &'
+' of'
+"',""'"
+'/'
+' says'
+' recently'
+' also'
+' (@'
+' ,'
+' for'
+' told'
+' released'
+' can'
+' performed'
+' made' Top-p = 0.9
+Logprob
+Taylor Swift
+' is'
+','
+' and'
+' has'
+' here'
+'?'
+' means'
+' in'
+' would'
+' as'
+"'?""'"
+' you'
+' may'
+' sounds'
+' Is'
+' are'
+' can'
+' goes'
+' now'
+' came'
+' might'
+' starts'
+"'!""'"
+' of'
+' really'
+Top-k = 5
+Top-p = 0.9
+My name
+31
+--- PAGE 59 ---
+Temperature Sampling
+Instead of truncating the tail, make the distribution more “peaked” .
+softmax(x, τ) = exp(x/τ )∑
+i exp(xi/τ )
+Temperature Parameter Pro Con
+High τ ≥ 1 Diverse Incoherent
+Low τ < 1 Coherent Repetitive
+32
+--- PAGE 60 ---
+Temperature Sampling
+Taylor Swift is… softmax (x/τ )
+0 0.4 0.8
+' a'
+' the'
+' an'
+' not'
+' one'
+' back'
+' in'
+' currently'
+' on'
+' also'
+' now'
+' still'
+' known'
+' set'
+' no'
+' doing'
+' out'
+' coming'
+' going'
+' playing'
+Probability
+τ = 0.5
+(peaked)
+0 0.4 0.8
+Probability
+τ = 1
+(unaltered)
+0 0.4 0.8
+Probability
+τ = 2
+(near uniform)
+33
+--- PAGE 61 ---
+Sampling implementations
+1 probs = model(sequence)
+2
+3 # Greedy
+4 indices, weights = probs.argmax(keepdim=True), None
+5
+6 # Ancestral
+7 indices, weights = vocab_size, probs
+8
+9 # Top-k
+10 topk = probs.topk(k)
+11 indices, weights = topk.indices, topk.values
+12
+13 # Top-p
+14 argsort = probs.argsort(descending=True)
+15 top_p = (argsort.values.cumsum() < p). sum() + 1
+16 indices, weights = argsort.indices[:top_p], argsort.values[:top_p]
+17
+18 # Epsilon
+19 indices, weights = vocab_size, probs * (probs > epsilon)
+20
+21 # Temperature
+22 indices, weights = vocab_size, (logits / temp).softmax(-1)
+23
+24 # Sample
+25 next_token = random.choices(indices, weights=weights, k=1) 34
+--- PAGE 62 ---
+Batteries-included inference frameworks
+1 # vLLM
+2 from vllm import LLM, SamplingParams
+3 llm = LLM(model= "facebook/opt-125m")
+4 prompts = [ "Hello, my name is"]
+5 sampling_params = SamplingParams( temperature=0.8, top_p=0.95)
+6 outputs = llm.generate(prompts, sampling_params)
+7
+8 # Huggingface
+9 from transformers import AutoModelForCausalLM, AutoTokenizer
+10 model = AutoModelForCausalLM.from_pretrained( "gpt2")
+11 tokenizer = AutoTokenizer.from_pretrained( "gpt2")
+12 text = "Hello, my name is"
+13 tokens = tokenizer(text, return_tensors= "pt")
+14 output = model(**tokens).generate(
+15 temperature=0.8, top_p=0.95, do_sample=True
+16 )
+35
+--- PAGE 63 ---
+Why are next-token distributions heavy-tailed?
+• Under-training
+• Mode-seeking: cross-entropy loss punishes probability
+underestimation more than overestimation.
+• By design low-rank constraints on the LLM
+outputs [Finlayson et al., 2024].
+Rembed Rvocabunembed ∆vocab
+softmax
+36
+--- PAGE 64 ---
+Why are next-token distributions heavy-tailed?
+• Under-training
+• Mode-seeking: cross-entropy loss punishes probability
+underestimation more than overestimation.
+• By design low-rank constraints on the LLM
+outputs [Finlayson et al., 2024].
+Rembed Rvocabunembed ∆vocab
+softmax
+36
+--- PAGE 65 ---
+Why are next-token distributions heavy-tailed?
+• Under-training
+• Mode-seeking: cross-entropy loss punishes probability
+underestimation more than overestimation.
+• By design low-rank constraints on the LLM
+outputs [Finlayson et al., 2024].
+Rembed Rvocabunembed ∆vocab
+softmax
+36
+--- PAGE 66 ---
+Sampling adapters
+A sampling adapter takes a token distribution pθ(· | x) and re-adjusts
+the probabilities.
+• Truncation and temperature are adapters.
+• Contrastive decoding [Li et al., 2023a, Liu et al., 2021]
+p(· | x) ∝ pexpert (· | x)
+pantiexpert (· | x)
+• Many others
+Method Purpose Adapter
+Ancestral sampling y∼pθ –
+Temperature sampling [Ackley et al., 1985]y∼q(pθ) Rescale
+Greedy decoding y←maxpθ Argmax (temperature→0)
+Top-k sampling [Fan et al., 2018]y∼q(pθ) Truncation (top-k)
+Nucleus sampling [Holtzman et al., 2020]y∼q(pθ) Truncation (cumulative prob.)
+Typical sampling [Meister et al., 2023]y∼q(pθ) Truncation (entropy)
+Epsilon sampling [Hewitt et al., 2022]y∼q(pθ) Truncation (probability)
+ηsampling [Hewitt et al., 2022]y∼q(pθ) Truncation (prob. and entropy)
+Mirostat decoding [Basu et al., 2021] Target perplexity Truncation (adaptive top-k)
+Basis-aware sampling [Finlayson et al., 2024]y∼q(pθ) Truncation (linear program)
+Contrastive decoding [Li et al., 2023a]y∼q(pθ) log pθ′ −logpθand truncation
+DExperts [Liu et al., 2021] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α
+Inference-time adapters [Lu et al., 2023]y∼q∗∝r(y) ∝(pθ·pθ′)α
+Proxy tuning [Liu et al., 2024] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α
+37
+--- PAGE 67 ---
+Sampling adapters
+A sampling adapter takes a token distribution pθ(· | x) and re-adjusts
+the probabilities.
+• Truncation and temperature are adapters.
+• Contrastive decoding [Li et al., 2023a, Liu et al., 2021]
+p(· | x) ∝ pexpert (· | x)
+pantiexpert (· | x)
+• Many others
+Method Purpose Adapter
+Ancestral sampling y∼pθ –
+Temperature sampling [Ackley et al., 1985]y∼q(pθ) Rescale
+Greedy decoding y←maxpθ Argmax (temperature→0)
+Top-k sampling [Fan et al., 2018]y∼q(pθ) Truncation (top-k)
+Nucleus sampling [Holtzman et al., 2020]y∼q(pθ) Truncation (cumulative prob.)
+Typical sampling [Meister et al., 2023]y∼q(pθ) Truncation (entropy)
+Epsilon sampling [Hewitt et al., 2022]y∼q(pθ) Truncation (probability)
+ηsampling [Hewitt et al., 2022]y∼q(pθ) Truncation (prob. and entropy)
+Mirostat decoding [Basu et al., 2021] Target perplexity Truncation (adaptive top-k)
+Basis-aware sampling [Finlayson et al., 2024]y∼q(pθ) Truncation (linear program)
+Contrastive decoding [Li et al., 2023a]y∼q(pθ) log pθ′ −logpθand truncation
+DExperts [Liu et al., 2021] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α
+Inference-time adapters [Lu et al., 2023]y∼q∗∝r(y) ∝(pθ·pθ′)α
+Proxy tuning [Liu et al., 2024] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α
+37
+--- PAGE 68 ---
+Sampling adapters
+A sampling adapter takes a token distribution pθ(· | x) and re-adjusts
+the probabilities.
+• Truncation and temperature are adapters.
+• Contrastive decoding [Li et al., 2023a, Liu et al., 2021]
+p(· | x) ∝ pexpert (· | x)
+pantiexpert (· | x)
+• Many others
+Method Purpose Adapter
+Ancestral sampling y∼pθ –
+Temperature sampling [Ackley et al., 1985]y∼q(pθ) Rescale
+Greedy decoding y←maxpθ Argmax (temperature→0)
+Top-k sampling [Fan et al., 2018]y∼q(pθ) Truncation (top-k)
+Nucleus sampling [Holtzman et al., 2020]y∼q(pθ) Truncation (cumulative prob.)
+Typical sampling [Meister et al., 2023]y∼q(pθ) Truncation (entropy)
+Epsilon sampling [Hewitt et al., 2022]y∼q(pθ) Truncation (probability)
+ηsampling [Hewitt et al., 2022]y∼q(pθ) Truncation (prob. and entropy)
+Mirostat decoding [Basu et al., 2021] Target perplexity Truncation (adaptive top-k)
+Basis-aware sampling [Finlayson et al., 2024]y∼q(pθ) Truncation (linear program)
+Contrastive decoding [Li et al., 2023a]y∼q(pθ) log pθ′ −logpθand truncation
+DExperts [Liu et al., 2021] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α
+Inference-time adapters [Lu et al., 2023]y∼q∗∝r(y) ∝(pθ·pθ′)α
+Proxy tuning [Liu et al., 2024] y∼q∗(·|x,c) ∝pθ·(pθ+/pθ−)α
+37
+--- PAGE 69 ---
+I. Primitive Generators
+Constrained decoding
+--- PAGE 70 ---
+Constrained decoding
+Embedding LLMs in larger systems requires that they can
+communicate with the larger system, e.g., with JSON.
+Can we force LLMs to generate structured outputs?
+From OpenAI Playground. 38
+--- PAGE 71 ---
+Worked example: decoding valid JSON
+Language models can stuggle with controlled and structured
+generation. Prompt:
+Key Type
+name string
+birth year int
+Format the following information using the JSON schema:
+”Taylor Swift was born December 13, 1989. ”
+LLM:
+{"name": "Taylor Swift", "birth": "1998-12-
+13T01:00:00Z", "age…
+The LLM output does not match the JSON schema.
+39
+--- PAGE 72 ---
+Worked example: decoding valid JSON
+Language models can stuggle with controlled and structured
+generation. Prompt:
+Key Type
+name string
+birth year int
+Format the following information using the JSON schema:
+”Taylor Swift was born December 13, 1989. ”
+LLM:
+{"name": "Taylor Swift", "birth": "1998-12-
+13T01:00:00Z", "age…
+The LLM output does not match the JSON schema.
+39
+--- PAGE 73 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+40
+--- PAGE 74 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+40
+--- PAGE 75 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+Token Prob.
+\n 0.36
+" 0.16
+{ 0.026
+https 0.025
+… …
+40
+--- PAGE 76 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+{
+Token Prob.
+name 0.31
+date 0.069
+" 0.039
+id 0.033
+… …
+40
+--- PAGE 77 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+{"name": "
+Token Prob.
+Taylor 0.85
+T 0.034
+S 0.024
+The 0.022
+… …
+40
+--- PAGE 78 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+{"name": "Taylor Swift
+Token Prob.
+", 0.85
+," 0.034
+" 0.024
+, 0.022
+… …
+40
+--- PAGE 79 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+{"name": "Taylor Swift", "birth
+year":
+Token Prob.
+" 0.46
+int 0.041
+' 0.026
+1989 0.020
+… …
+40
+--- PAGE 80 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+{"name": "Taylor Swift", "birth
+year": 1989
+Token Prob.
+, 0.39
+} 0.34
+}, 0.11
+} 0.082
+… …
+40
+--- PAGE 81 ---
+Format the following information using the JSON schema:
+Taylor Swift was born December 13, 1989.
+Key Type
+name string
+birth year int
+0start 1{
+2
+"name": "
+[A-Za-z]
+6
+"
+4"birth year":
+\d
+,
+, 7}
+}
+1. Compile the schema into a state machine.
+2. Filter the next-token distribution for valid tokens.
+GPT2:
+{"name": "Taylor Swift", "birth
+year": 1989}
+40
+--- PAGE 82 ---
+Side effects of templated/constrained decoding
+• Generation speedup
+• Reduced performance
+41
+--- PAGE 83 ---
+Token healing
+• Templated generation can force unnatural token boundaries
+The url is http:
+//
+• The model has rarely seen the tokenization http:// during
+training compared to http://.
+• Token healing rewinds the tokenizer and enforces the
+untokenized text as a prefix to the next token.
+The url is http
+://
+Candidates
+s://
+://
+• Alternative fix: tokenizer regularization during
+training [Kudo, 2018].
+42
+--- PAGE 84 ---
+Token healing
+• Templated generation can force unnatural token boundaries
+The url is http: //
+• The model has rarely seen the tokenization http:// during
+training compared to http://.
+• Token healing rewinds the tokenizer and enforces the
+untokenized text as a prefix to the next token.
+The url is http
+://
+Candidates
+s://
+://
+• Alternative fix: tokenizer regularization during
+training [Kudo, 2018].
+42
+--- PAGE 85 ---
+Token healing
+• Templated generation can force unnatural token boundaries
+The url is http: //
+• The model has rarely seen the tokenization http:// during
+training compared to http://.
+• Token healing rewinds the tokenizer and enforces the
+untokenized text as a prefix to the next token.
+The url is http:
+://
+Candidates
+s://
+://
+• Alternative fix: tokenizer regularization during
+training [Kudo, 2018].
+42
+--- PAGE 86 ---
+Token healing
+• Templated generation can force unnatural token boundaries
+The url is http: //
+• The model has rarely seen the tokenization http:// during
+training compared to http://.
+• Token healing rewinds the tokenizer and enforces the
+untokenized text as a prefix to the next token.
+The url is http://
+Candidates
+s://
+://
+• Alternative fix: tokenizer regularization during
+training [Kudo, 2018].
+42
+--- PAGE 87 ---
+Summary
+• Two views of decoding: optimization, sampling
+• The diversity-coherence trade-off
+• Constrained decoding enforces structure on LLM outputs
+These are the building blocks of modern LLM generation methods.
+43
+--- PAGE 88 ---
+Meta-generators
+--- PAGE 89 ---
+Goal (system designer)
+Design a system G that generates acceptable sequences:
+arg max
+G
+Ey∼G(·)A(y) (1)
+Example acceptability: correctness, human preferences
+We know how to sample probable outputs, y ∼ pθ(y|x)
+• What if these outputs are not acceptable?
+44
+--- PAGE 90 ---
+Goal (system designer)
+Design a system G that generates acceptable sequences:
+arg max
+G
+Ey∼G(·)A(y) (1)
+Example acceptability: correctness, human preferences
+We know how to sample probable outputs, y ∼ pθ(y|x)
+• What if these outputs are not acceptable?
+44
+--- PAGE 91 ---
+Meta-generation | Key ideas
+1. Take advantage of external information during generation
+• Example: Learn an evaluator v(y) ≈ A(y) and use it in generation
+Terminology: Evaluator ≈ critic ≈ verifier ≈ value ≈ reward model ≈ scoring model
+45
+--- PAGE 92 ---
+Meta-generation | Key ideas
+1. Take advantage of external information during generation
+• Example: Learn an evaluator v(y) ≈ A(y) and use it in generation
+Terminology: Evaluator ≈ critic ≈ verifier ≈ value ≈ reward model ≈ scoring model
+45
+--- PAGE 93 ---
+Meta-generation | Key ideas
+1. Take advantage of external information during generation
+2. Call the generator more than once to search for good sequences
+45
+--- PAGE 94 ---
+Meta-generation | Key ideas
+Example: solve a math problem
+46
+--- PAGE 95 ---
+Meta-generation | Key ideas
+What if we had an oracle verifier, v(y)?
+Repeat:
+• z ∼ pθ(z|x)
+• y ∼ pθ(y|x, z)
+• Stop if v(y) says answer is
+correct
+47
+--- PAGE 96 ---
+Meta-generation | Key ideas 1
+1Adapted from [Brown et al., 2024]. See also [Li et al., 2022, Cobbe et al., 2021, Jiang et al., 2023]
+48
+--- PAGE 97 ---
+Meta-generation
+We formalize these kinds of strategies as meta-generators 2
+y ∼ G(y|x; g1, g2, . . . ,gG  
+generators
+, φ 
+Other parameters
+)
+Key design choices:
+• G: strategy for calling generators
+• g1, g2, . . . ,gG: choice of generators
+• φ: other models, number of tokens to generate, ...
+2[Welleck et al., 2024] From Decoding to Meta-Generation: Inference-time Algorithms for LLMs .
+S. Welleck, A. Bertsch* , M. Finlayson* , H. Schoelkopf* , A. Xie, G. Neubig, I. Kulikov, Z. Harchaoui.
+49
+--- PAGE 98 ---
+Meta-generation
+Token-level generators from part 1 are a special case of calling:
+y ∼ g(y|x; pθ, φ)
+Design choices:
+• g: sampling adapters, beam search, ....
+• φ: temperature, beam width, ...
+50
+--- PAGE 99 ---
+Meta-generators | outline
+• Strategies
+• Chain
+• Parallel
+• Tree search
+• Refinement/Self-Correction
+• Scaling meta-generators
+51
+--- PAGE 100 ---
+Meta-generators | chain
+Compose generators:
+y1 ∼ g1(x)
+y2 ∼ g2(x, y1)
+y3 ∼ g3(x, y2)
+...
+52
+--- PAGE 101 ---
+Meta-generators | chain
+Motivating example: Chain-of-thought [Wei et al., 2022]:
+A simple decomposition:
+• Generate a thought, z ∼ g(·|x)
+• Generate an answer, a ∼ g(·|x, z)
+53
+--- PAGE 102 ---
+Meta-generators | chain
+Motivating example: Chain-of-thought [Wei et al., 2022]:
+Increases expressivity 3
+• Variable output length, analogous to a writeable tape
+3E.g., [Feng et al., 2023, Merrill and Sabharwal, 2024, Nowak et al., 2024]
+53
+--- PAGE 103 ---
+Meta-generators | chain
+Extend to multiple steps:
+• Each step:
+• Generate query
+• Call API
+• Then generate an answer
+Self-Ask [Press et al., 2023]
+54
+--- PAGE 104 ---
+Meta-generators | chain 4
+View as programs:
+• Outer function ≈ meta-generator
+• Inner function ≈ generator
+Demonstrate-Search-Predict (DSP)
+[Khattab et al., 2022]
+4[Khattab et al., 2022, Dohan et al., 2022, Schlag et al., 2023, Zheng et al., 2024]
+55
+--- PAGE 105 ---
+Meta-generators | chain
+Many other examples!
+• Rewrite input before generating
+(System-2 Attention [Weston and Sukhbaatar, 2023])
+• Sketch proof, fill gaps, check proof
+(Draft-Sketch-Prove [Jiang et al., 2023])
+• ...
+56
+--- PAGE 106 ---
+Meta-generators | chain
+Chained meta-generation
+• Key idea: decompose generation and incorporate tools/models
+• Chaining alone does not explore the output space
+57
+--- PAGE 107 ---
+Meta-generators | outline
+• Strategies
+• Chain
+• Parallel
+• Tree search
+• Refinement
+58
+--- PAGE 108 ---
+Meta-generators | parallel
+• Generate candidates:
+{y(1), . . . ,y(N)} ∼ G(·|x)
+• Aggregate:
+y = h(y(1), . . . ,y(N))
+59
+--- PAGE 109 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling 5
+arg max
+{y(1),...,y(N)}
+v(y)
+reward model
+5[Stiennon et al., 2020, Nakano et al., 2022]
+60
+--- PAGE 110 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling
+Reward model v(y) → [0, 1]:
+Train reward model with correct and incorrect examples. 6
+6E.g., [Cobbe et al., 2021]
+61
+--- PAGE 111 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling
+Reward model v(y) → [0, 1]:
+Train reward model with preference data. 6
+6E.g., [Stiennon et al., 2020]
+61
+--- PAGE 112 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling
+Why Best-of-N?
+• Approximates maximum acceptability:
+Best-of-N = arg max
+y∈{y(1),...,y(N)}
+v(y)
+≈ arg max
+y
+v(y) (2)
+≈ arg max
+y
+A(y) (3)
+(2) gets better as number of generations N increases!
+(3) Suffers from imperfect reward model, aka “over-optimization”
+62
+--- PAGE 113 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling
+Why Best-of-N?
+• Approximates maximum acceptability:
+Best-of-N = arg max
+y∈{y(1),...,y(N)}
+v(y)
+≈ arg max
+y
+v(y) (2)
+≈ arg max
+y
+A(y) (3)
+(2) gets better as number of generations N increases!
+(3) Suffers from imperfect reward model, aka “over-optimization”
+62
+--- PAGE 114 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling
+Why Best-of-N?
+• Approximates maximum acceptability:
+Best-of-N = arg max
+y∈{y(1),...,y(N)}
+v(y)
+≈ arg max
+y
+v(y) (2)
+≈ arg max
+y
+A(y) (3)
+(2) gets better as number of generations N increases!
+(3) Suffers from imperfect reward model, aka “over-optimization”
+62
+--- PAGE 115 ---
+Meta-generators | parallel | Best-of- N/Rejection Sampling 7
+7Plot adapted from Training Verifiers to Solve Math Word Problems [Cobbe et al., 2021] 63
+--- PAGE 116 ---
+Meta-generators | parallel | voting / self-consistency
+Voting aggregation: 8
+arg max
+a
+N∑
+i=1
+1{y(i) = a},
+8[Wang et al., 2023]
+64
+--- PAGE 117 ---
+Meta-generators | parallel | weighted voting 9
+Weighted Voting:
+arg max
+a
+N∑
+i=1
+v(y(i))  
+reward model
+·1{y(i) = a},
+9[Li et al., 2023b]
+65
+--- PAGE 118 ---
+Meta-generators | parallel | voting
+Can outperform Best-of- N, e.g.: 10
+10[Sun et al., 2024] Easy-to-Hard Generalization: Scalable Alignment Beyond Human Supervision .
+Z. Sun, L. Yu, Y. Shen, W. Liu, Y. Yang, S. Welleck, C. Gan. NeurIPS 2024. 66
+--- PAGE 119 ---
+Meta-generators | parallel | why (weighted) voting?
+As the number of candidates N → ∞, voting accuracy converges to... 11
+1
+M
+M∑
+i=1
+I
+
+
+a∗
+i = arg max
+a
+∑
+z
+v(x, z, a)g(z, a|x)
+  
+“Marginalize out paths z”
+
+
+Notation:
+• (x, z, a): (input, solution, answer)
+• M: number of test examples
+11Theorem 2, [Wu et al., 2024b] Inference Scaling Laws. Y. Wu, Z. Sun, S. Li, S. Welleck, Y. Yang.
+67
+--- PAGE 120 ---
+Meta-generators | parallel | why (weighted) voting?
+As the number of candidates N → ∞, voting accuracy converges to... 11
+1
+M
+M∑
+i=1
+I
+
+
+a∗
+i = arg max
+a
+∑
+z
+v(x, z, a)g(z, a|x)
+  
+“Marginalize out paths z”
+
+
+Takeaway 1: Will accuracy keep improving with more samples?
+• No, it eventually converges to the accuracy shown above
+11Theorem 2, [Wu et al., 2024b] Inference Scaling Laws. Y. Wu, Z. Sun, S. Li, S. Welleck, Y. Yang.
+67
+--- PAGE 121 ---
+Meta-generators | parallel | why (weighted) voting?
+As the number of candidates N → ∞, voting accuracy converges to... 11
+1
+M
+M∑
+i=1
+I
+
+
+a∗
+i = arg max
+a
+∑
+z
+v(x, z, a)g(z, a|x)
+  
+“Marginalize out paths z”
+
+
+Takeaway 2: When is weighted voting better than voting?
+• When v · g assigns more total mass to correct answers than g
+11Theorem 2, [Wu et al., 2024b] Inference Scaling Laws. Y. Wu, Z. Sun, S. Li, S. Welleck, Y. Yang.
+67
+--- PAGE 122 ---
+Meta-generators | parallel | why (weighted) voting?
+As the number of candidates N → ∞, voting accuracy converges to... 11
+1
+M
+M∑
+i=1
+I
+
+
+a∗
+i = arg max
+a
+∑
+z
+v(x, z, a)g(z, a|x)
+  
+“Marginalize out paths z”
+
+
+Takeaway 3: How do we improve performance further?
+• Improve the reward model v
+• Improve the generator g (better model and/or better algorithm)
+11Theorem 2, [Wu et al., 2024b] Inference Scaling Laws. Y. Wu, Z. Sun, S. Li, S. Welleck, Y. Yang.
+67
+--- PAGE 123 ---
+Meta-generators | parallel
+Improve the reward model:
+Parallel generation in the reward model too 12
+Active area of research!
+12[Zhang et al., 2024]
+68
+--- PAGE 124 ---
+Meta-generators | parallel
+Parallel meta-generators
+• Explores output space by generating full sequences
+• Large performance gains in practice
+• Bounded by the quality of the evaluator and generator
+Insight: only uses the verifier at the end (on full sequences)
+• Next: Can we better leverage intermediate evaluation?
+69
+--- PAGE 125 ---
+Meta-generators | parallel
+Parallel meta-generators
+• Explores output space by generating full sequences
+• Large performance gains in practice
+• Bounded by the quality of the evaluator and generator
+Insight: only uses the verifier at the end (on full sequences)
+• Next: Can we better leverage intermediate evaluation?
+69
+--- PAGE 126 ---
+Meta-generators | outline
+• Strategies
+• Chain
+• Parallel
+• Tree search
+• Refinement
+70
+--- PAGE 127 ---
+Meta-generators | tree search | basic idea
+Design choices:
+• States s
+• Transitions s → s′
+• Scores v(s)
+• Strategy (breadth-first, depth-first, ...)
+71
+--- PAGE 128 ---
+Meta-generators | tree search | basic idea
+Design choices:
+• States s
+• Transitions s → s′
+• Scores v(s)
+• Strategy (breadth-first, depth-first, ...)
+71
+--- PAGE 129 ---
+Meta-generators | tree search | example
+1. Scores: “process reward model (PRM)” 13
+v(x, s1, s2, . . . ,st) → [0, 1]
+13[Uesato et al., 2022, Lightman et al., 2024, Wang et al., 2024a]
+72
+--- PAGE 130 ---
+Meta-generators | tree search | example ( Rebase)
+2. Reward Balanced Search (Rebase) 14
+explore i = Round
+(
+Budget exp (v(si)/τ )∑
+j exp (v(sj)/τ )
+)
+, (4)
+14[Wu et al., 2024b] Inference Scaling Laws: An Empirical Analysis of Compute-Optimal Inference.
+73
+--- PAGE 131 ---
+Meta-generators | tree search | aggregation
+Run tree search to get candidates for aggregation (e.g., voting).
+• Key idea: Leverages scores on intermediate states
+• Backtracking
+• Exploration
+74
+--- PAGE 132 ---
+Meta-generators | tree search | aggregation
+Run tree search to get candidates for aggregation (e.g., voting).
+• Key idea: Leverages scores on intermediate states
+• Backtracking
+• Exploration
+74
+--- PAGE 133 ---
+Meta-generators | tree search | example 15
+15[Wu et al., 2024b] Inference Scaling Laws: An Empirical Analysis of Compute-Optimal Inference. 75
+--- PAGE 134 ---
+Meta-generators | tree search | example
+Go [Silver et al., 2016]
+Proofs [Polu and Sutskever, 2020]
+Agents [Koh et al., 2024]
+76
+--- PAGE 135 ---
+Meta-generators | tree search
+Tree-search meta-generators
+• Can backtrack and explore using intermediate scores
+• Requires a suitable environment and value function
+• Decomposition into states
+• Good reward signal
+77
+--- PAGE 136 ---
+Meta-generators | outline
+• Strategies
+• Chain
+• Parallel
+• Tree search
+• Refinement/self-correction
+• Scaling meta-generators
+78
+--- PAGE 137 ---
+Meta-generators | refinement / self-correction
+Improve a generation
+79
+--- PAGE 138 ---
+Meta-generators | refinement / self-correction
+Improve a generation using feedback
+79
+--- PAGE 139 ---
+Meta-generators | refinement / self-correction
+Improve a generation using feedback
+79
+--- PAGE 140 ---
+Meta-generators | refinement
+In practice, the quality and source of feedback is crucial:
+• Extrinsic: external information at inference time
+• Intrinsic: no external information at inference time
+80
+--- PAGE 141 ---
+Meta-generators | refinement | extrinsic
+1. Extrinsic : external feedback
+Feedback: external program verifier 16
+16 [Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck. 81
+--- PAGE 142 ---
+Meta-generators | refinement | extrinsic
+1. Extrinsic : external feedback
+AlphaVerus. P . Aggarwal, B. Parno, S. Welleck.
+81
+--- PAGE 143 ---
+Meta-generators | refinement | extrinsic
+1. Extrinsic : external feedback
+Tutorial code demo: github.com/cmu-l3/neurips2024-inference-tutorial-code
+81
+--- PAGE 144 ---
+Meta-generators | refinement | extrinsic
+1. Extrinsic : external feedback
+Several success cases:
+• Verifiers [Aggarwal et al., 2024]
+• Code interpreters [Chen et al., 2024b]
+• Retrievers [Asai et al., 2024]
+• Tools + agent environment 16
+• ...
+Intuition: adds new information, can detect and localize errors
+16https:/ /x.com/gneubig/status/1866172948991615177
+81
+--- PAGE 145 ---
+Meta-generators | refinement | intrinsic
+2. Intrinsic : Re-prompt the same model:
+Re-prompt a single LLM, e.g. [Madaan et al., 2023]
+82
+--- PAGE 146 ---
+Meta-generators | refinement | intrinsic
+Mixed results :
+• Easy to evaluate tasks: positive [Wang et al., 2024b]
+• E.g., missing info [Asai et al., 2024]
+• Mathematical reasoning: mixed17
+17E.g., [Huang et al., 2024] Large Language Models Cannot Self-Correct Reasoning Yet
+82
+--- PAGE 147 ---
+Meta-generators | refinement | intrinsic
+Takeaway: feedback is too noisy From [Huang et al., 2024]
+82
+--- PAGE 148 ---
+Meta-generators | refinement
+Generate “ TAYLORSWIFT”
+• Generator:
+• p(character )
+• Feedback:
+• Incorrect characters
+• Corrector:
+• Regenerate incorrect
+83
+--- PAGE 149 ---
+Meta-generators | refinement | intrinsic
+3. Intrinsic : trained corrector
+Directly learn to correct 17
+17[Welleck et al., 2023], Generating Sequences by Learning to [Self-]Correct .
+84
+--- PAGE 150 ---
+Meta-generators | refinement | Case 3: fine-tuning
+General pattern: 18
+• Collect (bad, better) pairs by generating and evaluating reward
+• Update corrector pθ(better|bad) using the collected data
+• Repeat
+Prone to behavior collapse
+• [Kumar et al., 2024]: overcome with regularization + RL
+18E.g., Self-corrective learning [Welleck et al., 2023], SCoRe [Kumar et al., 2024].
+85
+--- PAGE 151 ---
+Meta-generators | refinement | Case 3: fine-tuning
+General pattern: 18
+• Collect (bad, better) pairs by generating and evaluating reward
+• Update corrector pθ(better|bad) using the collected data
+• Repeat
+Prone to behavior collapse
+• [Kumar et al., 2024]: overcome with regularization + RL
+18E.g., Self-corrective learning [Welleck et al., 2023], SCoRe [Kumar et al., 2024].
+85
+--- PAGE 152 ---
+Meta-generators | refinement | Case 3: fine-tuning
+From SCoRe [Kumar et al., 2024]
+86
+--- PAGE 153 ---
+Meta-generators | refinement / self-correction
+Refinement / self-correction
+• Extrinsic
+• Positive results for environments that detect or localize errors
+• Intrinsic, prompted
+• Mixed results , depends on difficulty of verification
+• Intrinsic, trained
+• Possible improvements , requires specific training strategies
+87
+--- PAGE 154 ---
+Meta-generators | outline
+This talk:
+• Strategies
+• Chain
+• Parallel
+• Tree search
+• Refinement
+• Scaling meta-generators
+88
+--- PAGE 155 ---
+Meta-generation | how do we allocate test-time compute?
+Choose strategies based on task performance and compute cost
+Cost is a function of:
+• Model size
+• Number of generated tokens
+89
+--- PAGE 156 ---
+Meta-generation | compute-optimal inference 19
+For a compute budget C:
+argminN,T,S s.t. cost(N,T,S)=Cerror(N, T, S)
+• N: number of model parameters
+• T: number of generated tokens
+• S: inference strategy
+• cost(N, T, S): in floating-point operations
+19[Wu et al., 2024b] Inference Scaling Laws: An Empirical Analysis of Compute-Optimal Inference.
+90
+--- PAGE 157 ---
+Meta-generation | compute-optimal inference 20
+Choose configurations on the compute-optimal frontier (green)
+20[Wu et al., 2024b] Inference Scaling Laws: An Empirical Analysis of Compute-Optimal Inference.
+91
+--- PAGE 158 ---
+Meta-generation | how do we choose a meta-generator?
+Question 1: is it better to use:
+• A small model and more generations
+• A large model and fewer generations
+Experiment: Fix strategy, vary model size N and number of tokens T
+92
+--- PAGE 159 ---
+Meta-generation | how do we choose a meta-generator?
+Smaller models can be compute optimal [Wu et al., 2024b]. 93
+--- PAGE 160 ---
+Meta-generation | how do we choose a meta-generator?
+Question 2: what is the compute-optimal meta-generation strategy?
+Experiment: vary strategy (and model size and number of tokens)
+94
+--- PAGE 161 ---
+Meta-generation | how do we choose a meta-generator?
+Tree search ( Rebase) can be compute-optimal [Wu et al., 2024b].
+95
+--- PAGE 162 ---
+Meta-generation | recap
+• Performance improves with increased compute...
+• ... but it varies by the choice of model size and meta-generator
+• The optimal model size and strategy varies with the compute
+budget
+• Sometimes smaller models are better!
+• Goal: design strategies that are universally optimal
+96
+--- PAGE 163 ---
+Meta-generation | recap
+• Meta-generators: strategies for calling generators and
+incorporating external information
+• Several patterns: chain, parallel, tree search, refinement
+• They can be combined and mixed together
+• Choose and design methods based on task performance and
+cost
+97
+--- PAGE 164 ---
+Meta-generation | speeding up
+Next: The preceding meta-generators
+• Generate many tokens
+• In diverse ways (e.g., tree search)
+How do we do this quickly and efficiently?
+98
+--- PAGE 165 ---
+Efficient meta-generation
+--- PAGE 166 ---
+Efficiency | goals
+Scope:
+• Basics of efficient generation
+• How can we make meta-generation faster?
+• Which specific meta-generators are most efficient?
+99
+--- PAGE 167 ---
+Efficiency | basics
+How do we measure “efficiency”?
+• Latency
+• How long does a user wait for a response?
+• Throughput
+• How many requests are completed per second?
+100
+--- PAGE 168 ---
+Efficiency | basics
+Latency, Throughput, and Quality often trade off at a given budget.
+101
+--- PAGE 169 ---
+Efficiency | hardware
+Hardware improvements have driven model improvements 21
+The largest efficiency wins come from mapping operations onto
+hardware (more) effectively!
+21Figure: [Hobbhahn et al., 2023] 102
+--- PAGE 170 ---
+Efficiency | hardware
+How do ML accelerator designs impact generation efficiency?
+• How much data can we keep on-device?
+• VRAM (GB)
+• How many operations/second can the device perform?
+• FLOP/s
+• How long does it take to send operands from GPU memory
+(HBM) to the processor?
+• Memory Bandwidth (GB/s)
+103
+--- PAGE 171 ---
+Efficiency | bottlenecks
+• Loading inputs (activations) from memory
+• Memory Bandwidth
+• Loading weights from memory
+• Memory Bandwidth
+• Performing computation
+• FLOP/s
+• Communicating across devices
+• Communication Speeds (GB/s)
+• ...
+104
+--- PAGE 172 ---
+Efficiency | bottlenecks
+Time per operation can be modeled as 22:
+Time = max
+( Operation FLOP
+Device FLOP/s , Data Transferred (GB)
+Memory Bandwidth (GB/s)
+)
+Operations are either “compute-bound” or “memory-bound” 23
+22[He, 2022]
+23H100 SXM: BF16 dense tensor core max FLOP/s ≈ 1× 1015 FLOP/s, Memory bandwidth
+≈ 3.35× 1012 byte/s. ≫ 100 FLOP/byte is “free”!
+105
+--- PAGE 173 ---
+Efficiency | batching
+Inputs to a model can be “batched”
+together and computed
+simultaneously.
+Batching can be cost-free for
+memory-bound operations! a
+ahttps:/ /www.artfintel.com/p/how-does-
+batching-work-on-modern 106
+--- PAGE 174 ---
+Efficiency | KV cache
+Prefill Stage : process prompt all at
+once. Keys and values retained and
+initialize the “KV Cache” .
+Decode Stage : use cached KV values
+to compute attention for current
+timestep. Append new K, V to KV cache
+Size = (batch · n_ctx) · (2 · n_layer · n_heads · head_dim) · (n_bytes)
+107
+--- PAGE 175 ---
+Efficient meta-generation
+How to speed up sampling a single
+token?
+--- PAGE 176 ---
+Efficiency | single-token
+For a single decoding step, how do we work around hardware
+constraints?
+• Memory Bandwidth ↓
+• FLOP/s ↑
+• FLOP ↓
+108
+--- PAGE 177 ---
+Efficiency | single-token
+Memory Bandwidth ↓: reduce data transferred
+• Quantize weights or activations 24
+(bytes per parameter) · (total parameters)
+• Compress or distill model
+(bytes per parameter) · (total parameters)
+24Visual from
+https:/ /newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization
+109
+--- PAGE 178 ---
+Efficiency | single-token
+FLOP/s ↑: improve hardware utilization
+(FLOP per second) · (total operation FLOP)
+Flash Attention [Dao et al., 2022] performs the same operations, but
+optimizes the implementation to achieve far greater speed
+110
+--- PAGE 179 ---
+Efficiency | single-token
+FLOP ↓: reduce operations required
+(FLOP per second) · (total operation FLOP)
+Mixture-of-Experts models use fewer FLOP per token than equi-parameter
+dense models [Fedus et al., 2022] 111
+--- PAGE 180 ---
+Efficient meta-generation
+How to speed up a single generation?
+--- PAGE 181 ---
+Efficiency | single-generation
+Generation of long outputs is bottlenecked by sequential next-token
+prediction. But not all tokens are created equal!
+... The cow jumped over the moon . <EOS>
+How can we spend less time on “easier” tokens?
+112
+--- PAGE 182 ---
+Efficiency | single-generation
+Decoding is typically memory-bound.
+Speculative decoding uses a smaller draft model to produce “guesses” for
+the next N tokens cheaply, which are then “accepted” or “rejected” in parallel
+by the main model [Xia et al., 2024]
+113
+--- PAGE 183 ---
+Efficiency | single-generation
+In speculative decoding :
+• A lighter-weight draft model generates N “proposal” tokens
+• These N “proposal” tokens can be passed in parallel into the
+main generator
+• All tokens which match the main generator’s predictions are
+retained, and ones that do not are discarded
+114
+--- PAGE 184 ---
+Efficiency | single-generation
+Speculative decoding can harm throughput at low context but improves both
+throughput and latency at long context lengths [Chen et al., 2024a]
+115
+--- PAGE 185 ---
+Efficient meta-generation
+How to speed up meta-generation?
+--- PAGE 186 ---
+Efficiency | meta-generators
+• How do meta-generators interact with real-world efficiency and
+hardware utilization ?
+• Which meta-generators are the fastest? Can we design more
+efficient meta-generators?
+116
+--- PAGE 187 ---
+Efficiency | meta-generators | KV Cache reuse
+Common deployment and parallel generation scenarios have redundant
+shared prefix content in prompts 25
+25Figure from [Juravsky et al., 2024]
+117
+--- PAGE 188 ---
+Efficiency | meta-generators | KV Cache reuse
+PagedAttention [Kwon et al., 2023] prevents redundant storage costs by
+mapping KV cache blocks to physical “pages” of VRAM
+118
+--- PAGE 189 ---
+Efficiency | meta-generators | KV cache reuse
+KV Cache reuse is not limited to single-level shared prefixes!
+Multiple levels of prefix sharing can arise frequently: for example, combining
+a long few-shot prompt with Best-of-N generation 26
+26Figure from [Juravsky et al., 2024]
+119
+--- PAGE 190 ---
+Efficiency | meta-generators | KV Cache reuse
+RadixAttention enables complex prefix sharing patterns [Zheng et al., 2024],
+evicting least-recently-used KV cache blocks from memory when needed
+120
+--- PAGE 191 ---
+Efficiency | meta-generators | KV Cache reuse
+Hydragen [Juravsky et al., 2024] makes shared-prefix attention components
+faster via leveraging Tensor Cores 121
+--- PAGE 192 ---
+Efficiency | meta-generators | KV Cache compression
+KV Cache size is a key bottleneck to larger batches and to longer
+context inference
+• Token Dropping: Selectively remove tokens from the KV Cache
+• Quantization: Modify KV Cache datatype
+• Architectural Modification: Reduce inherent size of a
+prospective model’s KV Cache
+122
+--- PAGE 193 ---
+Efficiency | meta-generators | KV Cache compression
+Token Dropping:
+(batch · n_ctx) · (2 · n_layer · n_heads · head_dim) · (n_bytes)
+An overview of approaches to control KV Cache size via token dropping
+[Adams et al., 2024]
+123
+--- PAGE 194 ---
+Efficiency | meta-generators | KV Cache compression
+Quantization:
+(batch · n_ctx) · (2 · n_layer · n_heads · head_dim) · (n_bytes)
+As with model weights, elements of the KV cache can be quantized to reduce
+memory overheads
+124
+--- PAGE 195 ---
+Efficiency | meta-generators | KV Cache compression
+Architectural Modification:
+(batch · n_ctx) · (2 · n_layer · n_heads · head_dim) · (n_bytes)
+Architectural tweaks such as Multi-Query Attention [Shazeer, 2019] or
+Grouped-Query Attention [Ainslie et al., 2023] reduce the number of Key +
+Value attention heads to shrink the required KV Cache size
+125
+--- PAGE 196 ---
+Efficiency | meta-generators | recap
+Which meta-generators are most efficient?
+• Parallelizable : trajectories can be run in parallel; not
+sequentially bottlenecked
+• Prefix-shareable: long inputs are presented as identical shared
+prefix content, whose KV Caches can be reused across many
+model calls
+Token budget is not the only indicator of meta-generator efficiency!
+126
+--- PAGE 197 ---
+Recap and takeaways
+--- PAGE 198 ---
+This tutorial
+Beyond Decoding: Meta-Generation Algorithms for LLMs
+• Primitive generators: Generating one token at a time
+• Meta-generators: High-level strategies for calling generators
+• Efficient meta-generation: Generating quickly and efficiently
+127
+--- PAGE 199 ---
+Takeaways | Meta-generators
+Meta-generation : strategies for calling generators
+• Various strategies: chained, parallel, tree search, refinement
+• Spend test-time compute to improve performance
+• Use cost-performance tradeoffs to choose/design
+128
+--- PAGE 200 ---
+Takeaways | Efficient meta-generation
+• Parallelizability decreases latency and boosts throughput of
+meta-generation
+• Long inputs can be amortized via Prefix Sharing of KV Cache
+• Prompt design and meta-generator structure can change
+real-world efficiency significantly. Token budget can be an
+oversimplification!
+129
+--- PAGE 201 ---
+Looking ahead
+• Hybrid meta-generators
+[Aggarwal et al., 2024], AlphaVerus. P . Aggarwal, B. Parno, S. Welleck.
+• Learning to search (e.g., explore, backtrack, self-correct)
+• Agent environments
+• How should we allocate compute?
+Science: many conclusions are based on a few tasks!
+130
+--- PAGE 202 ---
+Looking ahead
+• Hybrid meta-generators
+• Learning to search (e.g., explore, backtrack, self-correct)
+• Agent environments
+• How should we allocate compute?
+Science: many conclusions are based on a few tasks!
+130
+--- PAGE 203 ---
+Looking ahead
+• Hybrid meta-generators
+• Learning to search (e.g., explore, backtrack, self-correct)
+• Agent environments
+• How should we allocate compute?
+Science: many conclusions are based on a few tasks!
+130
+--- PAGE 204 ---
+Looking ahead
+Survey Paper (TMLR 2024):
+From Decoding to Meta-Generation:
+Inference-time Algorithms for Large Language Models .
+Sean Welleck, Amanda Bertsch ∗, Matt Finlayson ∗, Hailey Schoelkopf ∗, Alex
+Xie, Graham Neubig, Ilia Kulikov, Zaid Harchaoui. TMLR 2024.
+https:/ /arxiv.org/abs/2406. 16838
+131
+--- PAGE 205 ---
+Thank you!
+https:/ /cmu-l3.github.io/neurips2024-inference-tutorial
+132
+--- PAGE 206 ---
+Panel
+Beidi Chen
+CMU
+@BeidiChen
+Nouha Dziri
+AI2
+@nouhadziri
+Rishabh Agarwal
+DeepMind/McGill
+@agarwl_
+Jakob Foerster
+Oxford/Meta AI
+@j_foerst
+Noam Brown
+OpenAI
+@polynoamial
+Ilia Kulikov (Moderator)
+Meta AI
+@uralik1
+https:/ /cmu-l3.github.io/neurips2024-inference-tutorial
+133
+--- PAGE 207 ---
+Appendix
+--- PAGE 208 ---
+Meta-generators | parallel | pairwise
+Pairwise: Minimum Bayes Risk
+MBR(g, v, N) = arg max
+y∈{y(1),...,y(N)}
+1
+N
+N∑
+i=1
+v(y, y(i))
+  
+≈Ey′ ∼p[v(y,y′)]
+,
+where {y(1), . . . ,y(N)} ∼ g and v(y, y′) is a “utility” function.
+Intuitively, selects the candidate with the highest “consensus” utility.
+134
+--- PAGE 209 ---
+Meta-generators | parallel | pairwise
+Pairwise: Minimum Bayes Risk
+MBR(g, v, N) = arg max
+y∈{y(1),...,y(N)}
+1
+N
+N∑
+i=1
+v(y, y(i))
+  
+≈Ey′ ∼p[v(y,y′)]
+,
+where {y(1), . . . ,y(N)} ∼ g and v(y, y′) is a “utility” function.
+Intuitively, selects the candidate with the highest “consensus” utility.
+134
+--- PAGE 210 ---
+Meta-generators | parallel | pairwise 27
+Utility: LLM(y, y(i)) → {1, 2, 3, 4, 5}:
+Models
+30
+40
+50
+AlpacaEval 2.0 win rate (%)
+Beam Search
+BoN (LLM utility)
+MBR (Rouge)
+MBR (LLM utility)
+27Example from [Wu et al., 2024a] (Llama 3 70B). Utility: Prometheus 2 [Kim et al., 2024]. 135
+--- PAGE 211 ---
+Meta-generators | parallel | connecting MBR and voting
+Weighted voting is an instance of Minimum Bayes Risk: 28
+v(y, y(i))  
+utility
+= 1
+[
+a = a(i)
+]
+  
+same answer
+· v(y(i))  
+sequence score
+, (5)
+where y = (z, a), y(i) = (z(i), a(i)).
+28[Bertsch et al., 2023] It’s MBR All the Way Down: Modern Generation Techniques Through the Lens
+of Minimum Bayes Risk. A. Bertsch, A. Xie, G. Neubig, M. Gormley.
+136
+--- PAGE 212 ---
+Code examples
+--- PAGE 213 ---
+speculative decoding
+1 def speculative_decode(tgt_m, drf_m, tok, inp: torch.Tensor, max_tok:
+int, n_spec: int = 5, t: float = 1.0):
+2 gen = inp; max_len = inp.shape[1] + max_tok
+3 while gen.shape[1] < max_len:
+4 tok_left = max_len - gen.shape[1]
+5 spec_size = min(n_spec, tok_left - 1)
+6 if spec_size > 0:
+7 spec_id, spec_lprob = generate(drf_m, tok, gen, spec_size, t)
+8 tgt_lprob = tgt_m(spec_id) # forwarding tgt model
+9 rejs = compute_ll_rejs(tgt_lprob, spec_lprob)
+10 if len(rejs) > 0:
+11 accepted = spec_id[:, :rejs[0]]
+12 adj_probs = compute_adjusted_dist(tgt_lprob, spec_lprob)
+13 next_tok = Categorical(adj_probs)
+14 else:
+15 accepted = spec_id
+16 next_tok = Categorical(tgt_lprob.exp())
+17 gen = torch.cat([gen, accepted, next_tok])
+137
+--- PAGE 214 ---
+speculative decoding
+1 def compute_ll_rejs(tgt_lprob: torch.Tensor, spec_lprob: torch.Tensor,
+spec_tok_id: torch.Tensor) -> torch.Tensor:
+2 llrs = tgt_lprob[spec_tok_id] - spec_lprob[spec_tok_id]
+3 uniform_lprobs = torch.log(torch.rand_like(llrs))
+4 rej_idx = torch.nonzero((llrs <= uniform_lprobs))
+5 return rej_idx
+6
+7 def compute_adjusted_dist(tgt_lprob: torch.Tensor, spec_lprob:
+torch.Tensor, rej_idx: torch.Tensor) -> torch.Tensor:
+8 adj_dist = torch.clamp(
+9 torch.exp(tgt_lprob[rej_idx]) - torch.exp(spec_lprob[rej_idx]),
+10 min=0
+11 )
+12 adj_dist = torch.div(adj_dist, adj_dist. sum())
+13 return adj_dist
+138
+--- PAGE 215 ---
+References i
+Ackley, D. H., Hinton, G. E., and Sejnowski, T. J. (1985).
+A learning algorithm for boltzmann machines.
+Cognitive Science, 9(1):147–169.
+Adams, G., Ladhak, F., Schoelkopf, H., and Biswas, R. (2024).
+Cold compress: A toolkit for benchmarking kv cache
+compression approaches.
+Aggarwal, P ., Parno, B., and Welleck, S. (2024).
+Alphaverus: Bootstrapping formally verified code generation
+through self-improving translation and treefinement.
+https://arxiv.org/abs/2412.06176.
+139
+--- PAGE 216 ---
+References ii
+Ainslie, J., Lee-Thorp, J., de Jong, M., Zemlyanskiy, Y., Lebrón, F.,
+and Sanghai, S. (2023).
+Gqa: Training generalized multi-query transformer models from
+multi-head checkpoints.
+Ankner, Z., Paul, M., Cui, B., Chang, J. D., and Ammanabrolu, P .
+(2024).
+Critique-out-loud reward models.
+Asai, A., He *, J., Shao *, R., Shi, W., Singh, A., Chang, J. C., Lo, K.,
+Soldaini, L., Feldman, Tian, S., Mike, D., Wadden, D., Latzke, M.,
+Minyang, Ji, P ., Liu, S., Tong, H., Wu, B., Xiong, Y., Zettlemoyer, L.,
+Weld, D., Neubig, G., Downey, D., Yih, W.-t., Koh, P . W., and
+Hajishirzi, H. (2024).
+OpenScholar: Synthesizing scientific literature with
+retrieval-augmented language models.
+140
+--- PAGE 217 ---
+References iii
+Arxiv.
+Basu, S., Ramachandran, G. S., Keskar, N. S., and Varshney, L. R.
+(2021).
+Mirostat: a neural text decoding algorithm that directly controls
+perplexity.
+In 9th International Conference on Learning Representations,
+ICLR 2021, Virtual Event, Austria, May 3-7 , 2021. OpenReview.net.
+Bertsch, A., Xie, A., Neubig, G., and Gormley, M. (2023).
+It’s MBR all the way down: Modern generation techniques
+through the lens of minimum Bayes risk.
+In Elazar, Y., Ettinger, A., Kassner, N., Ruder, S., and A. Smith, N.,
+editors, Proceedings of the Big Picture Workshop , pages 108–122,
+Singapore. Association for Computational Linguistics.
+141
+--- PAGE 218 ---
+References iv
+Brown, B., Juravsky, J., Ehrlich, R., Clark, R., Le, Q. V., Ré, C., and
+Mirhoseini, A. (2024).
+Large language monkeys: Scaling inference compute with
+repeated sampling.
+https://arxiv.org/abs/2407.21787.
+Chen, J., Tiwari, V., Sadhukhan, R., Chen, Z., Shi, J., Yen, I. E.-H., and
+Chen, B. (2024a).
+Magicdec: Breaking the latency-throughput tradeoff for long
+context generation with speculative decoding.
+Chen, X., Lin, M., Schärli, N., and Zhou, D. (2024b).
+Teaching large language models to self-debug.
+In The Twelfth International Conference on Learning
+Representations.
+142
+--- PAGE 219 ---
+References v
+Chung, H. W., Hou, L., Longpre, S., Zoph, B., Tay, Y., Fedus, W., Li, Y.,
+Wang, X., Dehghani, M., Brahma, S., Webson, A., Gu, S. S., Dai, Z.,
+Suzgun, M., Chen, X., Chowdhery, A., Castro-Ros, A., Pellat, M.,
+Robinson, K., Valter, D., Narang, S., Mishra, G., Yu, A., Zhao, V.,
+Huang, Y., Dai, A., Yu, H., Petrov, S., Chi, E. H., Dean, J., Devlin, J.,
+Roberts, A., Zhou, D., Le, Q. V., and Wei, J. (2022).
+Scaling instruction-finetuned language models.
+https://arxiv.org/abs/2210.11416.
+Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L.,
+Plappert, M., Tworek, J., Hilton, J., Nakano, R., Hesse, C., and
+Schulman, J. (2021).
+Training verifiers to solve math word problems.
+https://arxiv.org/abs/2110.14168.
+143
+--- PAGE 220 ---
+References vi
+Dao, T., Fu, D. Y., Ermon, S., Rudra, A., and R’e, C. (2022).
+Flashattention: Fast and memory-efficient exact attention with
+io-awareness.
+ArXiv preprint, abs/2205. 14135.
+Dohan, D., Xu, W., Lewkowycz, A., Austin, J., Bieber, D., Lopes, R. G.,
+Wu, Y., Michalewski, H., Saurous, R. A., Sohl-dickstein, J., Murphy,
+K., and Sutton, C. (2022).
+Language model cascades.
+https://arxiv.org/abs/2207.10342.
+Fan, A., Lewis, M., and Dauphin, Y. (2018).
+Hierarchical neural story generation.
+In Proceedings of the 56th Annual Meeting of the Association for
+Computational Linguistics (Volume 1: Long Papers) , pages
+889–898. Association for Computational Linguistics.
+144
+--- PAGE 221 ---
+References vii
+Fedus, W., Zoph, B., and Shazeer, N. (2022).
+Switch transformers: Scaling to trillion parameter models with
+simple and efficient sparsity.
+Feng, G., Zhang, B., Gu, Y., Ye, H., He, D., and Wang, L. (2023).
+Towards revealing the mystery behind chain of thought: A
+theoretical perspective.
+In Thirty-seventh Conference on Neural Information Processing
+Systems.
+Finlayson, M., Hewitt, J., Koller, A., Swayamdipta, S., and
+Sabharwal, A. (2024).
+Closing the curious case of neural text degeneration.
+In The Twelfth International Conference on Learning
+Representations.
+145
+--- PAGE 222 ---
+References viii
+Freitag, M. and Al-Onaizan, Y. (2017).
+Beam search strategies for neural machine translation.
+In Proceedings of the First Workshop on Neural Machine
+Translation, pages 56–60. Association for Computational
+Linguistics.
+He, H. (2022).
+Making deep learning go brrrr from first principles.
+Hewitt, J., Manning, C., and Liang, P . (2022).
+Truncation sampling as language model desmoothing.
+In Findings of the Association for Computational Linguistics:
+EMNLP 2022, pages 3414–3427 . Association for Computational
+Linguistics.
+146
+--- PAGE 223 ---
+References ix
+Hobbhahn, M., Heim, L., and Aydos, G. (2023).
+Trends in machine learning hardware.
+Accessed: 2024-11-26.
+Holtzman, A., Buys, J., Du, L., Forbes, M., and Choi, Y. (2020).
+The curious case of neural text degeneration.
+In 8th International Conference on Learning Representations,
+ICLR 2020, Addis Ababa, Ethiopia, April 26-30, 2020 .
+OpenReview.net.
+Huang, J., Chen, X., Mishra, S., Zheng, H. S., Yu, A. W., Song, X., and
+Zhou, D. (2024).
+Large language models cannot self-correct reasoning yet.
+In The Twelfth International Conference on Learning
+Representations.
+147
+--- PAGE 224 ---
+References x
+Jiang, A. Q., Welleck, S., Zhou, J. P ., Lacroix, T., Liu, J., Li, W., Jamnik,
+M., Lample, G., and Wu, Y. (2023).
+Draft, sketch, and prove: Guiding formal theorem provers with
+informal proofs.
+In The Eleventh International Conference on Learning
+Representations.
+Juravsky, J., Brown, B., Ehrlich, R., Fu, D. Y., Ré, C., and Mirhoseini, A.
+(2024).
+Hydragen: High-throughput llm inference with shared prefixes.
+Kaplan, J., McCandlish, S., Henighan, T., Brown, T. B., Chess, B.,
+Child, R., Gray, S., Radford, A., Wu, J., and Amodei, D. (2020).
+Scaling laws for neural language models.
+https://arxiv.org/abs/2001.08361.
+148
+--- PAGE 225 ---
+References xi
+Khattab, O., Santhanam, K., Li, X. L., Hall, D. L. W., Liang, P ., Potts, C.,
+and Zaharia, M. A. (2022).
+Demonstrate-search-predict: Composing retrieval and language
+models for knowledge-intensive nlp.
+ArXiv, abs/2212. 14024.
+Kim, S., Suk, J., Longpre, S., Lin, B. Y., Shin, J., Welleck, S., Neubig, G.,
+Lee, M., Lee, K., and Seo, M. (2024).
+Prometheus 2: An open source language model specialized in
+evaluating other language models.
+https://arxiv.org/abs/2405.01535.
+Koh, J. Y., McAleer, S., Fried, D., and Salakhutdinov, R. (2024).
+Tree search for language model agents.
+arXiv preprint arXiv:2407 .01476.
+149
+--- PAGE 226 ---
+References xii
+Kudo, T. (2018).
+Subword regularization: Improving neural network translation
+models with multiple subword candidates.
+In Gurevych, I. and Miyao, Y., editors, Proceedings of the 56th
+Annual Meeting of the Association for Computational Linguistics
+(Volume 1: Long Papers) , pages 66–75, Melbourne, Australia.
+Association for Computational Linguistics.
+Kumar, A., Zhuang, V., Agarwal, R., Su, Y., Co-Reyes, J. D., Singh, A.,
+Baumli, K., Iqbal, S., Bishop, C., Roelofs, R., Zhang, L. M., McKinney,
+K., Shrivastava, D., Paduraru, C., Tucker, G., Precup, D., Behbahani,
+F., and Faust, A. (2024).
+Training language models to self-correct via reinforcement
+learning.
+150
+--- PAGE 227 ---
+References xiii
+Kwon, W., Li, Z., Zhuang, S., Sheng, Y., Zheng, L., Yu, C. H., Gonzalez,
+J. E., Zhang, H., and Stoica, I. (2023).
+Efficient memory management for large language model serving
+with pagedattention.
+Li, X. L., Holtzman, A., Fried, D., Liang, P ., Eisner, J., Hashimoto, T.,
+Zettlemoyer, L., and Lewis, M. (2023a).
+Contrastive decoding: Open-ended text generation as
+optimization.
+In Rogers, A., Boyd-Graber, J., and Okazaki, N., editors,
+Proceedings of the 61st Annual Meeting of the Association for
+Computational Linguistics (Volume 1: Long Papers) , pages
+12286–12312. Association for Computational Linguistics.
+151
+--- PAGE 228 ---
+References xiv
+Li, Y., Choi, D., Chung, J., Kushman, N., Schrittwieser, J., Leblond, R.,
+Eccles, T., Keeling, J., Gimeno, F., Lago, A. D., Hubert, T., Choy, P .,
+de Masson d’Autume, C., Babuschkin, I., Chen, X., Huang, P .-S.,
+Welbl, J., Gowal, S., Cherepanov, A., Molloy, J., Mankowitz, D. J.,
+Robson, E. S., Kohli, P ., de Freitas, N., Kavukcuoglu, K., and Vinyals,
+O. (2022).
+Competition-level code generation with alphacode.
+Science, 378(6624):1092–1097 .
+Li, Y., Lin, Z., Zhang, S., Fu, Q., Chen, B., Lou, J.-G., and Chen, W.
+(2023b).
+Making language models better reasoners with step-aware
+verifier.
+In Rogers, A., Boyd-Graber, J., and Okazaki, N., editors,
+Proceedings of the 61st Annual Meeting of the Association for
+152
+--- PAGE 229 ---
+References xv
+Computational Linguistics (Volume 1: Long Papers) , pages
+5315–5333, Toronto, Canada. Association for Computational
+Linguistics.
+Lightman, H., Kosaraju, V., Burda, Y., Edwards, H., Baker, B., Lee, T.,
+Leike, J., Schulman, J., Sutskever, I., and Cobbe, K. (2024).
+Let’s verify step by step.
+In The Twelfth International Conference on Learning
+Representations.
+Liu, A., Han, X., Wang, Y., Tsvetkov, Y., Choi, Y., and Smith, N. A.
+(2024).
+Tuning language models by proxy.
+153
+--- PAGE 230 ---
+References xvi
+Liu, A., Sap, M., Lu, X., Swayamdipta, S., Bhagavatula, C., Smith,
+N. A., and Choi, Y. (2021).
+DExperts: Decoding-time controlled text generation with
+experts and anti-experts.
+In Proceedings of the 59th Annual Meeting of the Association for
+Computational Linguistics and the 11th International Joint
+Conference on Natural Language Processing (Volume 1: Long
+Papers), pages 6691–6706. Association for Computational
+Linguistics.
+154
+--- PAGE 231 ---
+References xvii
+Lu, X., Brahman, F., West, P ., Jung, J., Chandu, K., Ravichander, A.,
+Ammanabrolu, P ., Jiang, L., Ramnath, S., Dziri, N., Fisher, J., Lin, B.,
+Hallinan, S., Qin, L., Ren, X., Welleck, S., and Choi, Y. (2023).
+Inference-time policy adapters (IPA): Tailoring extreme-scale
+LMs without fine-tuning.
+In Bouamor, H., Pino, J., and Bali, K., editors, Proceedings of the
+2023 Conference on Empirical Methods in Natural Language
+Processing, pages 6863–6883. Association for Computational
+Linguistics.
+155
+--- PAGE 232 ---
+References xviii
+Madaan, A., Tandon, N., Gupta, P ., Hallinan, S., Gao, L., Wiegreffe,
+S., Alon, U., Dziri, N., Prabhumoye, S., Yang, Y., Gupta, S., Majumder,
+B. P ., Hermann, K., Welleck, S., Yazdanbakhsh, A., and Clark, P .
+(2023).
+Self-refine: Iterative refinement with self-feedback.
+In Thirty-seventh Conference on Neural Information Processing
+Systems.
+Meister, C., Cotterell, R., and Vieira, T. (2020).
+If beam search is the answer, what was the question?
+In Proceedings of the 2020 Conference on Empirical Methods in
+Natural Language Processing (EMNLP) , pages 2173–2185.
+Association for Computational Linguistics.
+156
+--- PAGE 233 ---
+References xix
+Meister, C., Pimentel, T., Wiher, G., and Cotterell, R. (2022).
+Locally typical sampling.
+Transactions of the Association for Computational Linguistics ,
+11:102–121.
+Meister, C., Pimentel, T., Wiher, G., and Cotterell, R. (2023).
+Locally typical sampling.
+Transactions of the Association for Computational Linguistics ,
+11:102–121.
+Merrill, W. and Sabharwal, A. (2024).
+The expressive power of transformers with chain of thought.
+In The Twelfth International Conference on Learning
+Representations.
+157
+--- PAGE 234 ---
+References xx
+Nakano, R., Hilton, J., Balaji, S., Wu, J., Ouyang, L., Kim, C., Hesse, C.,
+Jain, S., Kosaraju, V., Saunders, W., Jiang, X., Cobbe, K., Eloundou,
+T., Krueger, G., Button, K., Knight, M., Chess, B., and Schulman, J.
+(2022).
+Webgpt: Browser-assisted question-answering with human
+feedback.
+https://arxiv.org/abs/2112.09332.
+Nebius (2024).
+Leveraging training and search for better software engineering
+agents.
+https://nebius.com/blog/posts/
+training-and-search-for-software-engineering-agents .
+158
+--- PAGE 235 ---
+References xxi
+Nowak, F., Svete, A., Butoi, A., and Cotterell, R. (2024).
+On the representational capacity of neural language models
+with chain-of-thought reasoning.
+In Ku, L.-W., Martins, A., and Srikumar, V., editors, Proceedings of
+the 62nd Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers) , pages 12510–12548, Bangkok,
+Thailand. Association for Computational Linguistics.
+OpenAI (2024).
+Learning to reason with llms.
+https://openai.com/index/
+learning-to-reason-with-llms/ .
+Polu, S. and Sutskever, I. (2020).
+Generative language modeling for automated theorem proving.
+159
+--- PAGE 236 ---
+References xxii
+Press, O., Zhang, M., Min, S., Schmidt, L., Smith, N., and Lewis, M.
+(2023).
+Measuring and narrowing the compositionality gap in language
+models.
+In Bouamor, H., Pino, J., and Bali, K., editors, Findings of the
+Association for Computational Linguistics: EMNLP 2023 , pages
+5687–5711. Association for Computational Linguistics.
+Schlag, I., Sukhbaatar, S., Celikyilmaz, A., tau Yih, W., Weston, J.,
+Schmidhuber, J., and Li, X. (2023).
+Large language model programs.
+https://arxiv.org/abs/2305.05364.
+Shazeer, N. (2019).
+Fast transformer decoding: One write-head is all you need.
+160
+--- PAGE 237 ---
+References xxiii
+Shi, C., Yang, H., Cai, D., Zhang, Z., Wang, Y., Yang, Y., and Lam, W.
+(2024).
+A thorough examination of decoding methods in the era of
+LLMs.
+In Al-Onaizan, Y., Bansal, M., and Chen, Y.-N., editors, Proceedings
+of the 2024 Conference on Empirical Methods in Natural
+Language Processing, pages 8601–8629, Miami, Florida, USA.
+Association for Computational Linguistics.
+Silver, D., Huang, A., Maddison, C. J., Guez, A., Sifre, L., van den
+Driessche, G., Schrittwieser, J., Antonoglou, I., Panneershelvam, V.,
+Lanctot, M., Dieleman, S., Grewe, D., Nham, J., Kalchbrenner, N.,
+Sutskever, I., Lillicrap, T., Leach, M., Kavukcuoglu, K., Graepel, T.,
+and Hassabis, D. (2016).
+161
+--- PAGE 238 ---
+References xxiv
+Mastering the game of go with deep neural networks and tree
+search.
+Nature, 529:484–503.
+Stahlberg, F. and Byrne, B. (2019).
+On nmt search errors and model errors: Cat got your tongue?
+ArXiv, abs/1908. 10090.
+Stiennon, N., Ouyang, L., Wu, J., Ziegler, D., Lowe, R., Voss, C.,
+Radford, A., Amodei, D., and Christiano, P . F. (2020).
+Learning to summarize with human feedback.
+In Larochelle, H., Ranzato, M., Hadsell, R., Balcan, M., and Lin, H.,
+editors, Advances in Neural Information Processing Systems ,
+volume 33, pages 3008–3021. Curran Associates, Inc.
+162
+--- PAGE 239 ---
+References xxv
+Sun, Z., Yu, L., Shen, Y., Liu, W., Yang, Y., Welleck, S., and Gan, C.
+(2024).
+Easy-to-hard generalization: Scalable alignment beyond human
+supervision.
+In The Thirty-eighth Annual Conference on Neural Information
+Processing Systems.
+Uesato, J., Kushman, N., Kumar, R., Song, F., Siegel, N., Wang, L.,
+Creswell, A., Irving, G., and Higgins, I. (2022).
+Solving math word problems with process- and outcome-based
+feedback.
+163
+--- PAGE 240 ---
+References xxvi
+Wang, P ., Li, L., Shao, Z., Xu, R., Dai, D., Li, Y., Chen, D., Wu, Y., and
+Sui, Z. (2024a).
+Math-shepherd: Verify and reinforce LLMs step-by-step without
+human annotations.
+In Ku, L.-W., Martins, A., and Srikumar, V., editors, Proceedings of
+the 62nd Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers) , pages 9426–9439, Bangkok,
+Thailand. Association for Computational Linguistics.
+Wang, X., Wei, J., Schuurmans, D., Le, Q. V., Chi, E. H., Narang, S.,
+Chowdhery, A., and Zhou, D. (2023).
+Self-consistency improves chain of thought reasoning in
+language models.
+In The Eleventh International Conference on Learning
+Representations.
+164
+--- PAGE 241 ---
+References xxvii
+Wang, Y., Wu, Y., Wei, Z., Jegelka, S., and Wang, Y. (2024b).
+A theoretical understanding of self-correction through
+in-context alignment.
+https://arxiv.org/abs/2405.18634.
+Wei, J., Wang, X., Schuurmans, D., Bosma, M., brian ichter, Xia, F.,
+Chi, E. H., Le, Q. V., and Zhou, D. (2022).
+Chain of thought prompting elicits reasoning in large language
+models.
+In Oh, A. H., Agarwal, A., Belgrave, D., and Cho, K., editors,
+Advances in Neural Information Processing Systems .
+165
+--- PAGE 242 ---
+References xxviii
+Welleck, S., Bertsch, A., Finlayson, M., Schoelkopf, H., Xie, A.,
+Neubig, G., Kulikov, I., and Harchaoui, Z. (2024).
+From decoding to meta-generation: Inference-time algorithms
+for large language models.
+https://arxiv.org/abs/2406.16838.
+Welleck, S., Kulikov, I., Roller, S., Dinan, E., Cho, K., and Weston, J.
+(2020).
+Neural text generation with unlikelihood training.
+In 8th International Conference on Learning Representations,
+ICLR 2020, Addis Ababa, Ethiopia, April 26-30, 2020 .
+OpenReview.net.
+166
+--- PAGE 243 ---
+References xxix
+Welleck, S., Lu, X., West, P ., Brahman, F., Shen, T., Khashabi, D., and
+Choi, Y. (2023).
+Generating sequences by learning to self-correct.
+In The Eleventh International Conference on Learning
+Representations.
+Weston, J. and Sukhbaatar, S. (2023).
+System 2 attention (is something you might need too).
+Wu, I., Fernandes, P ., Bertsch, A., Kim, S., Pakazad, S., and Neubig,
+G. (2024a).
+Better instruction-following through minimum bayes risk.
+https://arxiv.org/abs/2410.02902.
+167
+--- PAGE 244 ---
+References xxx
+Wu, Y., Sun, Z., Li, S., Welleck, S., and Yang, Y. (2024b).
+Inference scaling laws: An empirical analysis of
+compute-optimal inference for problem-solving with language
+models.
+https://arxiv.org/abs/2408.00724.
+Xia, H., Yang, Z., Dong, Q., Wang, P ., Li, Y., Ge, T., Liu, T., Li, W., and
+Sui, Z. (2024).
+Unlocking efficiency in large language model inference: A
+comprehensive survey of speculative decoding.
+Zaharia, M., Khattab, O., Chen, L., Davis, J. Q., Miller, H., Potts, C.,
+Zou, J., Carbin, M., Frankle, J., Rao, N., and Ghodsi, A. (2024).
+The shift from models to compound ai systems.
+https://bair.berkeley.edu/blog/2024/02/18/
+compound-ai-systems/ .
+168
+--- PAGE 245 ---
+References xxxi
+Zhang, L., Hosseini, A., Bansal, H., Kazemi, M., Kumar, A., and
+Agarwal, R. (2024).
+Generative verifiers: Reward modeling as next-token prediction.
+Zheng, L., Yin, L., Xie, Z., Sun, C., Huang, J., Yu, C. H., Cao, S.,
+Kozyrakis, C., Stoica, I., Gonzalez, J. E., Barrett, C., and Sheng, Y.
+(2024).
+Sglang: Efficient execution of structured language model
+programs.
+169
