@@ -1,0 +1,1 @@
+Therefore, the key conclusion is that approximate MAP, such as narrow beam search, can work better than exact MAP.

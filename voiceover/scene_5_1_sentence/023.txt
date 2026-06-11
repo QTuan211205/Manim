@@ -1,0 +1,1 @@
+One direction is co-designing the model, algorithm, and hardware because inference may take a larger share of compute than before.

@@ -1,0 +1,1 @@
+If models learn to search better during training, we may need less inference-time compute, but we will still need inference-time algorithms to refine, extend capability, backtrack, evaluate, or use feedback.

@@ -1,0 +1,1 @@
+Important open questions include learning search during pretraining, self-improvement for chain-of-thought, downstream generalization, and whether reasoning learned at a certain length can scale to longer contexts.

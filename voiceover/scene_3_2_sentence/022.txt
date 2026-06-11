@@ -1,0 +1,1 @@
+Voting and weighted voting explain another form of aggregation: we do not only ask which sequence has the highest score, but which answer is supported by the most paths.

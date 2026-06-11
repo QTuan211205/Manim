@@ -1,0 +1,1 @@
+A natural question is whether better pretrained models in the future will remove the need for inference-time algorithms.

@@ -1,0 +1,1 @@
+Instead of the main model generating one token at a time, the draft model proposes several tokens in advance.

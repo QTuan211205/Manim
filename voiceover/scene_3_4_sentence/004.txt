@@ -1,0 +1,1 @@
+Extrinsic feedback provides outside information at inference time, for example an external program verifier.

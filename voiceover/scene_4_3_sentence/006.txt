@@ -1,0 +1,1 @@
+RadixAttention in SGLang supports complex prefix-sharing patterns and evicts least-recently-used KV cache blocks when needed.

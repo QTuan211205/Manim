@@ -1,0 +1,1 @@
+Greedy decoding chooses the maximum-scoring token; ancestral sampling samples from the full vocabulary; Top-k selects the top k values; Top-p keeps tokens under a cumulative probability threshold; epsilon filters with a hard probability threshold; and temperature changes the sharpness of the distribution before sampling.

@@ -1,0 +1,1 @@
+If two meta-generators use the same token budget but one method is more parallelizable and shares prefixes better, the real cost and latency can be very different.

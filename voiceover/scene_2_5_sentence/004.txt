@@ -1,0 +1,1 @@
+The prompt asks the model to format information about Taylor Swift according to a schema with a name field as text and a birth year field as an integer, but the free-form LLM output does not match the JSON schema.

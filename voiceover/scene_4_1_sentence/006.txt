@@ -1,0 +1,1 @@
+Hardware affects generation efficiency through three factors: on-device memory or VRAM, operations per second or FLOP/s, and data transfer speed, or memory bandwidth in GB/s.

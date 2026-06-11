@@ -1,0 +1,1 @@
+Higher temperature makes the distribution more uniform, lower temperature makes it more peaked, while truncation changes which token region remains available for sampling.

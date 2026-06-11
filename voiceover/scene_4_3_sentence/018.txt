@@ -1,0 +1,1 @@
+Hydragen focuses on making attention over the shared prefix faster by using Tensor Cores.

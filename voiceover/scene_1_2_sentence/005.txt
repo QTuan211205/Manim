@@ -1,0 +1,1 @@
+We keep the trained model fixed, but design methods that use additional compute during inference or generation time to increase performance.

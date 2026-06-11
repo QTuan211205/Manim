@@ -1,0 +1,1 @@
+A common method is prompt-based re-prompting with the same LLM, such as Self-Refine.

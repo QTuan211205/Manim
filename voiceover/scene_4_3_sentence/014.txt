@@ -1,0 +1,1 @@
+For example, Best-of-N uses the same prompt to generate many candidates; tree search has many branches sharing a prefix; and chatbots or few-shot prompting often use the same long system prompt.

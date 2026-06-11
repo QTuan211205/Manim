@@ -1,0 +1,1 @@
+When verification is not easier than generation, merely increasing samples or compute is not enough.

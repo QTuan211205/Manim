@@ -1,0 +1,1 @@
+A generator is any algorithm that takes an input sequence and a language model, then produces an output sequence.

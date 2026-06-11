@@ -1,0 +1,1 @@
+Tree search assumes that the generation process can be decomposed into search over states and transitions.

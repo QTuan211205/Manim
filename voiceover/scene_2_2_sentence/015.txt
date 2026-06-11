@@ -1,0 +1,1 @@
+This is simple and cheap, but it does not guarantee a globally optimal sequence, because a better sequence may begin with a token that is not the best token at the first step.

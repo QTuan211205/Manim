@@ -1,0 +1,1 @@
+If future models learn better search during training, inference-time algorithms may become a lighter maintenance or refinement layer.

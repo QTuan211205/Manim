@@ -1,0 +1,1 @@
+It receives the model distribution and readjusts probabilities before choosing a token.

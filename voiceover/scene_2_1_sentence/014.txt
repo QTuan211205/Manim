@@ -1,0 +1,1 @@
+A local choice at the current step changes the prefix, and the new prefix creates a new distribution for the next step.

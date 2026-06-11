@@ -1,0 +1,1 @@
+At each step, it keeps a limited number of the best branches according to beam size K, then expands them.

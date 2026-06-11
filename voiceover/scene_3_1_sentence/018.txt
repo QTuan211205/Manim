@@ -1,0 +1,1 @@
+An output can be probable under the model but still be incorrect, disliked by humans, or fail to satisfy the system requirement.

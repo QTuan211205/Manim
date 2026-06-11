@@ -1,0 +1,1 @@
+After introducing the strategies, we move to the scaling question: how should we allocate test-time compute?

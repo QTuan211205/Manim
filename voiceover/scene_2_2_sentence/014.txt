@@ -1,0 +1,1 @@
+Greedy decoding is a local choice: at every step, it chooses the best token right now.

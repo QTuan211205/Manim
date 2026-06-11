@@ -1,0 +1,1 @@
+These algorithms differ in how they choose the next token.

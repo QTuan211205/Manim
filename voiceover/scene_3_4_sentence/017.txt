@@ -1,0 +1,1 @@
+Intrinsic feedback relies on the model itself, so the risk is that the same model both creates the error and fails to judge it correctly.

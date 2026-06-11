@@ -1,0 +1,1 @@
+Prompt structure and meta-generator structure determine much of the real-world efficiency, so token budget is only a simplification.

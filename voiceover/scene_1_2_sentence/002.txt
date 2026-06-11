@@ -1,0 +1,1 @@
+The first wave is scaling pretraining compute: using larger models and larger datasets, guided by scaling laws for language models.

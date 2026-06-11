@@ -1,0 +1,1 @@
+Prefill creates the cache for the prompt, while decode only adds the K and V for the new token.

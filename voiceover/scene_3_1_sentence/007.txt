@@ -1,0 +1,1 @@
+The second idea is to call the generator more than once to search for good sequences.

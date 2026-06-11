@@ -1,0 +1,1 @@
+When we look at progress in large language models, we can divide scaling into three waves.

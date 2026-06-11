@@ -1,0 +1,1 @@
+If a token does not move the system into a valid state, it is filtered out of the next-token distribution.

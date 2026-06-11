@@ -1,0 +1,1 @@
+A sampling adapter takes the model's token distribution conditioned on the input and readjusts the probabilities.

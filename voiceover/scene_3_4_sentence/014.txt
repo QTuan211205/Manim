@@ -1,0 +1,1 @@
+Summary: extrinsic feedback works well when the environment can localize errors; prompted intrinsic feedback gives mixed results; trained intrinsic feedback is promising but requires a very specific training strategy.

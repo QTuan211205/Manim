@@ -1,0 +1,1 @@
+Another direction is hybrid systems that know when to use code or tools because that is more efficient than forcing the LLM to generate every token itself.

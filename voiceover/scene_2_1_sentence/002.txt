@@ -1,0 +1,1 @@
+Autoregressive language modeling uses a causal language model, which defines the probability of the next token, given all previous tokens.

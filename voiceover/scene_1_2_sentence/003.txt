@@ -1,0 +1,1 @@
+The second wave is post-training compute: collecting input-output pairs, then fine-tuning the model so it performs better on tasks and can generalize to new tasks.

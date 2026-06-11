@@ -1,0 +1,1 @@
+This lets the final sequence become a valid JSON object containing Taylor Swift's name and birth year.

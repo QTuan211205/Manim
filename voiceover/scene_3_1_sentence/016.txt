@@ -1,0 +1,1 @@
+The takeaway is that chaining decomposes generation and integrates tools or models, but chaining alone does not explore the output space.

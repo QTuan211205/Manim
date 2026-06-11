@@ -1,0 +1,1 @@
+Token-level generators from the previous section are a special case of this framework.

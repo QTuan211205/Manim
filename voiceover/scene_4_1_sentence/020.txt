@@ -1,0 +1,1 @@
+The KV cache reduces repeated computation, but the cache itself consumes VRAM, so it becomes a bottleneck when batch size or context length is large.

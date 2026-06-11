@@ -1,0 +1,1 @@
+We view it as one component in a complete generation system: a system that can call the model many times, use supporting tools, use evaluators, and decide how to spend compute during generation.

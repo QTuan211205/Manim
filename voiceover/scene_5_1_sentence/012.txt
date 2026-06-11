@@ -1,0 +1,1 @@
+Final points include hybrid systems that use code when useful, generative verifiers, inference scaling laws, and the need for the open-source community to focus more on tools for this direction.

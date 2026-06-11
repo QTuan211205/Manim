@@ -1,0 +1,1 @@
+A token-level decoding algorithm is mainly concerned with how to choose that next token.

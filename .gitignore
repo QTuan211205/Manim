@@ -1,6 +1,39 @@
-# Tạo hoặc ghi thêm vào file .gitignore
-Add-Content .gitignore "`n**/__pycache__/"
-Add-Content .gitignore "`n**/media/"
-Add-Content .gitignore "`n**/partial_movie_files/"
-Add-Content .gitignore "`n**/frames_debug/"
-Add-Content .gitignore "`n*.png"
+# Manim outputs
+**/media/
+**/partial_movie_files/
+**/frames_debug/
+media/
+content/**/media/
+
+# Compiled Python files
+**/__pycache__/
+*.pyc
+
+# Local cache / virtual environment
+.venv/
+.cache/
+.local/
+fontconfig/
+
+# Audio formats
+*.mp3
+*.wav
+*.ogg
+*.m4a
+*.flac
+
+# Video formats
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+
+# Image formats
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# System files
+.DS_Store

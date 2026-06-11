@@ -1,0 +1,1 @@
+Given a compute budget, the compute-optimal inference problem is to choose the model size, the number of generated tokens, and the inference strategy that minimize error while staying within that budget.

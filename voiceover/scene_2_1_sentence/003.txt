@@ -1,0 +1,1 @@
+At each decoding step, the model looks at all previous tokens and outputs a distribution over the next token.

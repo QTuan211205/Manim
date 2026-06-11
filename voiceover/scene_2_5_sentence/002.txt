@@ -1,0 +1,1 @@
+Truncation and temperature are adapters, but there are many other methods too: typical sampling, epsilon, eta, Mirostat, basis-aware sampling, contrastive decoding, DExperts, inference-time adapters, and proxy tuning.

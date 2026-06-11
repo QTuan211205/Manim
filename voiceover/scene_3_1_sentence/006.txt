@@ -1,0 +1,1 @@
+In this context, evaluator, critic, verifier, value, reward model, and scoring model all play closely related roles.

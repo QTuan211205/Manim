@@ -1,0 +1,1 @@
+At long context lengths, memory-bound decoding is heavier, so the benefit of checking many proposals in parallel becomes clearer.

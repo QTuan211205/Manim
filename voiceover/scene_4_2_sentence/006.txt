@@ -1,0 +1,1 @@
+Tokens that match the main generator's prediction are kept, while tokens that do not match are discarded.

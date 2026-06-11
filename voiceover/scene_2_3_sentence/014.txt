@@ -1,0 +1,1 @@
+But in open-ended text generation, probability maximization can push the model into repetitive, too-short, or atypical outputs.

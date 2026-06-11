@@ -1,0 +1,1 @@
+Reward Balanced Search, or Rebase, uses scores to allocate exploration budget across the frontier.

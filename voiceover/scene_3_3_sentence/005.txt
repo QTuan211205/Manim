@@ -1,0 +1,1 @@
+It allocates budget according to a softmax over each node score divided by tau.

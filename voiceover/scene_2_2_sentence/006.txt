@@ -1,0 +1,1 @@
+A greedy sequence can make locally good choices, such as choosing "an" first, but still end with a much lower cumulative probability.

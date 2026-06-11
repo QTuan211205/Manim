@@ -1,0 +1,1 @@
+Tree search uses scores on intermediate states.

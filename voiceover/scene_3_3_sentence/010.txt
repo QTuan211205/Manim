@@ -1,0 +1,1 @@
+The major difference between parallel generation and tree search is when evaluation is used.

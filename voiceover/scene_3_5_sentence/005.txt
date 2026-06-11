@@ -1,0 +1,1 @@
+Here model size means the number of model parameters, generation length means the number of generated tokens, and cost is measured in floating-point operations, or FLOP.

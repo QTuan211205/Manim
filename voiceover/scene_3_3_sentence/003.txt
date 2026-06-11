@@ -1,0 +1,1 @@
+For math and complex reasoning problems, one way to score intermediate steps is a Process Reward Model, or PRM, which labels each step as correct or incorrect by outputting a score between zero and one.

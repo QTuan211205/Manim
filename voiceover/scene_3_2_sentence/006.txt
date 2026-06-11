@@ -1,0 +1,1 @@
+The second aggregation method is Voting, or Self-Consistency, which chooses the answer receiving the most votes.

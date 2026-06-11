@@ -1,0 +1,1 @@
+Therefore, temperature, truncation, contrastive decoding, and DExperts can all be understood as transformation layers placed after the original model distribution.

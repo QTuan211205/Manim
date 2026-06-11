@@ -1,0 +1,1 @@
+Low tau, less than 1, increases coherence but can make outputs repetitive.

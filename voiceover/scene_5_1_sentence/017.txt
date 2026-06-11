@@ -1,0 +1,1 @@
+Math and code are easier to scale because they have clear verifiers or tests.

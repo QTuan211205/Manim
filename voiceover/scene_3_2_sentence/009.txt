@@ -1,0 +1,1 @@
+As the sample count approaches infinity, voting accuracy converges according to the convergence theorem.

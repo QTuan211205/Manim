@@ -1,0 +1,1 @@
+MAP decoding works well for closed-ended tasks such as translation and question answering.

@@ -1,0 +1,1 @@
+The first idea in meta-generation is to use external information, for example by learning an evaluator that approximates acceptability and using it during generation.

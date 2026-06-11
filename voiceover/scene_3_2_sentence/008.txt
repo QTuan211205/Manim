@@ -1,0 +1,1 @@
+Easy-to-Hard Generalization adds an interesting angle: a verifier can sometimes work more effectively than the human grader.

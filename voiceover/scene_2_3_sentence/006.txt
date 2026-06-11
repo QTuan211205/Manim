@@ -1,0 +1,1 @@
+A sequence that ends early with the end-of-sequence token can have higher cumulative probability than a longer, more informative sentence.

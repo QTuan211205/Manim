@@ -1,0 +1,1 @@
+In closed-ended tasks, MAP is often useful because the output space is constrained and the answer is well defined.

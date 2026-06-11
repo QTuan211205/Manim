@@ -1,0 +1,1 @@
+Because every time step requires a choice, decoding can be viewed as search.

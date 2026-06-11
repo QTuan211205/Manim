@@ -1,0 +1,1 @@
+Notice that when beam size K equals 1, beam search is exactly greedy decoding.

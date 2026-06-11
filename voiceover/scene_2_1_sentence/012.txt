@@ -1,0 +1,1 @@
+The same model can be used with greedy decoding, beam search, sampling, or constrained decoding.

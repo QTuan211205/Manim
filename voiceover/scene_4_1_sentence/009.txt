@@ -1,0 +1,1 @@
+For example, on an NVIDIA H100 SXM, BF16 dense tensor core compute reaches about ten to the fifteenth FLOP per second, while memory bandwidth is three point three five times ten to the twelfth bytes per second.

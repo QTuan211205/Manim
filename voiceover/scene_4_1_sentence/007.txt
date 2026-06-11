@@ -1,0 +1,1 @@
+Bottlenecks include loading inputs and activations, loading weights, performing computation, and communicating across devices.

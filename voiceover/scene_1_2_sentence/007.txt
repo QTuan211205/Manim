@@ -1,0 +1,1 @@
+So test-time scaling does not replace pretraining or post-training.

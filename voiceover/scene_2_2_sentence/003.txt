@@ -1,0 +1,1 @@
+Two common optimization algorithms are greedy decoding and beam search.

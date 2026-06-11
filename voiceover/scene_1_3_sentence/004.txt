@@ -1,0 +1,1 @@
+AlphaCode is a canonical example: the system generates many candidate programs, then filters and clusters them to obtain a smaller but higher-quality set of results.

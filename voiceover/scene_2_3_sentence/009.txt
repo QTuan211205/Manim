@@ -1,0 +1,1 @@
+For a biased coin with heads probability zero point six and tails probability zero point four, the most likely outcome for 100 flips is all heads, but that sequence is extremely atypical and unnatural.

@@ -1,0 +1,1 @@
+The important insight is that the verifier is used only at the end, on full sequences.

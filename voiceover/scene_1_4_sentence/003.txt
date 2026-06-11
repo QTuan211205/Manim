@@ -1,0 +1,1 @@
+A meta-generator is a higher-level strategy: it may call the generator multiple times, use external information, or choose the best output with a separate model.

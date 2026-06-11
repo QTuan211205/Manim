@@ -1,0 +1,1 @@
+We can distinguish domains with clear verification, such as math and code, from harder domains such as writing, biology, drug discovery, or problems involving ambiguity and correctness.

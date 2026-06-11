@@ -1,0 +1,1 @@
+These proposal tokens are then passed in parallel to the main generator for verification.

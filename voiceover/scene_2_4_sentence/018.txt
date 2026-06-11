@@ -1,0 +1,1 @@
+Top-p uses cumulative probability, so the kept region can expand or shrink according to the distribution.

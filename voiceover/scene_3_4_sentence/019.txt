@@ -1,0 +1,1 @@
+This example helps viewers understand why localizing errors matters: if we know where the mistake is, correction is much easier than merely knowing the whole output is not good enough.

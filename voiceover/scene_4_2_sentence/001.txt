@@ -1,0 +1,1 @@
+Generation of long outputs is bottlenecked by sequential next-token prediction.

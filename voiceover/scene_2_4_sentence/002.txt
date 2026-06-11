@@ -1,0 +1,1 @@
+Ancestral sampling generates one token at a time by sampling the next output token from the model distribution, conditioned on the input and all previous output tokens.

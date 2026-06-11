@@ -1,0 +1,1 @@
+One bottleneck is verifier quality: if the verifier cannot distinguish false positives from true positives, increasing compute will not solve the problem by itself.

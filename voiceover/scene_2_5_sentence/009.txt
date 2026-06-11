@@ -1,0 +1,1 @@
+Constrained decoding has side effects: it can speed up generation, but it can also reduce performance.

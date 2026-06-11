@@ -1,0 +1,34 @@
+{
+  "source_manifest": "voiceover/sentence_audio_manifest.json",
+  "config": "voiceover/elevenlabs_config.json",
+  "chapter": null,
+  "scene": "scene_1_2",
+  "start": "sc12_009",
+  "total_characters": 154,
+  "output_dir": "voiceover/generated_sentence_level",
+  "entries": [
+    {
+      "text_file": "voiceover/scene_1_2_sentence/009.txt",
+      "audio_file": "voiceover/generated_sentence_level/sc12_009.mp3",
+      "scene": "scene_1_2",
+      "cue": "sc12_009",
+      "cue_number": 9,
+      "voice_id": "UgBBYS2sOqTuMpoF3BR0",
+      "model_id": "eleven_multilingual_v2",
+      "output_format": "mp3_44100_128",
+      "stability": 0.65,
+      "similarity_boost": 0.8,
+      "speed": 0.95,
+      "status": "planned",
+      "duration_seconds": null,
+      "start": null,
+      "end": null,
+      "start_label": null,
+      "end_label": null,
+      "source_paragraph_file": "004.txt",
+      "source_start": 208.01,
+      "source_end": 260,
+      "anchor": ""
+    }
+  ]
+}

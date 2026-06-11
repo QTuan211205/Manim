@@ -1,0 +1,1 @@
+Batching is especially important because many decoding operations are memory-bound.

@@ -1,0 +1,1 @@
+Hydragen makes shared-prefix attention components faster by leveraging Tensor Cores.

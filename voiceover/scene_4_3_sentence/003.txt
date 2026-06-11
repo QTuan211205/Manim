@@ -1,0 +1,1 @@
+PagedAttention in vLLM avoids redundant storage by mapping KV cache blocks to physical pages in VRAM.

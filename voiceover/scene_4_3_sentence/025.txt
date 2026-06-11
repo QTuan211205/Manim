@@ -1,0 +1,1 @@
+We allocate test-time compute to improve performance and design around cost-performance trade-offs.

@@ -1,0 +1,1 @@
+The first trap is repetition, with GPT2 and beam size 32, the output can repeat phrases like "singer-songwriter" and "songwriter-songwriter" indefinitely.

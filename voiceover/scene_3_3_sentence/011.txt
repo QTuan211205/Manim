@@ -1,0 +1,1 @@
+Parallel generation usually waits until it has a full sequence before using a verifier or reward model.

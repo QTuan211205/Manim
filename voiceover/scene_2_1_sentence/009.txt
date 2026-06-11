@@ -1,0 +1,1 @@
+The next section divides primitive generators into three directions: optimization, sampling, and constrained generation or structured outputs.

@@ -1,0 +1,1 @@
+This increases expressivity because the intermediate work can have variable length, like a writable tape.

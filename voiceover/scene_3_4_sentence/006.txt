@@ -1,0 +1,1 @@
+The intuition is that external feedback provides new information not already inside the model, helping detect and localize errors.

@@ -1,0 +1,1 @@
+First, we can make the model generate extra tokens, such as in chain-of-thought: the model writes intermediate reasoning steps before giving the final answer.

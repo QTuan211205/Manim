@@ -1,0 +1,1 @@
+Speculative decoding can harm throughput at low context lengths, but it can improve both throughput and latency at long context lengths, according to the MagicDec results.

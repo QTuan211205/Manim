@@ -1,0 +1,1 @@
+With an oracle verifier loop, we can repeat the process: generate an intermediate step conditioned on the input, generate an answer conditioned on both the input and that intermediate step, then stop when the verifier confirms that the answer is correct.

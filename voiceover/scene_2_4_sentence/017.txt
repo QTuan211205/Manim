@@ -1,0 +1,1 @@
+Top-k always keeps exactly the k highest-probability tokens, so it does not adapt to the shape of the distribution.

@@ -1,0 +1,1 @@
+Speculative decoding uses a smaller draft model to cheaply guess the next several tokens.

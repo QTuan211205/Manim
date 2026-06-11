@@ -1,0 +1,1 @@
+This method is prone to behavior collapse; regularization combined with reinforcement learning can help address this.

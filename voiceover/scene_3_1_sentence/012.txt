@@ -1,0 +1,1 @@
+Chaining composes generators in order: the first generator produces an output from the input, the second generator uses the input and the first output, and the third generator uses the input and the second output.

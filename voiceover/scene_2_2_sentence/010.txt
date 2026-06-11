@@ -1,0 +1,1 @@
+With GPT2 and beam size 2, step 1 keeps "an" with probability 0.80 and "a" with probability 0.13.

@@ -1,0 +1,1 @@
+Hardware was previously designed mainly for training, while inference may become a larger share of total compute.

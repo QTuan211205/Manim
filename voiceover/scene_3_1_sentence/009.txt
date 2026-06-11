@@ -1,0 +1,1 @@
+We can formalize this as sampling an output from a generator system conditioned on the input, with choices for the strategy, the component generators, and other parameters.

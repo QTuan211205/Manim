@@ -1,0 +1,1 @@
+In Best-of-N, the generator creates many candidates, and the reward model ranks them.

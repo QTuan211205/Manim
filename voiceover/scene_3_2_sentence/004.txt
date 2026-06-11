@@ -1,0 +1,1 @@
+A reward model can be trained to output a score between zero and one, using correct and incorrect examples or preference data.

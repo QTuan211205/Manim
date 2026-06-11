@@ -1,0 +1,1 @@
+Each technique saves memory by shrinking a different part of the same bottleneck.

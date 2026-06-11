@@ -1,0 +1,1 @@
+As the number of generations increases, Best-of-N better approximates the most acceptable output, but if the reward model is imperfect, the system can fall into over-optimization.

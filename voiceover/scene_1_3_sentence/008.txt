@@ -1,0 +1,1 @@
+When we generate extra tokens, each new token corresponds to another neural-network forward pass, so generating extra tokens itself consumes compute.

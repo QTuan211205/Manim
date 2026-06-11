@@ -1,0 +1,1 @@
+The compute-optimal frontier is the set of configurations that are not dominated: at the same cost, they have lower error; or at the same error, they use less cost.

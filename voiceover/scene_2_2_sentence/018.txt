@@ -1,0 +1,1 @@
+Beam search keeps a finite beam, so it searches more branches than greedy decoding while controlling cost through the beam size.

@@ -1,0 +1,1 @@
+Token healing handles cases where templated generation forces an unnatural boundary, for example when the phrase "The URL is HTTP colon" is followed by the rest of the URL separator.

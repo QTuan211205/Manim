@@ -1,0 +1,1 @@
+Greedy decoding chooses the highest-probability token at each step, given the previous tokens.

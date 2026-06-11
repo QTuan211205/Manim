@@ -1,0 +1,1 @@
+To summarize, the tutorial has three large parts: primitive generators that produce one token at a time; meta-generators, which are ways of calling generators; and efficient meta-generation, which optimizes the hardware system when running those algorithms.

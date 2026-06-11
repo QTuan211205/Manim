@@ -1,0 +1,1 @@
+MAP decoding searches for the sequence with the highest probability under the model.

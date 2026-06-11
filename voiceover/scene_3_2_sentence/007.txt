@@ -1,0 +1,1 @@
+Weighted voting goes further by multiplying each vote by the reward model score.

@@ -1,0 +1,1 @@
+Cost is a function of model size and the number of generated tokens.

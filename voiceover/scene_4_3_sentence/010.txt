@@ -1,0 +1,1 @@
+Architectural tweaks such as Multi-Query Attention or Grouped-Query Attention reduce the number of Key and Value attention heads to shrink the KV cache.

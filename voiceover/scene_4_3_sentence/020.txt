@@ -1,0 +1,1 @@
+For KV cache compression, each direction acts on one part of the cache size.

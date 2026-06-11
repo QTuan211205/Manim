@@ -1,0 +1,1 @@
+A sampling adapter does not replace the language model.

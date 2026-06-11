@@ -1,0 +1,1 @@
+The next question is the limit of inference scaling.

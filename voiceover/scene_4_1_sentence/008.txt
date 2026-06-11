@@ -1,0 +1,1 @@
+We model time per operation as the slower of two limits: the compute time, or the memory-transfer time.

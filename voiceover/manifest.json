@@ -1,0 +1,1057 @@
+{
+  "source": "full_video_script.md",
+  "scenes": {
+    "scene_1_1": {
+      "title": "Scene 1.1 - Chủ đề tutorial và động cơ",
+      "start": 0,
+      "end": 120,
+      "start_label": "00:00",
+      "end_label": "02:00",
+      "directory": "voiceover/scene_1_1",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 0,
+          "end": 41.15,
+          "start_label": "00:00",
+          "end_label": "00:41",
+          "text": "We begin with the main topic of today's video: algorithms for generating outputs with language models, especially meta-generation algorithms for large language models, or LLMs. This topic matters because we are now trying to use additional compute at test time, after the model has already been trained, to improve the quality of the entire text-generation system."
+        },
+        {
+          "file": "002.txt",
+          "start": 41.15,
+          "end": 77.76,
+          "start_label": "00:41",
+          "end_label": "01:18",
+          "text": "Language models can support many tasks whenever the task can be framed as generating a sequence: from solving difficult Olympiad problems to writing real code. So we will focus on one question: once we already have a language model, how should we call it, control it, and combine it with other components to produce the best result?"
+        },
+        {
+          "file": "003.txt",
+          "start": 77.76,
+          "end": 120,
+          "start_label": "01:18",
+          "end_label": "02:00",
+          "text": "We also place this topic in the context of inference algorithms and the LLM operating system, or LLM OS. This means we do not view the language model only as a single token predictor. We view it as one component in a complete generation system: a system that can call the model many times, use supporting tools, use evaluators, and decide how to spend compute during generation."
+        }
+      ]
+    },
+    "scene_1_2": {
+      "title": "Scene 1.2 - Ba hướng scale compute",
+      "start": 120,
+      "end": 260,
+      "start_label": "02:00",
+      "end_label": "04:20",
+      "directory": "voiceover/scene_1_2",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 120,
+          "end": 157.67,
+          "start_label": "02:00",
+          "end_label": "02:38",
+          "text": "When we look at progress in large language models, we can divide scaling into three waves. The first wave is scaling pretraining compute: using larger models and larger datasets, guided by scaling laws for language models."
+        },
+        {
+          "file": "002.txt",
+          "start": 157.67,
+          "end": 182.39,
+          "start_label": "02:38",
+          "end_label": "03:02",
+          "text": "The second wave is post-training compute: collecting input-output pairs, then fine-tuning the model so it performs better on tasks and can generalize to new tasks."
+        },
+        {
+          "file": "003.txt",
+          "start": 182.39,
+          "end": 208.01,
+          "start_label": "03:02",
+          "end_label": "03:28",
+          "text": "The current wave is test-time scaling. We keep the trained model fixed, but design methods that use additional compute during inference or generation time to increase performance."
+        },
+        {
+          "file": "004.txt",
+          "start": 208.01,
+          "end": 260,
+          "start_label": "03:28",
+          "end_label": "04:20",
+          "text": "The important point is that the first two waves, although very important, are still not enough for every task we want language models to solve. So test-time scaling does not replace pretraining or post-training. It is another compute dimension, used after the model already exists, at the moment the system needs to generate an answer."
+        }
+      ]
+    },
+    "scene_1_3": {
+      "title": "Scene 1.3 - Test-time compute được dùng như thế nào",
+      "start": 260,
+      "end": 440,
+      "start_label": "04:20",
+      "end_label": "07:20",
+      "directory": "voiceover/scene_1_3",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 260,
+          "end": 290.37,
+          "start_label": "04:20",
+          "end_label": "04:50",
+          "text": "There are three main ways to use test-time compute. First, we can make the model generate extra tokens, such as in chain-of-thought: the model writes intermediate reasoning steps before giving the final answer."
+        },
+        {
+          "file": "002.txt",
+          "start": 290.37,
+          "end": 320.89,
+          "start_label": "04:50",
+          "end_label": "05:21",
+          "text": "Second, we can call the generator multiple times. AlphaCode is a canonical example: the system generates many candidate programs, then filters and clusters them to obtain a smaller but higher-quality set of results."
+        },
+        {
+          "file": "003.txt",
+          "start": 320.89,
+          "end": 366.0,
+          "start_label": "05:21",
+          "end_label": "06:06",
+          "text": "Third, we can move from a single language model to a compound AI system. In such a system, the model can be combined with evaluators, verifiers, code interpreters, search engines, or other external tools. This is the foundation for defining meta-generation."
+        },
+        {
+          "file": "004.txt",
+          "start": 366.0,
+          "end": 440,
+          "start_label": "06:06",
+          "end_label": "07:20",
+          "text": "When we generate extra tokens, each new token corresponds to another neural-network forward pass, so generating extra tokens itself consumes compute. With chain-of-thought, that compute creates intermediate thinking tokens. With repeated calls, compute creates many candidates. With a compound AI system, part of the computational burden can be handed to reliable specialized tools such as a code interpreter or search engine."
+        }
+      ]
+    },
+    "scene_1_4": {
+      "title": "Scene 1.4 - Generator và meta-generator",
+      "start": 440,
+      "end": 600,
+      "start_label": "07:20",
+      "end_label": "10:00",
+      "directory": "voiceover/scene_1_4",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 440,
+          "end": 465.17,
+          "start_label": "07:20",
+          "end_label": "07:45",
+          "text": "A generator is any algorithm that takes an input sequence and a language model, then produces an output sequence. When we call a normal LLM API, we can view that call as a generator."
+        },
+        {
+          "file": "002.txt",
+          "start": 465.17,
+          "end": 514.07,
+          "start_label": "07:45",
+          "end_label": "08:34",
+          "text": "A meta-generator is a higher-level strategy: it may call the generator multiple times, use external information, or choose the best output with a separate model. We use meta-generators to generate more in order to improve task performance, combine multiple models such as verifiers or retrievers, and bring external information such as tools or feedback into generation."
+        },
+        {
+          "file": "003.txt",
+          "start": 514.07,
+          "end": 551.25,
+          "start_label": "08:34",
+          "end_label": "09:11",
+          "text": "The main content of this tutorial has three parts: primitive generators, meta-generators, and efficient meta-generation, followed by a discussion of open questions and future directions."
+        },
+        {
+          "file": "004.txt",
+          "start": 551.25,
+          "end": 600,
+          "start_label": "09:11",
+          "end_label": "10:00",
+          "text": "The word primitive here does not mean these methods are unimportant. Primitives are building blocks: the basic pieces used to construct more complex meta-generation algorithms. So before discussing meta-generators, we first look at how a generator produces a single sequence."
+        }
+      ]
+    },
+    "scene_2_1": {
+      "title": "Scene 2.1 - Token-level generation và decoding là search",
+      "start": 600,
+      "end": 990,
+      "start_label": "10:00",
+      "end_label": "16:30",
+      "directory": "voiceover/scene_2_1",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 600,
+          "end": 658.51,
+          "start_label": "10:00",
+          "end_label": "10:59",
+          "text": "In primitive generators, we begin with token-level generation. Autoregressive language modeling uses a causal language model, which defines the probability of the next token, given all previous tokens."
+        },
+        {
+          "file": "002.txt",
+          "start": 658.51,
+          "end": 709.08,
+          "start_label": "10:59",
+          "end_label": "11:49",
+          "text": "At each decoding step, the model looks at all previous tokens and outputs a distribution over the next token. A token-level decoding algorithm is mainly concerned with how to choose that next token."
+        },
+        {
+          "file": "003.txt",
+          "start": 709.08,
+          "end": 796.85,
+          "start_label": "11:49",
+          "end_label": "13:17",
+          "text": "Because every time step requires a choice, decoding can be viewed as search. But search for what? What is the objective? And how do local choices lead to that objective? The next section divides primitive generators into three directions: optimization, sampling, and constrained generation or structured outputs."
+        },
+        {
+          "file": "004.txt",
+          "start": 796.85,
+          "end": 899.1,
+          "start_label": "13:17",
+          "end_label": "14:59",
+          "text": "When visualizing this scene, the key is for viewers to see the difference between the language model and the decoding algorithm. The language model provides a probability distribution over the next token; the decoding algorithm is the rule that decides which token to take from that distribution. The same model can be used with greedy decoding, beam search, sampling, or constrained decoding."
+        },
+        {
+          "file": "005.txt",
+          "start": 899.1,
+          "end": 990,
+          "start_label": "14:59",
+          "end_label": "16:30",
+          "text": "The choice tree shows why the problem is not just choosing one token and stopping. A local choice at the current step changes the prefix, and the new prefix creates a new distribution for the next step. Therefore, the decoding algorithm must connect local choices into a final sequence according to the chosen objective."
+        }
+      ]
+    },
+    "scene_2_2": {
+      "title": "Scene 2.2 - MAP, greedy decoding và beam search",
+      "start": 990,
+      "end": 1380,
+      "start_label": "16:30",
+      "end_label": "23:00",
+      "directory": "voiceover/scene_2_2",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 990,
+          "end": 1036.55,
+          "start_label": "16:30",
+          "end_label": "17:17",
+          "text": "MAP decoding searches for the sequence with the highest probability under the model. In other words, it chooses the sequence that the model assigns the largest probability to. Two common optimization algorithms are greedy decoding and beam search."
+        },
+        {
+          "file": "002.txt",
+          "start": 1036.55,
+          "end": 1147.45,
+          "start_label": "17:17",
+          "end_label": "19:07",
+          "text": "Greedy decoding chooses the highest-probability token at each step, given the previous tokens. But greedy decoding does not guarantee that we find the highest-probability sequence, or MAP. A greedy sequence can make locally good choices, such as choosing \"an\" first, but still end with a much lower cumulative probability. By contrast, a non-greedy sequence can begin with a lower-probability token, such as \"a\", and still reach a much higher overall probability."
+        },
+        {
+          "file": "003.txt",
+          "start": 1147.45,
+          "end": 1264.6,
+          "start_label": "19:07",
+          "end_label": "21:05",
+          "text": "Beam search is a width-limited breadth-first search algorithm. At each step, it keeps a limited number of the best branches according to beam size K, then expands them. With GPT2 and beam size 2, step 1 keeps \"an\" with probability 0.80 and \"a\" with probability 0.13. At step 2, we compare cumulative scores for the children: \"a singer\" at 0.117, \"a songwriter\" at 0.104, \"an American\" at 0.016, and \"an artist\" at 0.008. Beam search keeps \"a singer\" and \"a songwriter\", pruning \"an American\", even though that branch began with the best greedy choice. Notice that when beam size K equals 1, beam search is exactly greedy decoding."
+        },
+        {
+          "file": "004.txt",
+          "start": 1264.6,
+          "end": 1313.7,
+          "start_label": "21:05",
+          "end_label": "21:54",
+          "text": "Greedy decoding is a local choice: at every step, it chooses the best token right now. This is simple and cheap, but it does not guarantee a globally optimal sequence, because a better sequence may begin with a token that is not the best token at the first step."
+        },
+        {
+          "file": "005.txt",
+          "start": 1313.7,
+          "end": 1380,
+          "start_label": "21:54",
+          "end_label": "23:00",
+          "text": "Beam search is a middle point between greedy search and exhaustive search. Exhaustive search would expand far too many possibilities, so it is not feasible for language models with tens or hundreds of thousands of tokens in the vocabulary. Beam search keeps a finite beam, so it searches more branches than greedy decoding while controlling cost through the beam size."
+        }
+      ]
+    },
+    "scene_2_3": {
+      "title": "Scene 2.3 - Lợi ích và cạm bẫy của MAP",
+      "start": 1380,
+      "end": 1710,
+      "start_label": "23:00",
+      "end_label": "28:30",
+      "directory": "voiceover/scene_2_3",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 1380,
+          "end": 1411.5,
+          "start_label": "23:00",
+          "end_label": "23:32",
+          "text": "MAP decoding works well for closed-ended tasks such as translation and question answering. But maximizing probability also creates serious decoding problems."
+        },
+        {
+          "file": "002.txt",
+          "start": 1411.5,
+          "end": 1466.63,
+          "start_label": "23:32",
+          "end_label": "24:27",
+          "text": "The first trap is repetition, with GPT2 and beam size 32, the output can repeat phrases like \"singer-songwriter\" and \"songwriter-songwriter\" indefinitely. Common fixes include repetition penalties and unlikelihood training."
+        },
+        {
+          "file": "003.txt",
+          "start": 1466.63,
+          "end": 1534.44,
+          "start_label": "24:27",
+          "end_label": "25:34",
+          "text": "The second trap is generating sequences that are too short. A sequence that ends early with the end-of-sequence token can have higher cumulative probability than a longer, more informative sentence. For example, the short sequence \"Taylor Swift is\" followed by end of sequence can have higher probability than the longer sentence \"Taylor Swift is an American singer.\" A common remedy is length normalization."
+        },
+        {
+          "file": "004.txt",
+          "start": 1534.44,
+          "end": 1636.05,
+          "start_label": "25:34",
+          "end_label": "27:16",
+          "text": "The third trap is atypicality. For a biased coin with heads probability zero point six and tails probability zero point four, the most likely outcome for 100 flips is all heads, but that sequence is extremely atypical and unnatural. Similarly, the highest-probability generation under a model is not necessarily natural. Therefore, the key conclusion is that approximate MAP, such as narrow beam search, can work better than exact MAP."
+        },
+        {
+          "file": "005.txt",
+          "start": 1636.05,
+          "end": 1710,
+          "start_label": "27:16",
+          "end_label": "28:30",
+          "text": "The main idea here is that \"most likely\" does not mean \"best\" for every type of generation. In closed-ended tasks, MAP is often useful because the output space is constrained and the answer is well defined. But in open-ended text generation, probability maximization can push the model into repetitive, too-short, or atypical outputs. We use these traps to transition from optimization to sampling."
+        }
+      ]
+    },
+    "scene_2_4": {
+      "title": "Scene 2.4 - Sampling, truncation và temperature",
+      "start": 1710,
+      "end": 2310,
+      "start_label": "28:30",
+      "end_label": "38:30",
+      "directory": "voiceover/scene_2_4",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 1710,
+          "end": 1770.93,
+          "start_label": "28:30",
+          "end_label": "29:31",
+          "text": "Now the objective shifts to sampling. Ancestral sampling generates one token at a time by sampling the next output token from the model distribution, conditioned on the input and all previous output tokens. This is equivalent to sequence sampling through the product of conditional probabilities."
+        },
+        {
+          "file": "002.txt",
+          "start": 1770.93,
+          "end": 1828.68,
+          "start_label": "29:31",
+          "end_label": "30:29",
+          "text": "The problem is that greedy decoding can cause repetition traps, while ancestral sampling can cause incoherence because low-probability tokens are too likely under a heavy-tailed distribution. The solution is to chop off the tail with truncation sampling."
+        },
+        {
+          "file": "003.txt",
+          "start": 1828.68,
+          "end": 1954.5,
+          "start_label": "30:29",
+          "end_label": "32:35",
+          "text": "Truncation sampling chooses a probability threshold at each time step. Common variants include Top-k, Top-p, epsilon sampling, eta sampling, and Min-p. Top-k always keeps a fixed number of tokens, while Top-p adapts based on the cumulative probability of the leading tokens."
+        },
+        {
+          "file": "004.txt",
+          "start": 1954.5,
+          "end": 2019.14,
+          "start_label": "32:35",
+          "end_label": "33:39",
+          "text": "Temperature is another adapter. It does not cut off the tail; instead, it rescales logits using a softmax divided by tau. High tau, greater than or equal to 1, increases diversity but can make outputs incoherent. Low tau, less than 1, increases coherence but can make outputs repetitive."
+        },
+        {
+          "file": "005.txt",
+          "start": 2019.14,
+          "end": 2172.25,
+          "start_label": "33:39",
+          "end_label": "36:12",
+          "text": "These algorithms differ in how they choose the next token. Greedy decoding chooses the maximum-scoring token; ancestral sampling samples from the full vocabulary; Top-k selects the top k values; Top-p keeps tokens under a cumulative probability threshold; epsilon filters with a hard probability threshold; and temperature changes the sharpness of the distribution before sampling. The heavy tail can come from under-training, the mode-seeking nature of cross-entropy loss, and low-rank constraints in the output layer."
+        },
+        {
+          "file": "006.txt",
+          "start": 2172.25,
+          "end": 2240.33,
+          "start_label": "36:12",
+          "end_label": "37:20",
+          "text": "Top-k and Top-p differ in how they threshold the distribution. Top-k always keeps exactly the k highest-probability tokens, so it does not adapt to the shape of the distribution. Top-p uses cumulative probability, so the kept region can expand or shrink according to the distribution."
+        },
+        {
+          "file": "007.txt",
+          "start": 2240.33,
+          "end": 2310,
+          "start_label": "37:20",
+          "end_label": "38:30",
+          "text": "Temperature does not decide which tokens are removed. It rescales logits before sampling. Higher temperature makes the distribution more uniform, lower temperature makes it more peaked, while truncation changes which token region remains available for sampling."
+        }
+      ]
+    },
+    "scene_2_5": {
+      "title": "Scene 2.5 - Sampling adapters, constrained decoding và token healing",
+      "start": 2310,
+      "end": 2760,
+      "start_label": "38:30",
+      "end_label": "46:00",
+      "directory": "voiceover/scene_2_5",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 2310,
+          "end": 2390.09,
+          "start_label": "38:30",
+          "end_label": "39:50",
+          "text": "A sampling adapter takes the model's token distribution conditioned on the input and readjusts the probabilities. Truncation and temperature are adapters, but there are many other methods too: typical sampling, epsilon, eta, Mirostat, basis-aware sampling, contrastive decoding, DExperts, inference-time adapters, and proxy tuning."
+        },
+        {
+          "file": "002.txt",
+          "start": 2390.09,
+          "end": 2441.29,
+          "start_label": "39:50",
+          "end_label": "40:41",
+          "text": "Constrained decoding appears when we embed an LLM inside a larger system and need structured output, such as JSON. The prompt asks the model to format information about Taylor Swift according to a schema with a name field as text and a birth year field as an integer, but the free-form LLM output does not match the JSON schema."
+        },
+        {
+          "file": "003.txt",
+          "start": 2441.29,
+          "end": 2510.73,
+          "start_label": "40:41",
+          "end_label": "41:51",
+          "text": "The method has two steps: compile the schema into a state machine, then filter the next-token distribution so only valid tokens remain. When the state machine requires the opening brace of a JSON object, all other tokens are removed. When it is inside the name field, only compatible tokens can continue. This lets the final sequence become a valid JSON object containing Taylor Swift's name and birth year."
+        },
+        {
+          "file": "004.txt",
+          "start": 2510.73,
+          "end": 2589.59,
+          "start_label": "41:51",
+          "end_label": "43:10",
+          "text": "Constrained decoding has side effects: it can speed up generation, but it can also reduce performance. Token healing handles cases where templated generation forces an unnatural boundary, for example when the phrase \"The URL is HTTP colon\" is followed by the rest of the URL separator. Token healing rewinds the tokenizer and enforces the untokenized text as the prefix for the next token. Another fix is tokenizer regularization during training."
+        },
+        {
+          "file": "005.txt",
+          "start": 2589.59,
+          "end": 2638.54,
+          "start_label": "43:10",
+          "end_label": "43:59",
+          "text": "The summary of primitive generators is this: decoding has two views, optimization and sampling; there is a diversity-coherence trade-off; and constrained decoding enforces structure on LLM outputs. These are the building blocks of modern LLM generation methods."
+        },
+        {
+          "file": "006.txt",
+          "start": 2638.54,
+          "end": 2700.6,
+          "start_label": "43:59",
+          "end_label": "45:01",
+          "text": "A sampling adapter does not replace the language model. It receives the model distribution and readjusts probabilities before choosing a token. Therefore, temperature, truncation, contrastive decoding, and DExperts can all be understood as transformation layers placed after the original model distribution."
+        },
+        {
+          "file": "007.txt",
+          "start": 2700.6,
+          "end": 2760,
+          "start_label": "45:01",
+          "end_label": "46:00",
+          "text": "For constrained decoding, the core concept is that a state machine turns a schema into the set of valid tokens at each step. If a token does not move the system into a valid state, it is filtered out of the next-token distribution. This is how we force an LLM to communicate with a larger system through structured outputs such as JSON."
+        }
+      ]
+    },
+    "scene_3_1": {
+      "title": "Scene 3.1 - Mục tiêu, formalization và chaining",
+      "start": 2760,
+      "end": 3420,
+      "start_label": "46:00",
+      "end_label": "57:00",
+      "directory": "voiceover/scene_3_1",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 2760,
+          "end": 2821.74,
+          "start_label": "46:00",
+          "end_label": "47:02",
+          "text": "The system designer's goal is to design a generator system that produces acceptable sequences. In other words, we want the system whose outputs have the highest expected acceptability. Acceptability can mean correctness or human preference."
+        },
+        {
+          "file": "002.txt",
+          "start": 2821.74,
+          "end": 2915.1,
+          "start_label": "47:02",
+          "end_label": "48:35",
+          "text": "We already know how to generate probable outputs by sampling from the model conditioned on the input, but if those probable outputs are not acceptable, we need an additional strategy. The first idea in meta-generation is to use external information, for example by learning an evaluator that approximates acceptability and using it during generation. In this context, evaluator, critic, verifier, value, reward model, and scoring model all play closely related roles."
+        },
+        {
+          "file": "003.txt",
+          "start": 2915.1,
+          "end": 2991.78,
+          "start_label": "48:35",
+          "end_label": "49:52",
+          "text": "The second idea is to call the generator more than once to search for good sequences. With an oracle verifier loop, we can repeat the process: generate an intermediate step conditioned on the input, generate an answer conditioned on both the input and that intermediate step, then stop when the verifier confirms that the answer is correct."
+        },
+        {
+          "file": "004.txt",
+          "start": 2991.78,
+          "end": 3052.03,
+          "start_label": "49:52",
+          "end_label": "50:52",
+          "text": "We can formalize this as sampling an output from a generator system conditioned on the input, with choices for the strategy, the component generators, and other parameters. The design choices include the overall strategy, the choice of generators, and other parameters such as the number of tokens. Token-level generators from the previous section are a special case of this framework."
+        },
+        {
+          "file": "005.txt",
+          "start": 3052.03,
+          "end": 3218.09,
+          "start_label": "50:52",
+          "end_label": "53:38",
+          "text": "Chaining composes generators in order: the first generator produces an output from the input, the second generator uses the input and the first output, and the third generator uses the input and the second output. Chain-of-thought is the canonical example: generate a thought, then generate an answer. We can compare chain-of-thought to a writable tape, increasing expressivity through variable output length. Chaining can extend to methods such as Self-Ask, Demonstrate-Search-Predict, System-2 Attention, and Draft-Sketch-Prove. The takeaway is that chaining decomposes generation and integrates tools or models, but chaining alone does not explore the output space."
+        },
+        {
+          "file": "006.txt",
+          "start": 3218.09,
+          "end": 3311.45,
+          "start_label": "53:38",
+          "end_label": "55:11",
+          "text": "The important point about acceptability is that it does not necessarily match the model's probability. An output can be probable under the model but still be incorrect, disliked by humans, or fail to satisfy the system requirement. Meta-generation is introduced to find more acceptable sequences by using evaluators, verifiers, tools, or multiple generator calls."
+        },
+        {
+          "file": "007.txt",
+          "start": 3311.45,
+          "end": 3420,
+          "start_label": "55:11",
+          "end_label": "57:00",
+          "text": "Chain-of-thought uses a simple but powerful decomposition: the system generates an intermediate thought, then uses that thought to generate the answer. This increases expressivity because the intermediate work can have variable length, like a writable tape. The chain acts like a multi-step program, where the outer process is the meta-generator and the inner calls are generators or tools."
+        }
+      ]
+    },
+    "scene_3_2": {
+      "title": "Scene 3.2 - Parallel generation, Best-of-N, voting và weighted voting",
+      "start": 3420,
+      "end": 4110,
+      "start_label": "57:00",
+      "end_label": "68:30",
+      "directory": "voiceover/scene_3_2",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 3420,
+          "end": 3460.69,
+          "start_label": "57:00",
+          "end_label": "57:41",
+          "text": "Parallel meta-generators produce many candidates in parallel, all conditioned on the same input, then aggregate those candidates into a final output."
+        },
+        {
+          "file": "002.txt",
+          "start": 3460.69,
+          "end": 3613.35,
+          "start_label": "57:41",
+          "end_label": "60:13",
+          "text": "The first strategy is Best-of-N, also called rejection sampling, which chooses the candidate with the highest reward model score. This approximates the maximum acceptability value. A reward model can be trained to output a score between zero and one, using correct and incorrect examples or preference data. As the number of generations increases, Best-of-N better approximates the most acceptable output, but if the reward model is imperfect, the system can fall into over-optimization."
+        },
+        {
+          "file": "003.txt",
+          "start": 3613.35,
+          "end": 3758.68,
+          "start_label": "60:13",
+          "end_label": "62:39",
+          "text": "The second aggregation method is Voting, or Self-Consistency, which chooses the answer receiving the most votes. Weighted voting goes further by multiplying each vote by the reward model score. Easy-to-Hard Generalization adds an interesting angle: a verifier can sometimes work more effectively than the human grader. As the sample count approaches infinity, voting accuracy converges according to the convergence theorem."
+        },
+        {
+          "file": "004.txt",
+          "start": 3758.68,
+          "end": 3843.86,
+          "start_label": "62:39",
+          "end_label": "64:04",
+          "text": "The convergence theorem gives three important takeaways. First, accuracy does not increase forever; it converges to a limit. Second, weighted voting is better than ordinary voting when the combined verifier and generator scores assign more total mass to correct answers. Third, to break the convergence limit, we must improve either the verifier or the generator."
+        },
+        {
+          "file": "005.txt",
+          "start": 3843.86,
+          "end": 3926.51,
+          "start_label": "64:04",
+          "end_label": "65:27",
+          "text": "Parallel meta-generators explore the output space by generating full sequences. This gives large performance gains in practice, but it is limited by the evaluator and the generator. The important insight is that the verifier is used only at the end, on full sequences. The next question is whether we can use intermediate evaluation more effectively."
+        },
+        {
+          "file": "006.txt",
+          "start": 3926.51,
+          "end": 4022.55,
+          "start_label": "65:27",
+          "end_label": "67:03",
+          "text": "The reward model is the bridge between probability and acceptability. In Best-of-N, the generator creates many candidates, and the reward model ranks them. If the reward model reflects acceptability well, increasing the number of candidates helps find a better candidate. But if the reward model is imperfect, the system may optimize too strongly for the reward model instead of true acceptability; this is the over-optimization problem."
+        },
+        {
+          "file": "007.txt",
+          "start": 4022.55,
+          "end": 4110,
+          "start_label": "67:03",
+          "end_label": "68:30",
+          "text": "Voting and weighted voting explain another form of aggregation: we do not only ask which sequence has the highest score, but which answer is supported by the most paths. In reasoning tasks, many different solution paths can lead to the same answer. Self-consistency uses this by marginalizing out the reasoning paths and choosing the most strongly supported answer."
+        }
+      ]
+    },
+    "scene_3_3": {
+      "title": "Scene 3.3 - Tree search, PRM và Rebase",
+      "start": 4110,
+      "end": 4620,
+      "start_label": "68:30",
+      "end_label": "77:00",
+      "directory": "voiceover/scene_3_3",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 4110,
+          "end": 4180.33,
+          "start_label": "68:30",
+          "end_label": "69:40",
+          "text": "Tree search assumes that the generation process can be decomposed into search over states and transitions. When using tree search, we must choose the states, the transitions from one state to the next, the scoring function for each state, and a strategy such as breadth-first or depth-first search."
+        },
+        {
+          "file": "002.txt",
+          "start": 4180.33,
+          "end": 4272.59,
+          "start_label": "69:40",
+          "end_label": "71:13",
+          "text": "For math and complex reasoning problems, one way to score intermediate steps is a Process Reward Model, or PRM, which labels each step as correct or incorrect by outputting a score between zero and one."
+        },
+        {
+          "file": "003.txt",
+          "start": 4272.59,
+          "end": 4351.76,
+          "start_label": "71:13",
+          "end_label": "72:32",
+          "text": "Reward Balanced Search, or Rebase, uses scores to allocate exploration budget across the frontier. It allocates budget according to a softmax over each node score divided by tau. High-scoring nodes receive more exploration; low-scoring nodes receive little or no expansion."
+        },
+        {
+          "file": "004.txt",
+          "start": 4351.76,
+          "end": 4437.92,
+          "start_label": "72:32",
+          "end_label": "73:58",
+          "text": "After tree search, we can take candidates and aggregate them, for example through voting. The key idea is that tree search uses scores on intermediate states, with backtracking and exploration. However, tree-search meta-generators require a suitable environment, decomposition into states, and a good reward signal."
+        },
+        {
+          "file": "005.txt",
+          "start": 4437.92,
+          "end": 4539.31,
+          "start_label": "73:58",
+          "end_label": "75:39",
+          "text": "The major difference between parallel generation and tree search is when evaluation is used. Parallel generation usually waits until it has a full sequence before using a verifier or reward model. Tree search uses scores on intermediate states. This lets it stop a bad branch early, backtrack, or allocate more budget to promising branches."
+        },
+        {
+          "file": "006.txt",
+          "start": 4539.31,
+          "end": 4620,
+          "start_label": "75:39",
+          "end_label": "77:00",
+          "text": "Tree search is not always appropriate. If the task cannot be decomposed into states, if the environment does not provide intermediate information, or if the reward signal is weak, tree search may not provide benefits that justify its cost."
+        }
+      ]
+    },
+    "scene_3_4": {
+      "title": "Scene 3.4 - Refinement và self-correction",
+      "start": 4620,
+      "end": 5190,
+      "start_label": "77:00",
+      "end_label": "86:30",
+      "directory": "voiceover/scene_3_4",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 4620,
+          "end": 4661.14,
+          "start_label": "77:00",
+          "end_label": "77:41",
+          "text": "Refinement and self-correction improve a generation using feedback. In practice, the quality and source of feedback are crucial. We distinguish between extrinsic feedback and intrinsic feedback."
+        },
+        {
+          "file": "002.txt",
+          "start": 4661.14,
+          "end": 4763.32,
+          "start_label": "77:41",
+          "end_label": "79:23",
+          "text": "Extrinsic feedback provides outside information at inference time, for example an external program verifier. Successful systems can integrate verifiers, code interpreters, retrievers, and tools in agent environments. The intuition is that external feedback provides new information not already inside the model, helping detect and localize errors."
+        },
+        {
+          "file": "003.txt",
+          "start": 4763.32,
+          "end": 4898.11,
+          "start_label": "79:23",
+          "end_label": "81:38",
+          "text": "Intrinsic feedback does not use external information at inference time. A common method is prompt-based re-prompting with the same LLM, such as Self-Refine. Results in this direction are mixed: it can work better on tasks that are easy to evaluate or cases with missing information, but results on mathematical reasoning are very limited. The core issue is that intrinsic feedback is often too noisy for reliable self-correction."
+        },
+        {
+          "file": "004.txt",
+          "start": 4898.11,
+          "end": 5051.93,
+          "start_label": "81:38",
+          "end_label": "84:12",
+          "text": "The second direction is to train an intrinsic corrector, such as self-corrective learning. The general process is to collect bad-to-better data pairs by generating samples and evaluating reward, then update the corrector to produce a better output from a bad one, and repeat. This method is prone to behavior collapse; regularization combined with reinforcement learning can help address this. Summary: extrinsic feedback works well when the environment can localize errors; prompted intrinsic feedback gives mixed results; trained intrinsic feedback is promising but requires a very specific training strategy."
+        },
+        {
+          "file": "005.txt",
+          "start": 5051.93,
+          "end": 5117.36,
+          "start_label": "84:12",
+          "end_label": "85:17",
+          "text": "The word feedback in refinement needs to be explained clearly. Extrinsic feedback can provide new information the model does not have by itself, such as a verifier or code interpreter detecting an error. Intrinsic feedback relies on the model itself, so the risk is that the same model both creates the error and fails to judge it correctly."
+        },
+        {
+          "file": "006.txt",
+          "start": 5117.36,
+          "end": 5190,
+          "start_label": "85:17",
+          "end_label": "86:30",
+          "text": "The toy example \"Generate Taylor Swift\" shows refinement in a simple form: the generator produces characters, feedback identifies incorrect characters, and the corrector regenerates the wrong parts. This example helps viewers understand why localizing errors matters: if we know where the mistake is, correction is much easier than merely knowing the whole output is not good enough."
+        }
+      ]
+    },
+    "scene_3_5": {
+      "title": "Scene 3.5 - Scaling meta-generators và compute allocation",
+      "start": 5190,
+      "end": 5640,
+      "start_label": "86:30",
+      "end_label": "94:00",
+      "directory": "voiceover/scene_3_5",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": 5190,
+          "end": 5242.82,
+          "start_label": "86:30",
+          "end_label": "87:23",
+          "text": "After introducing the strategies, we move to the scaling question: how should we allocate test-time compute? We choose a strategy based on task performance and compute cost. Cost is a function of model size and the number of generated tokens."
+        },
+        {
+          "file": "002.txt",
+          "start": 5242.82,
+          "end": 5307.88,
+          "start_label": "87:23",
+          "end_label": "88:28",
+          "text": "Given a compute budget, the compute-optimal inference problem is to choose the model size, the number of generated tokens, and the inference strategy that minimize error while staying within that budget. Here model size means the number of model parameters, generation length means the number of generated tokens, and cost is measured in floating-point operations, or FLOP."
+        },
+        {
+          "file": "003.txt",
+          "start": 5307.88,
+          "end": 5403.1,
+          "start_label": "88:28",
+          "end_label": "90:03",
+          "text": "The first question is whether it is better to use a small model with more generations, or a large model with fewer generations. Smaller models can be compute-optimal in some settings. The second question is which meta-generation strategy is compute-optimal. Tree search, specifically Rebase, can also be compute-optimal."
+        },
+        {
+          "file": "004.txt",
+          "start": 5403.1,
+          "end": 5498.99,
+          "start_label": "90:03",
+          "end_label": "91:39",
+          "text": "The recap of meta-generation is that performance improves with increased compute, but depends on model size and the meta-generator. The optimal model size and strategy change with the compute budget; sometimes smaller models are better. The long-term goal is to design strategies that are universally optimal. Because meta-generators produce many tokens in diverse ways such as tree search, the next question is how to generate quickly and efficiently."
+        },
+        {
+          "file": "005.txt",
+          "start": 5498.99,
+          "end": 5573.58,
+          "start_label": "91:39",
+          "end_label": "92:54",
+          "text": "The compute-optimal frontier is the set of configurations that are not dominated: at the same cost, they have lower error; or at the same error, they use less cost. So the question is not simply \"use the largest possible model,\" but choose model size, number of generated tokens, and strategy to match the budget."
+        },
+        {
+          "file": "006.txt",
+          "start": 5573.58,
+          "end": 5640,
+          "start_label": "92:54",
+          "end_label": "94:00",
+          "text": "This is also the bridge to systems efficiency. If two meta-generators use the same token budget but one method is more parallelizable and shares prefixes better, the real cost and latency can be very different. Therefore, the cost-performance trade-off must consider both the algorithm and how the system executes that algorithm."
+        }
+      ]
+    },
+    "scene_4_1": {
+      "title": "Scene 4.1 - Efficiency basics, hardware, batching và KV cache",
+      "start": null,
+      "end": null,
+      "start_label": null,
+      "end_label": null,
+      "directory": "voiceover/scene_4_1",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The efficiency section moves from algorithms to systems. The scope includes the basics of efficient generation, how to make meta-generation faster, and which meta-generators are the most efficient."
+        },
+        {
+          "file": "002.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Efficiency is measured by latency and throughput. Latency is how long the user must wait for a response; throughput is how many requests complete per second. Latency, throughput, and quality usually trade off against one another under a fixed budget."
+        },
+        {
+          "file": "003.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Hardware affects generation efficiency through three factors: on-device memory or VRAM, operations per second or FLOP/s, and data transfer speed, or memory bandwidth in GB/s. Bottlenecks include loading inputs and activations, loading weights, performing computation, and communicating across devices."
+        },
+        {
+          "file": "004.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "We model time per operation as the slower of two limits: the compute time, or the memory-transfer time. For example, on an NVIDIA H100 SXM, BF16 dense tensor core compute reaches about ten to the fifteenth FLOP per second, while memory bandwidth is three point three five times ten to the twelfth bytes per second. This ratio shows that if an operation performs more than 100 FLOP per byte, the compute cost is almost free compared with the data-transfer cost."
+        },
+        {
+          "file": "005.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "For a single decoding step, optimization directions include reducing memory bandwidth through quantization or distillation, increasing FLOP per second through FlashAttention, which improves hardware utilization without changing the number of operations, or reducing FLOP through Mixture-of-Experts, which uses fewer FLOP per token than a dense model."
+        },
+        {
+          "file": "006.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Compute-bound means time is mainly limited by how many operations can be performed per second. Memory-bound means the processor can compute faster than data can be moved from memory, so it waits for data. Operation time is controlled by the slower branch between compute and memory transfer."
+        },
+        {
+          "file": "007.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Batching is especially important because many decoding operations are memory-bound. If we must load the weights from memory anyway, we want to use that same load for many inputs at once. This is why batching can be nearly cost-free for memory-bound operations."
+        },
+        {
+          "file": "008.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The KV cache solves another problem: avoiding recomputation of keys and values for the entire prefix at every decode step. Prefill creates the cache for the prompt, while decode only adds the K and V for the new token. The KV cache reduces repeated computation, but the cache itself consumes VRAM, so it becomes a bottleneck when batch size or context length is large."
+        }
+      ]
+    },
+    "scene_4_2": {
+      "title": "Scene 4.2 - Speculative decoding",
+      "start": null,
+      "end": null,
+      "start_label": null,
+      "end_label": null,
+      "directory": "voiceover/scene_4_2",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Generation of long outputs is bottlenecked by sequential next-token prediction. But not every token is equally hard. The key question is: how can we spend less time on easier tokens?"
+        },
+        {
+          "file": "002.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Speculative decoding uses a smaller draft model to cheaply guess the next several tokens. These proposal tokens are then passed in parallel to the main generator for verification. Tokens that match the main generator's prediction are kept, while tokens that do not match are discarded."
+        },
+        {
+          "file": "003.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Decoding is often memory-bound. Speculative decoding can harm throughput at low context lengths, but it can improve both throughput and latency at long context lengths, according to the MagicDec results."
+        },
+        {
+          "file": "004.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The concept to convey is that speculative decoding turns part of the sequential work into parallel work. Instead of the main model generating one token at a time, the draft model proposes several tokens in advance. The main model then checks those proposals all at once. If the tokens are easy to predict, many proposals are kept and the system saves many sequential decode steps."
+        },
+        {
+          "file": "005.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Speculative decoding is not always beneficial. At low context lengths, the overhead of the draft model and verification can hurt throughput. At long context lengths, memory-bound decoding is heavier, so the benefit of checking many proposals in parallel becomes clearer."
+        }
+      ]
+    },
+    "scene_4_3": {
+      "title": "Scene 4.3 - KV cache reuse, prefix sharing, KV cache compression và recap, takeaways",
+      "start": null,
+      "end": null,
+      "start_label": null,
+      "end_label": null,
+      "directory": "voiceover/scene_4_3",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "For meta-generation, the question is how meta-generators interact with real-world efficiency and hardware utilization, and how we can design more efficient meta-generators."
+        },
+        {
+          "file": "002.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Common deployment and parallel generation often have redundant shared prefix content in prompts. PagedAttention in vLLM avoids redundant storage by mapping KV cache blocks to physical pages in VRAM."
+        },
+        {
+          "file": "003.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "KV cache reuse is not limited to a single shared prefix. Multiple levels of prefix sharing can appear, for example a long few-shot prompt combined with Best-of-N generation. RadixAttention in SGLang supports complex prefix-sharing patterns and evicts least-recently-used KV cache blocks when needed."
+        },
+        {
+          "file": "004.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Hydragen makes shared-prefix attention components faster by leveraging Tensor Cores. The KV cache compression section emphasizes that KV cache size is a bottleneck for larger batches and longer-context inference. The three directions are token dropping, quantization, and architectural modification. Architectural tweaks such as Multi-Query Attention or Grouped-Query Attention reduce the number of Key and Value attention heads to shrink the KV cache."
+        },
+        {
+          "file": "005.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Meta-generators are efficient when trajectories can run in parallel and long inputs can share prefixes to reuse KV caches. Token budget is not the only indicator of meta-generator efficiency."
+        },
+        {
+          "file": "006.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Prefix sharing appears naturally in meta-generation. For example, Best-of-N uses the same prompt to generate many candidates; tree search has many branches sharing a prefix; and chatbots or few-shot prompting often use the same long system prompt. If each request stores a separate KV cache for the same prefix, VRAM is wasted."
+        },
+        {
+          "file": "007.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "PagedAttention solves redundant storage at the memory-page level. RadixAttention extends the idea to multiple levels of prefix sharing using a prefix tree. Hydragen focuses on making attention over the shared prefix faster by using Tensor Cores. These three techniques send the same message: the structure of the prompt and the meta-generator can create opportunities for system optimization."
+        },
+        {
+          "file": "008.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "For KV cache compression, each direction acts on one part of the cache size. Token dropping reduces the effective context length, quantization reduces the bytes used per value, and architectural modification reduces the number of Key and Value heads. Each technique saves memory by shrinking a different part of the same bottleneck."
+        },
+        {
+          "file": "009.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "To summarize, the tutorial has three large parts: primitive generators that produce one token at a time; meta-generators, which are ways of calling generators; and efficient meta-generation, which optimizes the hardware system when running those algorithms."
+        },
+        {
+          "file": "010.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "To optimize meta-generation, we have strategies such as chaining, parallel generation, tree search, and refinement. We allocate test-time compute to improve performance and design around cost-performance trade-offs. At the systems level, parallelizability reduces latency and increases throughput. Prompt structure and meta-generator structure determine much of the real-world efficiency, so token budget is only a simplification."
+        },
+        {
+          "file": "011.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Future directions will focus on hybrid systems that combine parallel and sequential improvement, learning to search with backtracking and self-correction, optimizing agents that interact with external environments, and automatically allocating compute flexibly. But there is also a warning: many scientific conclusions today are based on only a few benchmark tasks, so stronger evidence will require broader evaluation."
+        },
+        {
+          "file": "012.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "There is an important warning here: many conclusions are still based on a few tasks. Meta-generation techniques show many strong results, but how general those conclusions are still depends on the tasks, evaluator, generator, and budget that were tested. So the looking-ahead section is not only a list of future directions; it is also a reminder that the field needs broader evidence."
+        }
+      ]
+    },
+    "scene_5_1": {
+      "title": "Scene 5.1 - Panel session",
+      "start": null,
+      "end": null,
+      "start_label": null,
+      "end_label": null,
+      "directory": "voiceover/scene_5_1",
+      "files": [
+        {
+          "file": "001.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "A natural question is whether better pretrained models in the future will remove the need for inference-time algorithms. The general answer is that these directions are complementary. If models learn to search better during training, we may need less inference-time compute, but we will still need inference-time algorithms to refine, extend capability, backtrack, evaluate, or use feedback."
+        },
+        {
+          "file": "002.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The next question is the limit of inference scaling. We can distinguish domains with clear verification, such as math and code, from harder domains such as writing, biology, drug discovery, or problems involving ambiguity and correctness. One bottleneck is verifier quality: if the verifier cannot distinguish false positives from true positives, increasing compute will not solve the problem by itself."
+        },
+        {
+          "file": "003.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Verification can also be harder than generation, for example proving that a program is safe for every input. There is also the question of whether systems reasoning can solve very complex social problems such as poverty or climate change, and whether architectural limits may be related to state tracking or sequence length."
+        },
+        {
+          "file": "004.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The efficiency question is whether there is still room to optimize the current architecture, or whether we are only waiting for new accelerators. A useful direction is co-design across algorithms, modeling, and hardware. Hardware was previously designed mainly for training, while inference may become a larger share of total compute. Final points include hybrid systems that use code when useful, generative verifiers, inference scaling laws, and the need for the open-source community to focus more on tools for this direction."
+        },
+        {
+          "file": "005.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "An important nuance is that inference-time algorithms do not necessarily have to do the heavy lifting forever. If future models learn better search during training, inference-time algorithms may become a lighter maintenance or refinement layer. But they can still be necessary because many tasks require feedback, backtracking, tool use, or evaluation at run time."
+        },
+        {
+          "file": "006.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The limits of inference scaling depend on the difference between tasks with clear outcome supervision and more ambiguous tasks. Math and code are easier to scale because they have clear verifiers or tests. Writing, biology, drug discovery, societal issues, or problems requiring expensive human verification are harder. When verification is not easier than generation, merely increasing samples or compute is not enough."
+        },
+        {
+          "file": "007.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "Important open questions include learning search during pretraining, self-improvement for chain-of-thought, downstream generalization, and whether reasoning learned at a certain length can scale to longer contexts. These are open directions, not settled conclusions."
+        },
+        {
+          "file": "008.txt",
+          "start": null,
+          "end": null,
+          "start_label": null,
+          "end_label": null,
+          "text": "The systems perspective expands from software optimization to hardware and hybrid architecture. One direction is co-designing the model, algorithm, and hardware because inference may take a larger share of compute than before. Another direction is hybrid systems that know when to use code or tools because that is more efficient than forcing the LLM to generate every token itself. A further idea is generative verifiers: if the verifier is also a language model, then we can apply inference-time compute to the verifier, leading to another meta level."
+        }
+      ]
+    }
+  }
+}

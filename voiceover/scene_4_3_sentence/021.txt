@@ -1,0 +1,1 @@
+Token dropping reduces the effective context length, quantization reduces the bytes used per value, and architectural modification reduces the number of Key and Value heads.

@@ -1,0 +1,1 @@
+Prefix sharing appears naturally in meta-generation.

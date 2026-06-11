@@ -1,0 +1,1 @@
+To optimize meta-generation, we have strategies such as chaining, parallel generation, tree search, and refinement.

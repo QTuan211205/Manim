@@ -1,0 +1,1 @@
+Language models can support many tasks whenever the task can be framed as generating a sequence: from solving difficult Olympiad problems to writing real code.

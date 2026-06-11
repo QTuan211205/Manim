@@ -1,0 +1,1 @@
+In primitive generators, we begin with token-level generation.

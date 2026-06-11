@@ -1,0 +1,1 @@
+If the reward model reflects acceptability well, increasing the number of candidates helps find a better candidate.

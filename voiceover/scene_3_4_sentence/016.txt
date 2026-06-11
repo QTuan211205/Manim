@@ -1,0 +1,1 @@
+Extrinsic feedback can provide new information the model does not have by itself, such as a verifier or code interpreter detecting an error.

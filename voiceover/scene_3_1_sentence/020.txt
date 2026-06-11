@@ -1,0 +1,1 @@
+Chain-of-thought uses a simple but powerful decomposition: the system generates an intermediate thought, then uses that thought to generate the answer.

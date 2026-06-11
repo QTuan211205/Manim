@@ -1,0 +1,1 @@
+Therefore, the decoding algorithm must connect local choices into a final sequence according to the chosen objective.

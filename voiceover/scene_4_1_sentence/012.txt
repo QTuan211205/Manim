@@ -1,0 +1,1 @@
+Compute-bound means time is mainly limited by how many operations can be performed per second.

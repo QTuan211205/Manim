@@ -1,0 +1,1 @@
+So the question is not simply "use the largest possible model," but choose model size, number of generated tokens, and strategy to match the budget.

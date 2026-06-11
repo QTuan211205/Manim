@@ -1,0 +1,1 @@
+Parallel meta-generators produce many candidates in parallel, all conditioned on the same input, then aggregate those candidates into a final output.

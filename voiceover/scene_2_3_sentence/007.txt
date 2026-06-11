@@ -1,0 +1,1 @@
+For example, the short sequence "Taylor Swift is" followed by end of sequence can have higher probability than the longer sentence "Taylor Swift is an American singer." A common remedy is length normalization.

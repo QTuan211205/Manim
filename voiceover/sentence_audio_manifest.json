@@ -1,0 +1,3254 @@
+{
+  "source": "voiceover/manifest.json",
+  "output_dir": "voiceover/generated_sentence_level",
+  "scenes": {
+    "scene_1_1": {
+      "title": "Scene 1.1 - Chủ đề tutorial và động cơ",
+      "directory": "voiceover/scene_1_1_sentence",
+      "files": [
+        {
+          "cue": "sc11_001",
+          "text_file": "voiceover/scene_1_1_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 0,
+          "source_end": 41.15,
+          "anchor": "",
+          "text": "We begin with the main topic of today's video: algorithms for generating outputs with language models, especially meta-generation algorithms for large language models, or LLMs."
+        },
+        {
+          "cue": "sc11_002",
+          "text_file": "voiceover/scene_1_1_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 0,
+          "source_end": 41.15,
+          "anchor": "",
+          "text": "This topic matters because we are now trying to use additional compute at test time, after the model has already been trained, to improve the quality of the entire text-generation system."
+        },
+        {
+          "cue": "sc11_003",
+          "text_file": "voiceover/scene_1_1_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 41.15,
+          "source_end": 77.76,
+          "anchor": "",
+          "text": "Language models can support many tasks whenever the task can be framed as generating a sequence: from solving difficult Olympiad problems to writing real code."
+        },
+        {
+          "cue": "sc11_004",
+          "text_file": "voiceover/scene_1_1_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 41.15,
+          "source_end": 77.76,
+          "anchor": "",
+          "text": "So we will focus on one question: once we already have a language model, how should we call it, control it, and combine it with other components to produce the best result?"
+        },
+        {
+          "cue": "sc11_005",
+          "text_file": "voiceover/scene_1_1_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 77.76,
+          "source_end": 120,
+          "anchor": "",
+          "text": "We also place this topic in the context of inference algorithms and the LLM operating system, or LLM OS."
+        },
+        {
+          "cue": "sc11_006",
+          "text_file": "voiceover/scene_1_1_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 77.76,
+          "source_end": 120,
+          "anchor": "",
+          "text": "This means we do not view the language model only as a single token predictor."
+        },
+        {
+          "cue": "sc11_007",
+          "text_file": "voiceover/scene_1_1_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc11_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 77.76,
+          "source_end": 120,
+          "anchor": "",
+          "text": "We view it as one component in a complete generation system: a system that can call the model many times, use supporting tools, use evaluators, and decide how to spend compute during generation."
+        }
+      ]
+    },
+    "scene_1_2": {
+      "title": "Scene 1.2 - Ba hướng scale compute",
+      "directory": "voiceover/scene_1_2_sentence",
+      "files": [
+        {
+          "cue": "sc12_001",
+          "text_file": "voiceover/scene_1_2_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 120,
+          "source_end": 157.67,
+          "anchor": "",
+          "text": "When we look at progress in large language models, we can divide scaling into three waves."
+        },
+        {
+          "cue": "sc12_002",
+          "text_file": "voiceover/scene_1_2_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 120,
+          "source_end": 157.67,
+          "anchor": "",
+          "text": "The first wave is scaling pretraining compute: using larger models and larger datasets, guided by scaling laws for language models."
+        },
+        {
+          "cue": "sc12_003",
+          "text_file": "voiceover/scene_1_2_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 157.67,
+          "source_end": 182.39,
+          "anchor": "",
+          "text": "The second wave is post-training compute: collecting input-output pairs, then fine-tuning the model so it performs better on tasks and can generalize to new tasks."
+        },
+        {
+          "cue": "sc12_004",
+          "text_file": "voiceover/scene_1_2_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_004.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 182.39,
+          "source_end": 208.01,
+          "anchor": "",
+          "text": "The current wave is test-time scaling."
+        },
+        {
+          "cue": "sc12_005",
+          "text_file": "voiceover/scene_1_2_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 182.39,
+          "source_end": 208.01,
+          "anchor": "",
+          "text": "We keep the trained model fixed, but design methods that use additional compute during inference or generation time to increase performance."
+        },
+        {
+          "cue": "sc12_006",
+          "text_file": "voiceover/scene_1_2_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_006.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 208.01,
+          "source_end": 260,
+          "anchor": "",
+          "text": "The important point is that the first two waves, although very important, are still not enough for every task we want language models to solve."
+        },
+        {
+          "cue": "sc12_007",
+          "text_file": "voiceover/scene_1_2_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_007.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 208.01,
+          "source_end": 260,
+          "anchor": "",
+          "text": "So test-time scaling does not replace pretraining or post-training."
+        },
+        {
+          "cue": "sc12_008",
+          "text_file": "voiceover/scene_1_2_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 208.01,
+          "source_end": 260,
+          "anchor": "",
+          "text": "It is another compute dimension, used after the model already exists, at the moment the system needs to generate an answer."
+        },
+        {
+          "cue": "sc12_009",
+          "text_file": "voiceover/scene_1_2_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc12_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 208.01,
+          "source_end": 260,
+          "anchor": "",
+          "text": "There are three main ways to use test-time compute. First, we can make the model generate extra tokens, such as in chain-of-thought: the model writes intermediate reasoning steps before giving the final answer. Second, we can call the generator multiple times. Third, we can move from a single language model to a compound AI system. In such a system, the model can be combined with evaluators, verifiers, code interpreters, search engines, or other external tools."
+        }
+      ]
+    },
+    "scene_1_3": {
+      "title": "Scene 1.3 - Test-time compute được dùng như thế nào",
+      "directory": "voiceover/scene_1_3_sentence",
+      "files": [
+        {
+          "cue": "sc13_001",
+          "text_file": "voiceover/scene_1_3_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 260,
+          "source_end": 290.37,
+          "anchor": "",
+          "text": "There are three main ways to use test-time compute."
+        },
+        {
+          "cue": "sc13_002",
+          "text_file": "voiceover/scene_1_3_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 260,
+          "source_end": 290.37,
+          "anchor": "",
+          "text": "First, we can make the model generate extra tokens, such as in chain-of-thought: the model writes intermediate reasoning steps before giving the final answer."
+        },
+        {
+          "cue": "sc13_003",
+          "text_file": "voiceover/scene_1_3_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 290.37,
+          "source_end": 320.89,
+          "anchor": "",
+          "text": "Second, we can call the generator multiple times."
+        },
+        {
+          "cue": "sc13_004",
+          "text_file": "voiceover/scene_1_3_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 290.37,
+          "source_end": 320.89,
+          "anchor": "",
+          "text": "AlphaCode is a canonical example: the system generates many candidate programs, then filters and clusters them to obtain a smaller but higher-quality set of results."
+        },
+        {
+          "cue": "sc13_005",
+          "text_file": "voiceover/scene_1_3_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 320.89,
+          "source_end": 366.0,
+          "anchor": "",
+          "text": "Third, we can move from a single language model to a compound AI system."
+        },
+        {
+          "cue": "sc13_006",
+          "text_file": "voiceover/scene_1_3_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 320.89,
+          "source_end": 366.0,
+          "anchor": "",
+          "text": "In such a system, the model can be combined with evaluators, verifiers, code interpreters, search engines, or other external tools."
+        },
+        {
+          "cue": "sc13_007",
+          "text_file": "voiceover/scene_1_3_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 320.89,
+          "source_end": 366.0,
+          "anchor": "",
+          "text": "This is the foundation for defining meta-generation."
+        },
+        {
+          "cue": "sc13_008",
+          "text_file": "voiceover/scene_1_3_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 366.0,
+          "source_end": 440,
+          "anchor": "",
+          "text": "When we generate extra tokens, each new token corresponds to another neural-network forward pass, so generating extra tokens itself consumes compute."
+        },
+        {
+          "cue": "sc13_009",
+          "text_file": "voiceover/scene_1_3_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 366.0,
+          "source_end": 440,
+          "anchor": "",
+          "text": "With chain-of-thought, that compute creates intermediate thinking tokens."
+        },
+        {
+          "cue": "sc13_010",
+          "text_file": "voiceover/scene_1_3_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 366.0,
+          "source_end": 440,
+          "anchor": "",
+          "text": "With repeated calls, compute creates many candidates."
+        },
+        {
+          "cue": "sc13_011",
+          "text_file": "voiceover/scene_1_3_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc13_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 366.0,
+          "source_end": 440,
+          "anchor": "",
+          "text": "With a compound AI system, part of the computational burden can be handed to reliable specialized tools such as a code interpreter or search engine."
+        }
+      ]
+    },
+    "scene_1_4": {
+      "title": "Scene 1.4 - Generator và meta-generator",
+      "directory": "voiceover/scene_1_4_sentence",
+      "files": [
+        {
+          "cue": "sc14_001",
+          "text_file": "voiceover/scene_1_4_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 440,
+          "source_end": 465.17,
+          "anchor": "",
+          "text": "A generator is any algorithm that takes an input sequence and a language model, then produces an output sequence."
+        },
+        {
+          "cue": "sc14_002",
+          "text_file": "voiceover/scene_1_4_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 440,
+          "source_end": 465.17,
+          "anchor": "",
+          "text": "When we call a normal LLM API, we can view that call as a generator."
+        },
+        {
+          "cue": "sc14_003",
+          "text_file": "voiceover/scene_1_4_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 465.17,
+          "source_end": 514.07,
+          "anchor": "",
+          "text": "A meta-generator is a higher-level strategy: it may call the generator multiple times, use external information, or choose the best output with a separate model."
+        },
+        {
+          "cue": "sc14_004",
+          "text_file": "voiceover/scene_1_4_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 465.17,
+          "source_end": 514.07,
+          "anchor": "",
+          "text": "We use meta-generators to generate more in order to improve task performance, combine multiple models such as verifiers or retrievers, and bring external information such as tools or feedback into generation."
+        },
+        {
+          "cue": "sc14_005",
+          "text_file": "voiceover/scene_1_4_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 514.07,
+          "source_end": 551.25,
+          "anchor": "",
+          "text": "The main content of this tutorial has three parts: primitive generators, meta-generators, and efficient meta-generation, followed by a discussion of open questions and future directions."
+        },
+        {
+          "cue": "sc14_006",
+          "text_file": "voiceover/scene_1_4_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_006.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 551.25,
+          "source_end": 600,
+          "anchor": "",
+          "text": "The word primitive here does not mean these methods are unimportant."
+        },
+        {
+          "cue": "sc14_007",
+          "text_file": "voiceover/scene_1_4_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_007.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 551.25,
+          "source_end": 600,
+          "anchor": "",
+          "text": "Primitives are building blocks: the basic pieces used to construct more complex meta-generation algorithms."
+        },
+        {
+          "cue": "sc14_008",
+          "text_file": "voiceover/scene_1_4_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc14_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 551.25,
+          "source_end": 600,
+          "anchor": "",
+          "text": "So before discussing meta-generators, we first look at how a generator produces a single sequence."
+        }
+      ]
+    },
+    "scene_2_1": {
+      "title": "Scene 2.1 - Token-level generation và decoding là search",
+      "directory": "voiceover/scene_2_1_sentence",
+      "files": [
+        {
+          "cue": "sc21_001",
+          "text_file": "voiceover/scene_2_1_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 600,
+          "source_end": 658.51,
+          "anchor": "",
+          "text": "In primitive generators, we begin with token-level generation."
+        },
+        {
+          "cue": "sc21_002",
+          "text_file": "voiceover/scene_2_1_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 600,
+          "source_end": 658.51,
+          "anchor": "",
+          "text": "Autoregressive language modeling uses a causal language model, which defines the probability of the next token, given all previous tokens."
+        },
+        {
+          "cue": "sc21_003",
+          "text_file": "voiceover/scene_2_1_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 658.51,
+          "source_end": 709.08,
+          "anchor": "",
+          "text": "At each decoding step, the model looks at all previous tokens and outputs a distribution over the next token."
+        },
+        {
+          "cue": "sc21_004",
+          "text_file": "voiceover/scene_2_1_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 658.51,
+          "source_end": 709.08,
+          "anchor": "",
+          "text": "A token-level decoding algorithm is mainly concerned with how to choose that next token."
+        },
+        {
+          "cue": "sc21_005",
+          "text_file": "voiceover/scene_2_1_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 709.08,
+          "source_end": 796.85,
+          "anchor": "",
+          "text": "Because every time step requires a choice, decoding can be viewed as search."
+        },
+        {
+          "cue": "sc21_006",
+          "text_file": "voiceover/scene_2_1_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 709.08,
+          "source_end": 796.85,
+          "anchor": "",
+          "text": "But search for what?"
+        },
+        {
+          "cue": "sc21_007",
+          "text_file": "voiceover/scene_2_1_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 709.08,
+          "source_end": 796.85,
+          "anchor": "",
+          "text": "What is the objective?"
+        },
+        {
+          "cue": "sc21_008",
+          "text_file": "voiceover/scene_2_1_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 709.08,
+          "source_end": 796.85,
+          "anchor": "",
+          "text": "And how do local choices lead to that objective?"
+        },
+        {
+          "cue": "sc21_009",
+          "text_file": "voiceover/scene_2_1_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_009.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 709.08,
+          "source_end": 796.85,
+          "anchor": "",
+          "text": "The next section divides primitive generators into three directions: optimization, sampling, and constrained generation or structured outputs."
+        },
+        {
+          "cue": "sc21_010",
+          "text_file": "voiceover/scene_2_1_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 796.85,
+          "source_end": 899.1,
+          "anchor": "",
+          "text": "When visualizing this scene, the key is for viewers to see the difference between the language model and the decoding algorithm."
+        },
+        {
+          "cue": "sc21_011",
+          "text_file": "voiceover/scene_2_1_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 796.85,
+          "source_end": 899.1,
+          "anchor": "",
+          "text": "The language model provides a probability distribution over the next token; the decoding algorithm is the rule that decides which token to take from that distribution."
+        },
+        {
+          "cue": "sc21_012",
+          "text_file": "voiceover/scene_2_1_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 796.85,
+          "source_end": 899.1,
+          "anchor": "",
+          "text": "The same model can be used with greedy decoding, beam search, sampling, or constrained decoding."
+        },
+        {
+          "cue": "sc21_013",
+          "text_file": "voiceover/scene_2_1_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 899.1,
+          "source_end": 990,
+          "anchor": "",
+          "text": "The choice tree shows why the problem is not just choosing one token and stopping."
+        },
+        {
+          "cue": "sc21_014",
+          "text_file": "voiceover/scene_2_1_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 899.1,
+          "source_end": 990,
+          "anchor": "",
+          "text": "A local choice at the current step changes the prefix, and the new prefix creates a new distribution for the next step."
+        },
+        {
+          "cue": "sc21_015",
+          "text_file": "voiceover/scene_2_1_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc21_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 899.1,
+          "source_end": 990,
+          "anchor": "",
+          "text": "Therefore, the decoding algorithm must connect local choices into a final sequence according to the chosen objective."
+        }
+      ]
+    },
+    "scene_2_2": {
+      "title": "Scene 2.2 - MAP, greedy decoding và beam search",
+      "directory": "voiceover/scene_2_2_sentence",
+      "files": [
+        {
+          "cue": "sc22_001",
+          "text_file": "voiceover/scene_2_2_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 990,
+          "source_end": 1036.55,
+          "anchor": "",
+          "text": "MAP decoding searches for the sequence with the highest probability under the model."
+        },
+        {
+          "cue": "sc22_002",
+          "text_file": "voiceover/scene_2_2_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 990,
+          "source_end": 1036.55,
+          "anchor": "",
+          "text": "In other words, it chooses the sequence that the model assigns the largest probability to."
+        },
+        {
+          "cue": "sc22_003",
+          "text_file": "voiceover/scene_2_2_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 990,
+          "source_end": 1036.55,
+          "anchor": "",
+          "text": "Two common optimization algorithms are greedy decoding and beam search."
+        },
+        {
+          "cue": "sc22_004",
+          "text_file": "voiceover/scene_2_2_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1036.55,
+          "source_end": 1147.45,
+          "anchor": "",
+          "text": "Greedy decoding chooses the highest-probability token at each step, given the previous tokens."
+        },
+        {
+          "cue": "sc22_005",
+          "text_file": "voiceover/scene_2_2_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1036.55,
+          "source_end": 1147.45,
+          "anchor": "",
+          "text": "But greedy decoding does not guarantee that we find the highest-probability sequence, or MAP."
+        },
+        {
+          "cue": "sc22_006",
+          "text_file": "voiceover/scene_2_2_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_006.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1036.55,
+          "source_end": 1147.45,
+          "anchor": "",
+          "text": "A greedy sequence can make locally good choices, such as choosing \"an\" first, but still end with a much lower cumulative probability."
+        },
+        {
+          "cue": "sc22_007",
+          "text_file": "voiceover/scene_2_2_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_007.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1036.55,
+          "source_end": 1147.45,
+          "anchor": "",
+          "text": "By contrast, a non-greedy sequence can begin with a lower-probability token, such as \"a\", and still reach a much higher overall probability."
+        },
+        {
+          "cue": "sc22_008",
+          "text_file": "voiceover/scene_2_2_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1147.45,
+          "source_end": 1264.6,
+          "anchor": "",
+          "text": "Beam search is a width-limited breadth-first search algorithm."
+        },
+        {
+          "cue": "sc22_009",
+          "text_file": "voiceover/scene_2_2_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_009.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1147.45,
+          "source_end": 1264.6,
+          "anchor": "",
+          "text": "At each step, it keeps a limited number of the best branches according to beam size K, then expands them."
+        },
+        {
+          "cue": "sc22_010",
+          "text_file": "voiceover/scene_2_2_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_010.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1147.45,
+          "source_end": 1264.6,
+          "anchor": "",
+          "text": "With GPT2 and beam size 2, step 1 keeps \"an\" with probability 0.80 and \"a\" with probability 0.13."
+        },
+        {
+          "cue": "sc22_011",
+          "text_file": "voiceover/scene_2_2_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_011.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1147.45,
+          "source_end": 1264.6,
+          "anchor": "",
+          "text": "At step 2, we compare cumulative scores for the children: \"a singer\" at 0.117, \"a songwriter\" at 0.104, \"an American\" at 0.016, and \"an artist\" at 0.008."
+        },
+        {
+          "cue": "sc22_012",
+          "text_file": "voiceover/scene_2_2_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_012.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1147.45,
+          "source_end": 1264.6,
+          "anchor": "",
+          "text": "Beam search keeps \"a singer\" and \"a songwriter\", pruning \"an American\", even though that branch began with the best greedy choice."
+        },
+        {
+          "cue": "sc22_013",
+          "text_file": "voiceover/scene_2_2_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_013.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1147.45,
+          "source_end": 1264.6,
+          "anchor": "",
+          "text": "Notice that when beam size K equals 1, beam search is exactly greedy decoding."
+        },
+        {
+          "cue": "sc22_014",
+          "text_file": "voiceover/scene_2_2_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_014.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1264.6,
+          "source_end": 1313.7,
+          "anchor": "",
+          "text": "Greedy decoding is a local choice: at every step, it chooses the best token right now."
+        },
+        {
+          "cue": "sc22_015",
+          "text_file": "voiceover/scene_2_2_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_015.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1264.6,
+          "source_end": 1313.7,
+          "anchor": "",
+          "text": "This is simple and cheap, but it does not guarantee a globally optimal sequence, because a better sequence may begin with a token that is not the best token at the first step."
+        },
+        {
+          "cue": "sc22_016",
+          "text_file": "voiceover/scene_2_2_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_016.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1313.7,
+          "source_end": 1380,
+          "anchor": "",
+          "text": "Beam search is a middle point between greedy search and exhaustive search."
+        },
+        {
+          "cue": "sc22_017",
+          "text_file": "voiceover/scene_2_2_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_017.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1313.7,
+          "source_end": 1380,
+          "anchor": "",
+          "text": "Exhaustive search would expand far too many possibilities, so it is not feasible for language models with tens or hundreds of thousands of tokens in the vocabulary."
+        },
+        {
+          "cue": "sc22_018",
+          "text_file": "voiceover/scene_2_2_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc22_018.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1313.7,
+          "source_end": 1380,
+          "anchor": "",
+          "text": "Beam search keeps a finite beam, so it searches more branches than greedy decoding while controlling cost through the beam size."
+        }
+      ]
+    },
+    "scene_2_3": {
+      "title": "Scene 2.3 - Lợi ích và cạm bẫy của MAP",
+      "directory": "voiceover/scene_2_3_sentence",
+      "files": [
+        {
+          "cue": "sc23_001",
+          "text_file": "voiceover/scene_2_3_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 1380,
+          "source_end": 1411.5,
+          "anchor": "",
+          "text": "MAP decoding works well for closed-ended tasks such as translation and question answering."
+        },
+        {
+          "cue": "sc23_002",
+          "text_file": "voiceover/scene_2_3_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 1380,
+          "source_end": 1411.5,
+          "anchor": "",
+          "text": "But maximizing probability also creates serious decoding problems."
+        },
+        {
+          "cue": "sc23_003",
+          "text_file": "voiceover/scene_2_3_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1411.5,
+          "source_end": 1466.63,
+          "anchor": "",
+          "text": "The first trap is repetition, with GPT2 and beam size 32, the output can repeat phrases like \"singer-songwriter\" and \"songwriter-songwriter\" indefinitely."
+        },
+        {
+          "cue": "sc23_004",
+          "text_file": "voiceover/scene_2_3_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1411.5,
+          "source_end": 1466.63,
+          "anchor": "",
+          "text": "Common fixes include repetition penalties and unlikelihood training."
+        },
+        {
+          "cue": "sc23_005",
+          "text_file": "voiceover/scene_2_3_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1466.63,
+          "source_end": 1534.44,
+          "anchor": "",
+          "text": "The second trap is generating sequences that are too short."
+        },
+        {
+          "cue": "sc23_006",
+          "text_file": "voiceover/scene_2_3_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1466.63,
+          "source_end": 1534.44,
+          "anchor": "",
+          "text": "A sequence that ends early with the end-of-sequence token can have higher cumulative probability than a longer, more informative sentence."
+        },
+        {
+          "cue": "sc23_007",
+          "text_file": "voiceover/scene_2_3_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1466.63,
+          "source_end": 1534.44,
+          "anchor": "",
+          "text": "For example, the short sequence \"Taylor Swift is\" followed by end of sequence can have higher probability than the longer sentence \"Taylor Swift is an American singer.\" A common remedy is length normalization."
+        },
+        {
+          "cue": "sc23_008",
+          "text_file": "voiceover/scene_2_3_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1534.44,
+          "source_end": 1636.05,
+          "anchor": "",
+          "text": "The third trap is atypicality."
+        },
+        {
+          "cue": "sc23_009",
+          "text_file": "voiceover/scene_2_3_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1534.44,
+          "source_end": 1636.05,
+          "anchor": "",
+          "text": "For a biased coin with heads probability zero point six and tails probability zero point four, the most likely outcome for 100 flips is all heads, but that sequence is extremely atypical and unnatural."
+        },
+        {
+          "cue": "sc23_010",
+          "text_file": "voiceover/scene_2_3_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1534.44,
+          "source_end": 1636.05,
+          "anchor": "",
+          "text": "Similarly, the highest-probability generation under a model is not necessarily natural."
+        },
+        {
+          "cue": "sc23_011",
+          "text_file": "voiceover/scene_2_3_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1534.44,
+          "source_end": 1636.05,
+          "anchor": "",
+          "text": "Therefore, the key conclusion is that approximate MAP, such as narrow beam search, can work better than exact MAP."
+        },
+        {
+          "cue": "sc23_012",
+          "text_file": "voiceover/scene_2_3_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_012.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1636.05,
+          "source_end": 1710,
+          "anchor": "",
+          "text": "The main idea here is that \"most likely\" does not mean \"best\" for every type of generation."
+        },
+        {
+          "cue": "sc23_013",
+          "text_file": "voiceover/scene_2_3_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1636.05,
+          "source_end": 1710,
+          "anchor": "",
+          "text": "In closed-ended tasks, MAP is often useful because the output space is constrained and the answer is well defined."
+        },
+        {
+          "cue": "sc23_014",
+          "text_file": "voiceover/scene_2_3_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1636.05,
+          "source_end": 1710,
+          "anchor": "",
+          "text": "But in open-ended text generation, probability maximization can push the model into repetitive, too-short, or atypical outputs."
+        },
+        {
+          "cue": "sc23_015",
+          "text_file": "voiceover/scene_2_3_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc23_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 1636.05,
+          "source_end": 1710,
+          "anchor": "",
+          "text": "We use these traps to transition from optimization to sampling."
+        }
+      ]
+    },
+    "scene_2_4": {
+      "title": "Scene 2.4 - Sampling, truncation và temperature",
+      "directory": "voiceover/scene_2_4_sentence",
+      "files": [
+        {
+          "cue": "sc24_001",
+          "text_file": "voiceover/scene_2_4_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 1710,
+          "source_end": 1770.93,
+          "anchor": "",
+          "text": "Now the objective shifts to sampling."
+        },
+        {
+          "cue": "sc24_002",
+          "text_file": "voiceover/scene_2_4_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 1710,
+          "source_end": 1770.93,
+          "anchor": "",
+          "text": "Ancestral sampling generates one token at a time by sampling the next output token from the model distribution, conditioned on the input and all previous output tokens."
+        },
+        {
+          "cue": "sc24_003",
+          "text_file": "voiceover/scene_2_4_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 1710,
+          "source_end": 1770.93,
+          "anchor": "",
+          "text": "This is equivalent to sequence sampling through the product of conditional probabilities."
+        },
+        {
+          "cue": "sc24_004",
+          "text_file": "voiceover/scene_2_4_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1770.93,
+          "source_end": 1828.68,
+          "anchor": "",
+          "text": "The problem is that greedy decoding can cause repetition traps, while ancestral sampling can cause incoherence because low-probability tokens are too likely under a heavy-tailed distribution."
+        },
+        {
+          "cue": "sc24_005",
+          "text_file": "voiceover/scene_2_4_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 1770.93,
+          "source_end": 1828.68,
+          "anchor": "",
+          "text": "The solution is to chop off the tail with truncation sampling."
+        },
+        {
+          "cue": "sc24_006",
+          "text_file": "voiceover/scene_2_4_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1828.68,
+          "source_end": 1954.5,
+          "anchor": "",
+          "text": "Truncation sampling chooses a probability threshold at each time step."
+        },
+        {
+          "cue": "sc24_007",
+          "text_file": "voiceover/scene_2_4_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1828.68,
+          "source_end": 1954.5,
+          "anchor": "",
+          "text": "Common variants include Top-k, Top-p, epsilon sampling, eta sampling, and Min-p."
+        },
+        {
+          "cue": "sc24_008",
+          "text_file": "voiceover/scene_2_4_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 1828.68,
+          "source_end": 1954.5,
+          "anchor": "",
+          "text": "Top-k always keeps a fixed number of tokens, while Top-p adapts based on the cumulative probability of the leading tokens."
+        },
+        {
+          "cue": "sc24_009",
+          "text_file": "voiceover/scene_2_4_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1954.5,
+          "source_end": 2019.14,
+          "anchor": "",
+          "text": "Temperature is another adapter."
+        },
+        {
+          "cue": "sc24_010",
+          "text_file": "voiceover/scene_2_4_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1954.5,
+          "source_end": 2019.14,
+          "anchor": "",
+          "text": "It does not cut off the tail; instead, it rescales logits using a softmax divided by tau."
+        },
+        {
+          "cue": "sc24_011",
+          "text_file": "voiceover/scene_2_4_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1954.5,
+          "source_end": 2019.14,
+          "anchor": "",
+          "text": "High tau, greater than or equal to 1, increases diversity but can make outputs incoherent."
+        },
+        {
+          "cue": "sc24_012",
+          "text_file": "voiceover/scene_2_4_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 1954.5,
+          "source_end": 2019.14,
+          "anchor": "",
+          "text": "Low tau, less than 1, increases coherence but can make outputs repetitive."
+        },
+        {
+          "cue": "sc24_013",
+          "text_file": "voiceover/scene_2_4_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 2019.14,
+          "source_end": 2172.25,
+          "anchor": "",
+          "text": "These algorithms differ in how they choose the next token."
+        },
+        {
+          "cue": "sc24_014",
+          "text_file": "voiceover/scene_2_4_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 2019.14,
+          "source_end": 2172.25,
+          "anchor": "",
+          "text": "Greedy decoding chooses the maximum-scoring token; ancestral sampling samples from the full vocabulary; Top-k selects the top k values; Top-p keeps tokens under a cumulative probability threshold; epsilon filters with a hard probability threshold; and temperature changes the sharpness of the distribution before sampling."
+        },
+        {
+          "cue": "sc24_015",
+          "text_file": "voiceover/scene_2_4_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 2019.14,
+          "source_end": 2172.25,
+          "anchor": "",
+          "text": "The heavy tail can come from under-training, the mode-seeking nature of cross-entropy loss, and low-rank constraints in the output layer."
+        },
+        {
+          "cue": "sc24_016",
+          "text_file": "voiceover/scene_2_4_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_016.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 2172.25,
+          "source_end": 2240.33,
+          "anchor": "",
+          "text": "Top-k and Top-p differ in how they threshold the distribution."
+        },
+        {
+          "cue": "sc24_017",
+          "text_file": "voiceover/scene_2_4_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_017.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 2172.25,
+          "source_end": 2240.33,
+          "anchor": "",
+          "text": "Top-k always keeps exactly the k highest-probability tokens, so it does not adapt to the shape of the distribution."
+        },
+        {
+          "cue": "sc24_018",
+          "text_file": "voiceover/scene_2_4_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_018.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 2172.25,
+          "source_end": 2240.33,
+          "anchor": "",
+          "text": "Top-p uses cumulative probability, so the kept region can expand or shrink according to the distribution."
+        },
+        {
+          "cue": "sc24_019",
+          "text_file": "voiceover/scene_2_4_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_019.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 2240.33,
+          "source_end": 2310,
+          "anchor": "",
+          "text": "Temperature does not decide which tokens are removed."
+        },
+        {
+          "cue": "sc24_020",
+          "text_file": "voiceover/scene_2_4_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_020.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 2240.33,
+          "source_end": 2310,
+          "anchor": "",
+          "text": "It rescales logits before sampling."
+        },
+        {
+          "cue": "sc24_021",
+          "text_file": "voiceover/scene_2_4_sentence/021.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc24_021.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 2240.33,
+          "source_end": 2310,
+          "anchor": "",
+          "text": "Higher temperature makes the distribution more uniform, lower temperature makes it more peaked, while truncation changes which token region remains available for sampling."
+        }
+      ]
+    },
+    "scene_2_5": {
+      "title": "Scene 2.5 - Sampling adapters, constrained decoding và token healing",
+      "directory": "voiceover/scene_2_5_sentence",
+      "files": [
+        {
+          "cue": "sc25_001",
+          "text_file": "voiceover/scene_2_5_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 2310,
+          "source_end": 2390.09,
+          "anchor": "",
+          "text": "A sampling adapter takes the model's token distribution conditioned on the input and readjusts the probabilities."
+        },
+        {
+          "cue": "sc25_002",
+          "text_file": "voiceover/scene_2_5_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 2310,
+          "source_end": 2390.09,
+          "anchor": "",
+          "text": "Truncation and temperature are adapters, but there are many other methods too: typical sampling, epsilon, eta, Mirostat, basis-aware sampling, contrastive decoding, DExperts, inference-time adapters, and proxy tuning."
+        },
+        {
+          "cue": "sc25_003",
+          "text_file": "voiceover/scene_2_5_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 2390.09,
+          "source_end": 2441.29,
+          "anchor": "",
+          "text": "Constrained decoding appears when we embed an LLM inside a larger system and need structured output, such as JSON."
+        },
+        {
+          "cue": "sc25_004",
+          "text_file": "voiceover/scene_2_5_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 2390.09,
+          "source_end": 2441.29,
+          "anchor": "",
+          "text": "The prompt asks the model to format information about Taylor Swift according to a schema with a name field as text and a birth year field as an integer, but the free-form LLM output does not match the JSON schema."
+        },
+        {
+          "cue": "sc25_005",
+          "text_file": "voiceover/scene_2_5_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 2441.29,
+          "source_end": 2510.73,
+          "anchor": "",
+          "text": "The method has two steps: compile the schema into a state machine, then filter the next-token distribution so only valid tokens remain."
+        },
+        {
+          "cue": "sc25_006",
+          "text_file": "voiceover/scene_2_5_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 2441.29,
+          "source_end": 2510.73,
+          "anchor": "",
+          "text": "When the state machine requires the opening brace of a JSON object, all other tokens are removed."
+        },
+        {
+          "cue": "sc25_007",
+          "text_file": "voiceover/scene_2_5_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 2441.29,
+          "source_end": 2510.73,
+          "anchor": "",
+          "text": "When it is inside the name field, only compatible tokens can continue."
+        },
+        {
+          "cue": "sc25_008",
+          "text_file": "voiceover/scene_2_5_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 2441.29,
+          "source_end": 2510.73,
+          "anchor": "",
+          "text": "This lets the final sequence become a valid JSON object containing Taylor Swift's name and birth year."
+        },
+        {
+          "cue": "sc25_009",
+          "text_file": "voiceover/scene_2_5_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2510.73,
+          "source_end": 2589.59,
+          "anchor": "",
+          "text": "Constrained decoding has side effects: it can speed up generation, but it can also reduce performance."
+        },
+        {
+          "cue": "sc25_010",
+          "text_file": "voiceover/scene_2_5_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2510.73,
+          "source_end": 2589.59,
+          "anchor": "",
+          "text": "Token healing handles cases where templated generation forces an unnatural boundary, for example when the phrase \"The URL is HTTP colon\" is followed by the rest of the URL separator."
+        },
+        {
+          "cue": "sc25_011",
+          "text_file": "voiceover/scene_2_5_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2510.73,
+          "source_end": 2589.59,
+          "anchor": "",
+          "text": "Token healing rewinds the tokenizer and enforces the untokenized text as the prefix for the next token."
+        },
+        {
+          "cue": "sc25_012",
+          "text_file": "voiceover/scene_2_5_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2510.73,
+          "source_end": 2589.59,
+          "anchor": "",
+          "text": "Another fix is tokenizer regularization during training."
+        },
+        {
+          "cue": "sc25_013",
+          "text_file": "voiceover/scene_2_5_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 2589.59,
+          "source_end": 2638.54,
+          "anchor": "",
+          "text": "The summary of primitive generators is this: decoding has two views, optimization and sampling; there is a diversity-coherence trade-off; and constrained decoding enforces structure on LLM outputs."
+        },
+        {
+          "cue": "sc25_014",
+          "text_file": "voiceover/scene_2_5_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 2589.59,
+          "source_end": 2638.54,
+          "anchor": "",
+          "text": "These are the building blocks of modern LLM generation methods."
+        },
+        {
+          "cue": "sc25_015",
+          "text_file": "voiceover/scene_2_5_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_015.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 2638.54,
+          "source_end": 2700.6,
+          "anchor": "",
+          "text": "A sampling adapter does not replace the language model."
+        },
+        {
+          "cue": "sc25_016",
+          "text_file": "voiceover/scene_2_5_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_016.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 2638.54,
+          "source_end": 2700.6,
+          "anchor": "",
+          "text": "It receives the model distribution and readjusts probabilities before choosing a token."
+        },
+        {
+          "cue": "sc25_017",
+          "text_file": "voiceover/scene_2_5_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_017.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 2638.54,
+          "source_end": 2700.6,
+          "anchor": "",
+          "text": "Therefore, temperature, truncation, contrastive decoding, and DExperts can all be understood as transformation layers placed after the original model distribution."
+        },
+        {
+          "cue": "sc25_018",
+          "text_file": "voiceover/scene_2_5_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_018.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 2700.6,
+          "source_end": 2760,
+          "anchor": "",
+          "text": "For constrained decoding, the core concept is that a state machine turns a schema into the set of valid tokens at each step."
+        },
+        {
+          "cue": "sc25_019",
+          "text_file": "voiceover/scene_2_5_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_019.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 2700.6,
+          "source_end": 2760,
+          "anchor": "",
+          "text": "If a token does not move the system into a valid state, it is filtered out of the next-token distribution."
+        },
+        {
+          "cue": "sc25_020",
+          "text_file": "voiceover/scene_2_5_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc25_020.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 2700.6,
+          "source_end": 2760,
+          "anchor": "",
+          "text": "This is how we force an LLM to communicate with a larger system through structured outputs such as JSON."
+        }
+      ]
+    },
+    "scene_3_1": {
+      "title": "Scene 3.1 - Mục tiêu, formalization và chaining",
+      "directory": "voiceover/scene_3_1_sentence",
+      "files": [
+        {
+          "cue": "sc31_001",
+          "text_file": "voiceover/scene_3_1_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 2760,
+          "source_end": 2821.74,
+          "anchor": "",
+          "text": "The system designer's goal is to design a generator system that produces acceptable sequences."
+        },
+        {
+          "cue": "sc31_002",
+          "text_file": "voiceover/scene_3_1_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 2760,
+          "source_end": 2821.74,
+          "anchor": "",
+          "text": "In other words, we want the system whose outputs have the highest expected acceptability."
+        },
+        {
+          "cue": "sc31_003",
+          "text_file": "voiceover/scene_3_1_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 2760,
+          "source_end": 2821.74,
+          "anchor": "",
+          "text": "Acceptability can mean correctness or human preference."
+        },
+        {
+          "cue": "sc31_004",
+          "text_file": "voiceover/scene_3_1_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 2821.74,
+          "source_end": 2915.1,
+          "anchor": "",
+          "text": "We already know how to generate probable outputs by sampling from the model conditioned on the input, but if those probable outputs are not acceptable, we need an additional strategy."
+        },
+        {
+          "cue": "sc31_005",
+          "text_file": "voiceover/scene_3_1_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 2821.74,
+          "source_end": 2915.1,
+          "anchor": "",
+          "text": "The first idea in meta-generation is to use external information, for example by learning an evaluator that approximates acceptability and using it during generation."
+        },
+        {
+          "cue": "sc31_006",
+          "text_file": "voiceover/scene_3_1_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_006.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 2821.74,
+          "source_end": 2915.1,
+          "anchor": "",
+          "text": "In this context, evaluator, critic, verifier, value, reward model, and scoring model all play closely related roles."
+        },
+        {
+          "cue": "sc31_007",
+          "text_file": "voiceover/scene_3_1_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 2915.1,
+          "source_end": 2991.78,
+          "anchor": "",
+          "text": "The second idea is to call the generator more than once to search for good sequences."
+        },
+        {
+          "cue": "sc31_008",
+          "text_file": "voiceover/scene_3_1_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 2915.1,
+          "source_end": 2991.78,
+          "anchor": "",
+          "text": "With an oracle verifier loop, we can repeat the process: generate an intermediate step conditioned on the input, generate an answer conditioned on both the input and that intermediate step, then stop when the verifier confirms that the answer is correct."
+        },
+        {
+          "cue": "sc31_009",
+          "text_file": "voiceover/scene_3_1_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2991.78,
+          "source_end": 3052.03,
+          "anchor": "",
+          "text": "We can formalize this as sampling an output from a generator system conditioned on the input, with choices for the strategy, the component generators, and other parameters."
+        },
+        {
+          "cue": "sc31_010",
+          "text_file": "voiceover/scene_3_1_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2991.78,
+          "source_end": 3052.03,
+          "anchor": "",
+          "text": "The design choices include the overall strategy, the choice of generators, and other parameters such as the number of tokens."
+        },
+        {
+          "cue": "sc31_011",
+          "text_file": "voiceover/scene_3_1_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 2991.78,
+          "source_end": 3052.03,
+          "anchor": "",
+          "text": "Token-level generators from the previous section are a special case of this framework."
+        },
+        {
+          "cue": "sc31_012",
+          "text_file": "voiceover/scene_3_1_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_012.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3052.03,
+          "source_end": 3218.09,
+          "anchor": "",
+          "text": "Chaining composes generators in order: the first generator produces an output from the input, the second generator uses the input and the first output, and the third generator uses the input and the second output."
+        },
+        {
+          "cue": "sc31_013",
+          "text_file": "voiceover/scene_3_1_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3052.03,
+          "source_end": 3218.09,
+          "anchor": "",
+          "text": "Chain-of-thought is the canonical example: generate a thought, then generate an answer."
+        },
+        {
+          "cue": "sc31_014",
+          "text_file": "voiceover/scene_3_1_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3052.03,
+          "source_end": 3218.09,
+          "anchor": "",
+          "text": "We can compare chain-of-thought to a writable tape, increasing expressivity through variable output length."
+        },
+        {
+          "cue": "sc31_015",
+          "text_file": "voiceover/scene_3_1_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3052.03,
+          "source_end": 3218.09,
+          "anchor": "",
+          "text": "Chaining can extend to methods such as Self-Ask, Demonstrate-Search-Predict, System-2 Attention, and Draft-Sketch-Prove."
+        },
+        {
+          "cue": "sc31_016",
+          "text_file": "voiceover/scene_3_1_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_016.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3052.03,
+          "source_end": 3218.09,
+          "anchor": "",
+          "text": "The takeaway is that chaining decomposes generation and integrates tools or models, but chaining alone does not explore the output space."
+        },
+        {
+          "cue": "sc31_017",
+          "text_file": "voiceover/scene_3_1_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_017.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3218.09,
+          "source_end": 3311.45,
+          "anchor": "",
+          "text": "The important point about acceptability is that it does not necessarily match the model's probability."
+        },
+        {
+          "cue": "sc31_018",
+          "text_file": "voiceover/scene_3_1_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_018.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3218.09,
+          "source_end": 3311.45,
+          "anchor": "",
+          "text": "An output can be probable under the model but still be incorrect, disliked by humans, or fail to satisfy the system requirement."
+        },
+        {
+          "cue": "sc31_019",
+          "text_file": "voiceover/scene_3_1_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_019.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3218.09,
+          "source_end": 3311.45,
+          "anchor": "",
+          "text": "Meta-generation is introduced to find more acceptable sequences by using evaluators, verifiers, tools, or multiple generator calls."
+        },
+        {
+          "cue": "sc31_020",
+          "text_file": "voiceover/scene_3_1_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_020.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 3311.45,
+          "source_end": 3420,
+          "anchor": "",
+          "text": "Chain-of-thought uses a simple but powerful decomposition: the system generates an intermediate thought, then uses that thought to generate the answer."
+        },
+        {
+          "cue": "sc31_021",
+          "text_file": "voiceover/scene_3_1_sentence/021.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_021.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 3311.45,
+          "source_end": 3420,
+          "anchor": "",
+          "text": "This increases expressivity because the intermediate work can have variable length, like a writable tape."
+        },
+        {
+          "cue": "sc31_022",
+          "text_file": "voiceover/scene_3_1_sentence/022.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc31_022.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 3311.45,
+          "source_end": 3420,
+          "anchor": "",
+          "text": "The chain acts like a multi-step program, where the outer process is the meta-generator and the inner calls are generators or tools."
+        }
+      ]
+    },
+    "scene_3_2": {
+      "title": "Scene 3.2 - Parallel generation, Best-of-N, voting và weighted voting",
+      "directory": "voiceover/scene_3_2_sentence",
+      "files": [
+        {
+          "cue": "sc32_001",
+          "text_file": "voiceover/scene_3_2_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 3420,
+          "source_end": 3460.69,
+          "anchor": "",
+          "text": "Parallel meta-generators produce many candidates in parallel, all conditioned on the same input, then aggregate those candidates into a final output."
+        },
+        {
+          "cue": "sc32_002",
+          "text_file": "voiceover/scene_3_2_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_002.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 3460.69,
+          "source_end": 3613.35,
+          "anchor": "",
+          "text": "The first strategy is Best-of-N, also called rejection sampling, which chooses the candidate with the highest reward model score."
+        },
+        {
+          "cue": "sc32_003",
+          "text_file": "voiceover/scene_3_2_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 3460.69,
+          "source_end": 3613.35,
+          "anchor": "",
+          "text": "This approximates the maximum acceptability value."
+        },
+        {
+          "cue": "sc32_004",
+          "text_file": "voiceover/scene_3_2_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 3460.69,
+          "source_end": 3613.35,
+          "anchor": "",
+          "text": "A reward model can be trained to output a score between zero and one, using correct and incorrect examples or preference data."
+        },
+        {
+          "cue": "sc32_005",
+          "text_file": "voiceover/scene_3_2_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 3460.69,
+          "source_end": 3613.35,
+          "anchor": "",
+          "text": "As the number of generations increases, Best-of-N better approximates the most acceptable output, but if the reward model is imperfect, the system can fall into over-optimization."
+        },
+        {
+          "cue": "sc32_006",
+          "text_file": "voiceover/scene_3_2_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 3613.35,
+          "source_end": 3758.68,
+          "anchor": "",
+          "text": "The second aggregation method is Voting, or Self-Consistency, which chooses the answer receiving the most votes."
+        },
+        {
+          "cue": "sc32_007",
+          "text_file": "voiceover/scene_3_2_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 3613.35,
+          "source_end": 3758.68,
+          "anchor": "",
+          "text": "Weighted voting goes further by multiplying each vote by the reward model score."
+        },
+        {
+          "cue": "sc32_008",
+          "text_file": "voiceover/scene_3_2_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 3613.35,
+          "source_end": 3758.68,
+          "anchor": "",
+          "text": "Easy-to-Hard Generalization adds an interesting angle: a verifier can sometimes work more effectively than the human grader."
+        },
+        {
+          "cue": "sc32_009",
+          "text_file": "voiceover/scene_3_2_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_009.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 3613.35,
+          "source_end": 3758.68,
+          "anchor": "",
+          "text": "As the sample count approaches infinity, voting accuracy converges according to the convergence theorem."
+        },
+        {
+          "cue": "sc32_010",
+          "text_file": "voiceover/scene_3_2_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 3758.68,
+          "source_end": 3843.86,
+          "anchor": "",
+          "text": "The convergence theorem gives three important takeaways."
+        },
+        {
+          "cue": "sc32_011",
+          "text_file": "voiceover/scene_3_2_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 3758.68,
+          "source_end": 3843.86,
+          "anchor": "",
+          "text": "First, accuracy does not increase forever; it converges to a limit."
+        },
+        {
+          "cue": "sc32_012",
+          "text_file": "voiceover/scene_3_2_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 3758.68,
+          "source_end": 3843.86,
+          "anchor": "",
+          "text": "Second, weighted voting is better than ordinary voting when the combined verifier and generator scores assign more total mass to correct answers."
+        },
+        {
+          "cue": "sc32_013",
+          "text_file": "voiceover/scene_3_2_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_013.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 3758.68,
+          "source_end": 3843.86,
+          "anchor": "",
+          "text": "Third, to break the convergence limit, we must improve either the verifier or the generator."
+        },
+        {
+          "cue": "sc32_014",
+          "text_file": "voiceover/scene_3_2_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3843.86,
+          "source_end": 3926.51,
+          "anchor": "",
+          "text": "Parallel meta-generators explore the output space by generating full sequences."
+        },
+        {
+          "cue": "sc32_015",
+          "text_file": "voiceover/scene_3_2_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3843.86,
+          "source_end": 3926.51,
+          "anchor": "",
+          "text": "This gives large performance gains in practice, but it is limited by the evaluator and the generator."
+        },
+        {
+          "cue": "sc32_016",
+          "text_file": "voiceover/scene_3_2_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_016.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3843.86,
+          "source_end": 3926.51,
+          "anchor": "",
+          "text": "The important insight is that the verifier is used only at the end, on full sequences."
+        },
+        {
+          "cue": "sc32_017",
+          "text_file": "voiceover/scene_3_2_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_017.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 3843.86,
+          "source_end": 3926.51,
+          "anchor": "",
+          "text": "The next question is whether we can use intermediate evaluation more effectively."
+        },
+        {
+          "cue": "sc32_018",
+          "text_file": "voiceover/scene_3_2_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_018.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3926.51,
+          "source_end": 4022.55,
+          "anchor": "",
+          "text": "The reward model is the bridge between probability and acceptability."
+        },
+        {
+          "cue": "sc32_019",
+          "text_file": "voiceover/scene_3_2_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_019.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3926.51,
+          "source_end": 4022.55,
+          "anchor": "",
+          "text": "In Best-of-N, the generator creates many candidates, and the reward model ranks them."
+        },
+        {
+          "cue": "sc32_020",
+          "text_file": "voiceover/scene_3_2_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_020.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3926.51,
+          "source_end": 4022.55,
+          "anchor": "",
+          "text": "If the reward model reflects acceptability well, increasing the number of candidates helps find a better candidate."
+        },
+        {
+          "cue": "sc32_021",
+          "text_file": "voiceover/scene_3_2_sentence/021.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_021.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 3926.51,
+          "source_end": 4022.55,
+          "anchor": "",
+          "text": "But if the reward model is imperfect, the system may optimize too strongly for the reward model instead of true acceptability; this is the over-optimization problem."
+        },
+        {
+          "cue": "sc32_022",
+          "text_file": "voiceover/scene_3_2_sentence/022.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_022.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 4022.55,
+          "source_end": 4110,
+          "anchor": "",
+          "text": "Voting and weighted voting explain another form of aggregation: we do not only ask which sequence has the highest score, but which answer is supported by the most paths."
+        },
+        {
+          "cue": "sc32_023",
+          "text_file": "voiceover/scene_3_2_sentence/023.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_023.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 4022.55,
+          "source_end": 4110,
+          "anchor": "",
+          "text": "In reasoning tasks, many different solution paths can lead to the same answer."
+        },
+        {
+          "cue": "sc32_024",
+          "text_file": "voiceover/scene_3_2_sentence/024.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc32_024.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": 4022.55,
+          "source_end": 4110,
+          "anchor": "",
+          "text": "Self-consistency uses this by marginalizing out the reasoning paths and choosing the most strongly supported answer."
+        }
+      ]
+    },
+    "scene_3_3": {
+      "title": "Scene 3.3 - Tree search, PRM và Rebase",
+      "directory": "voiceover/scene_3_3_sentence",
+      "files": [
+        {
+          "cue": "sc33_001",
+          "text_file": "voiceover/scene_3_3_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 4110,
+          "source_end": 4180.33,
+          "anchor": "",
+          "text": "Tree search assumes that the generation process can be decomposed into search over states and transitions."
+        },
+        {
+          "cue": "sc33_002",
+          "text_file": "voiceover/scene_3_3_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 4110,
+          "source_end": 4180.33,
+          "anchor": "",
+          "text": "When using tree search, we must choose the states, the transitions from one state to the next, the scoring function for each state, and a strategy such as breadth-first or depth-first search."
+        },
+        {
+          "cue": "sc33_003",
+          "text_file": "voiceover/scene_3_3_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 4180.33,
+          "source_end": 4272.59,
+          "anchor": "",
+          "text": "For math and complex reasoning problems, one way to score intermediate steps is a Process Reward Model, or PRM, which labels each step as correct or incorrect by outputting a score between zero and one."
+        },
+        {
+          "cue": "sc33_004",
+          "text_file": "voiceover/scene_3_3_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_004.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4272.59,
+          "source_end": 4351.76,
+          "anchor": "",
+          "text": "Reward Balanced Search, or Rebase, uses scores to allocate exploration budget across the frontier."
+        },
+        {
+          "cue": "sc33_005",
+          "text_file": "voiceover/scene_3_3_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4272.59,
+          "source_end": 4351.76,
+          "anchor": "",
+          "text": "It allocates budget according to a softmax over each node score divided by tau."
+        },
+        {
+          "cue": "sc33_006",
+          "text_file": "voiceover/scene_3_3_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4272.59,
+          "source_end": 4351.76,
+          "anchor": "",
+          "text": "High-scoring nodes receive more exploration; low-scoring nodes receive little or no expansion."
+        },
+        {
+          "cue": "sc33_007",
+          "text_file": "voiceover/scene_3_3_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_007.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4351.76,
+          "source_end": 4437.92,
+          "anchor": "",
+          "text": "After tree search, we can take candidates and aggregate them, for example through voting."
+        },
+        {
+          "cue": "sc33_008",
+          "text_file": "voiceover/scene_3_3_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4351.76,
+          "source_end": 4437.92,
+          "anchor": "",
+          "text": "The key idea is that tree search uses scores on intermediate states, with backtracking and exploration."
+        },
+        {
+          "cue": "sc33_009",
+          "text_file": "voiceover/scene_3_3_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4351.76,
+          "source_end": 4437.92,
+          "anchor": "",
+          "text": "However, tree-search meta-generators require a suitable environment, decomposition into states, and a good reward signal."
+        },
+        {
+          "cue": "sc33_010",
+          "text_file": "voiceover/scene_3_3_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_010.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 4437.92,
+          "source_end": 4539.31,
+          "anchor": "",
+          "text": "The major difference between parallel generation and tree search is when evaluation is used."
+        },
+        {
+          "cue": "sc33_011",
+          "text_file": "voiceover/scene_3_3_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_011.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 4437.92,
+          "source_end": 4539.31,
+          "anchor": "",
+          "text": "Parallel generation usually waits until it has a full sequence before using a verifier or reward model."
+        },
+        {
+          "cue": "sc33_012",
+          "text_file": "voiceover/scene_3_3_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_012.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 4437.92,
+          "source_end": 4539.31,
+          "anchor": "",
+          "text": "Tree search uses scores on intermediate states."
+        },
+        {
+          "cue": "sc33_013",
+          "text_file": "voiceover/scene_3_3_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 4437.92,
+          "source_end": 4539.31,
+          "anchor": "",
+          "text": "This lets it stop a bad branch early, backtrack, or allocate more budget to promising branches."
+        },
+        {
+          "cue": "sc33_014",
+          "text_file": "voiceover/scene_3_3_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_014.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 4539.31,
+          "source_end": 4620,
+          "anchor": "",
+          "text": "Tree search is not always appropriate."
+        },
+        {
+          "cue": "sc33_015",
+          "text_file": "voiceover/scene_3_3_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc33_015.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 4539.31,
+          "source_end": 4620,
+          "anchor": "",
+          "text": "If the task cannot be decomposed into states, if the environment does not provide intermediate information, or if the reward signal is weak, tree search may not provide benefits that justify its cost."
+        }
+      ]
+    },
+    "scene_3_4": {
+      "title": "Scene 3.4 - Refinement và self-correction",
+      "directory": "voiceover/scene_3_4_sentence",
+      "files": [
+        {
+          "cue": "sc34_001",
+          "text_file": "voiceover/scene_3_4_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 4620,
+          "source_end": 4661.14,
+          "anchor": "",
+          "text": "Refinement and self-correction improve a generation using feedback."
+        },
+        {
+          "cue": "sc34_002",
+          "text_file": "voiceover/scene_3_4_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 4620,
+          "source_end": 4661.14,
+          "anchor": "",
+          "text": "In practice, the quality and source of feedback are crucial."
+        },
+        {
+          "cue": "sc34_003",
+          "text_file": "voiceover/scene_3_4_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 4620,
+          "source_end": 4661.14,
+          "anchor": "",
+          "text": "We distinguish between extrinsic feedback and intrinsic feedback."
+        },
+        {
+          "cue": "sc34_004",
+          "text_file": "voiceover/scene_3_4_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 4661.14,
+          "source_end": 4763.32,
+          "anchor": "",
+          "text": "Extrinsic feedback provides outside information at inference time, for example an external program verifier."
+        },
+        {
+          "cue": "sc34_005",
+          "text_file": "voiceover/scene_3_4_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 4661.14,
+          "source_end": 4763.32,
+          "anchor": "",
+          "text": "Successful systems can integrate verifiers, code interpreters, retrievers, and tools in agent environments."
+        },
+        {
+          "cue": "sc34_006",
+          "text_file": "voiceover/scene_3_4_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_006.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 4661.14,
+          "source_end": 4763.32,
+          "anchor": "",
+          "text": "The intuition is that external feedback provides new information not already inside the model, helping detect and localize errors."
+        },
+        {
+          "cue": "sc34_007",
+          "text_file": "voiceover/scene_3_4_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4763.32,
+          "source_end": 4898.11,
+          "anchor": "",
+          "text": "Intrinsic feedback does not use external information at inference time."
+        },
+        {
+          "cue": "sc34_008",
+          "text_file": "voiceover/scene_3_4_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4763.32,
+          "source_end": 4898.11,
+          "anchor": "",
+          "text": "A common method is prompt-based re-prompting with the same LLM, such as Self-Refine."
+        },
+        {
+          "cue": "sc34_009",
+          "text_file": "voiceover/scene_3_4_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_009.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4763.32,
+          "source_end": 4898.11,
+          "anchor": "",
+          "text": "Results in this direction are mixed: it can work better on tasks that are easy to evaluate or cases with missing information, but results on mathematical reasoning are very limited."
+        },
+        {
+          "cue": "sc34_010",
+          "text_file": "voiceover/scene_3_4_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_010.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 4763.32,
+          "source_end": 4898.11,
+          "anchor": "",
+          "text": "The core issue is that intrinsic feedback is often too noisy for reliable self-correction."
+        },
+        {
+          "cue": "sc34_011",
+          "text_file": "voiceover/scene_3_4_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4898.11,
+          "source_end": 5051.93,
+          "anchor": "",
+          "text": "The second direction is to train an intrinsic corrector, such as self-corrective learning."
+        },
+        {
+          "cue": "sc34_012",
+          "text_file": "voiceover/scene_3_4_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4898.11,
+          "source_end": 5051.93,
+          "anchor": "",
+          "text": "The general process is to collect bad-to-better data pairs by generating samples and evaluating reward, then update the corrector to produce a better output from a bad one, and repeat."
+        },
+        {
+          "cue": "sc34_013",
+          "text_file": "voiceover/scene_3_4_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_013.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4898.11,
+          "source_end": 5051.93,
+          "anchor": "",
+          "text": "This method is prone to behavior collapse; regularization combined with reinforcement learning can help address this."
+        },
+        {
+          "cue": "sc34_014",
+          "text_file": "voiceover/scene_3_4_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_014.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 4898.11,
+          "source_end": 5051.93,
+          "anchor": "",
+          "text": "Summary: extrinsic feedback works well when the environment can localize errors; prompted intrinsic feedback gives mixed results; trained intrinsic feedback is promising but requires a very specific training strategy."
+        },
+        {
+          "cue": "sc34_015",
+          "text_file": "voiceover/scene_3_4_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 5051.93,
+          "source_end": 5117.36,
+          "anchor": "",
+          "text": "The word feedback in refinement needs to be explained clearly."
+        },
+        {
+          "cue": "sc34_016",
+          "text_file": "voiceover/scene_3_4_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_016.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 5051.93,
+          "source_end": 5117.36,
+          "anchor": "",
+          "text": "Extrinsic feedback can provide new information the model does not have by itself, such as a verifier or code interpreter detecting an error."
+        },
+        {
+          "cue": "sc34_017",
+          "text_file": "voiceover/scene_3_4_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_017.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 5051.93,
+          "source_end": 5117.36,
+          "anchor": "",
+          "text": "Intrinsic feedback relies on the model itself, so the risk is that the same model both creates the error and fails to judge it correctly."
+        },
+        {
+          "cue": "sc34_018",
+          "text_file": "voiceover/scene_3_4_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_018.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 5117.36,
+          "source_end": 5190,
+          "anchor": "",
+          "text": "The toy example \"Generate Taylor Swift\" shows refinement in a simple form: the generator produces characters, feedback identifies incorrect characters, and the corrector regenerates the wrong parts."
+        },
+        {
+          "cue": "sc34_019",
+          "text_file": "voiceover/scene_3_4_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc34_019.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 5117.36,
+          "source_end": 5190,
+          "anchor": "",
+          "text": "This example helps viewers understand why localizing errors matters: if we know where the mistake is, correction is much easier than merely knowing the whole output is not good enough."
+        }
+      ]
+    },
+    "scene_3_5": {
+      "title": "Scene 3.5 - Scaling meta-generators và compute allocation",
+      "directory": "voiceover/scene_3_5_sentence",
+      "files": [
+        {
+          "cue": "sc35_001",
+          "text_file": "voiceover/scene_3_5_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 5190,
+          "source_end": 5242.82,
+          "anchor": "",
+          "text": "After introducing the strategies, we move to the scaling question: how should we allocate test-time compute?"
+        },
+        {
+          "cue": "sc35_002",
+          "text_file": "voiceover/scene_3_5_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 5190,
+          "source_end": 5242.82,
+          "anchor": "",
+          "text": "We choose a strategy based on task performance and compute cost."
+        },
+        {
+          "cue": "sc35_003",
+          "text_file": "voiceover/scene_3_5_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": 5190,
+          "source_end": 5242.82,
+          "anchor": "",
+          "text": "Cost is a function of model size and the number of generated tokens."
+        },
+        {
+          "cue": "sc35_004",
+          "text_file": "voiceover/scene_3_5_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 5242.82,
+          "source_end": 5307.88,
+          "anchor": "",
+          "text": "Given a compute budget, the compute-optimal inference problem is to choose the model size, the number of generated tokens, and the inference strategy that minimize error while staying within that budget."
+        },
+        {
+          "cue": "sc35_005",
+          "text_file": "voiceover/scene_3_5_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": 5242.82,
+          "source_end": 5307.88,
+          "anchor": "",
+          "text": "Here model size means the number of model parameters, generation length means the number of generated tokens, and cost is measured in floating-point operations, or FLOP."
+        },
+        {
+          "cue": "sc35_006",
+          "text_file": "voiceover/scene_3_5_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 5307.88,
+          "source_end": 5403.1,
+          "anchor": "",
+          "text": "The first question is whether it is better to use a small model with more generations, or a large model with fewer generations."
+        },
+        {
+          "cue": "sc35_007",
+          "text_file": "voiceover/scene_3_5_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 5307.88,
+          "source_end": 5403.1,
+          "anchor": "",
+          "text": "Smaller models can be compute-optimal in some settings."
+        },
+        {
+          "cue": "sc35_008",
+          "text_file": "voiceover/scene_3_5_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 5307.88,
+          "source_end": 5403.1,
+          "anchor": "",
+          "text": "The second question is which meta-generation strategy is compute-optimal."
+        },
+        {
+          "cue": "sc35_009",
+          "text_file": "voiceover/scene_3_5_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_009.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": 5307.88,
+          "source_end": 5403.1,
+          "anchor": "",
+          "text": "Tree search, specifically Rebase, can also be compute-optimal."
+        },
+        {
+          "cue": "sc35_010",
+          "text_file": "voiceover/scene_3_5_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 5403.1,
+          "source_end": 5498.99,
+          "anchor": "",
+          "text": "The recap of meta-generation is that performance improves with increased compute, but depends on model size and the meta-generator."
+        },
+        {
+          "cue": "sc35_011",
+          "text_file": "voiceover/scene_3_5_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 5403.1,
+          "source_end": 5498.99,
+          "anchor": "",
+          "text": "The optimal model size and strategy change with the compute budget; sometimes smaller models are better."
+        },
+        {
+          "cue": "sc35_012",
+          "text_file": "voiceover/scene_3_5_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 5403.1,
+          "source_end": 5498.99,
+          "anchor": "",
+          "text": "The long-term goal is to design strategies that are universally optimal."
+        },
+        {
+          "cue": "sc35_013",
+          "text_file": "voiceover/scene_3_5_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_013.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": 5403.1,
+          "source_end": 5498.99,
+          "anchor": "",
+          "text": "Because meta-generators produce many tokens in diverse ways such as tree search, the next question is how to generate quickly and efficiently."
+        },
+        {
+          "cue": "sc35_014",
+          "text_file": "voiceover/scene_3_5_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 5498.99,
+          "source_end": 5573.58,
+          "anchor": "",
+          "text": "The compute-optimal frontier is the set of configurations that are not dominated: at the same cost, they have lower error; or at the same error, they use less cost."
+        },
+        {
+          "cue": "sc35_015",
+          "text_file": "voiceover/scene_3_5_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": 5498.99,
+          "source_end": 5573.58,
+          "anchor": "",
+          "text": "So the question is not simply \"use the largest possible model,\" but choose model size, number of generated tokens, and strategy to match the budget."
+        },
+        {
+          "cue": "sc35_016",
+          "text_file": "voiceover/scene_3_5_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_016.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 5573.58,
+          "source_end": 5640,
+          "anchor": "",
+          "text": "This is also the bridge to systems efficiency."
+        },
+        {
+          "cue": "sc35_017",
+          "text_file": "voiceover/scene_3_5_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_017.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 5573.58,
+          "source_end": 5640,
+          "anchor": "",
+          "text": "If two meta-generators use the same token budget but one method is more parallelizable and shares prefixes better, the real cost and latency can be very different."
+        },
+        {
+          "cue": "sc35_018",
+          "text_file": "voiceover/scene_3_5_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc35_018.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": 5573.58,
+          "source_end": 5640,
+          "anchor": "",
+          "text": "Therefore, the cost-performance trade-off must consider both the algorithm and how the system executes that algorithm."
+        }
+      ]
+    },
+    "scene_4_1": {
+      "title": "Scene 4.1 - Efficiency basics, hardware, batching và KV cache",
+      "directory": "voiceover/scene_4_1_sentence",
+      "files": [
+        {
+          "cue": "sc41_001",
+          "text_file": "voiceover/scene_4_1_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The efficiency section moves from algorithms to systems."
+        },
+        {
+          "cue": "sc41_002",
+          "text_file": "voiceover/scene_4_1_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The scope includes the basics of efficient generation, how to make meta-generation faster, and which meta-generators are the most efficient."
+        },
+        {
+          "cue": "sc41_003",
+          "text_file": "voiceover/scene_4_1_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Efficiency is measured by latency and throughput."
+        },
+        {
+          "cue": "sc41_004",
+          "text_file": "voiceover/scene_4_1_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Latency is how long the user must wait for a response; throughput is how many requests complete per second."
+        },
+        {
+          "cue": "sc41_005",
+          "text_file": "voiceover/scene_4_1_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Latency, throughput, and quality usually trade off against one another under a fixed budget."
+        },
+        {
+          "cue": "sc41_006",
+          "text_file": "voiceover/scene_4_1_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Hardware affects generation efficiency through three factors: on-device memory or VRAM, operations per second or FLOP/s, and data transfer speed, or memory bandwidth in GB/s."
+        },
+        {
+          "cue": "sc41_007",
+          "text_file": "voiceover/scene_4_1_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Bottlenecks include loading inputs and activations, loading weights, performing computation, and communicating across devices."
+        },
+        {
+          "cue": "sc41_008",
+          "text_file": "voiceover/scene_4_1_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "We model time per operation as the slower of two limits: the compute time, or the memory-transfer time."
+        },
+        {
+          "cue": "sc41_009",
+          "text_file": "voiceover/scene_4_1_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "For example, on an NVIDIA H100 SXM, BF16 dense tensor core compute reaches about ten to the fifteenth FLOP per second, while memory bandwidth is three point three five times ten to the twelfth bytes per second."
+        },
+        {
+          "cue": "sc41_010",
+          "text_file": "voiceover/scene_4_1_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "This ratio shows that if an operation performs more than 100 FLOP per byte, the compute cost is almost free compared with the data-transfer cost."
+        },
+        {
+          "cue": "sc41_011",
+          "text_file": "voiceover/scene_4_1_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_011.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "For a single decoding step, optimization directions include reducing memory bandwidth through quantization or distillation, increasing FLOP per second through FlashAttention, which improves hardware utilization without changing the number of operations, or reducing FLOP through Mixture-of-Experts, which uses fewer FLOP per token than a dense model."
+        },
+        {
+          "cue": "sc41_012",
+          "text_file": "voiceover/scene_4_1_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_012.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Compute-bound means time is mainly limited by how many operations can be performed per second."
+        },
+        {
+          "cue": "sc41_013",
+          "text_file": "voiceover/scene_4_1_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_013.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Memory-bound means the processor can compute faster than data can be moved from memory, so it waits for data."
+        },
+        {
+          "cue": "sc41_014",
+          "text_file": "voiceover/scene_4_1_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_014.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Operation time is controlled by the slower branch between compute and memory transfer."
+        },
+        {
+          "cue": "sc41_015",
+          "text_file": "voiceover/scene_4_1_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_015.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Batching is especially important because many decoding operations are memory-bound."
+        },
+        {
+          "cue": "sc41_016",
+          "text_file": "voiceover/scene_4_1_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_016.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "If we must load the weights from memory anyway, we want to use that same load for many inputs at once."
+        },
+        {
+          "cue": "sc41_017",
+          "text_file": "voiceover/scene_4_1_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_017.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "This is why batching can be nearly cost-free for memory-bound operations."
+        },
+        {
+          "cue": "sc41_018",
+          "text_file": "voiceover/scene_4_1_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_018.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The KV cache solves another problem: avoiding recomputation of keys and values for the entire prefix at every decode step."
+        },
+        {
+          "cue": "sc41_019",
+          "text_file": "voiceover/scene_4_1_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_019.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Prefill creates the cache for the prompt, while decode only adds the K and V for the new token."
+        },
+        {
+          "cue": "sc41_020",
+          "text_file": "voiceover/scene_4_1_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc41_020.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The KV cache reduces repeated computation, but the cache itself consumes VRAM, so it becomes a bottleneck when batch size or context length is large."
+        }
+      ]
+    },
+    "scene_4_2": {
+      "title": "Scene 4.2 - Speculative decoding",
+      "directory": "voiceover/scene_4_2_sentence",
+      "files": [
+        {
+          "cue": "sc42_001",
+          "text_file": "voiceover/scene_4_2_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Generation of long outputs is bottlenecked by sequential next-token prediction."
+        },
+        {
+          "cue": "sc42_002",
+          "text_file": "voiceover/scene_4_2_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "But not every token is equally hard."
+        },
+        {
+          "cue": "sc42_003",
+          "text_file": "voiceover/scene_4_2_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The key question is: how can we spend less time on easier tokens?"
+        },
+        {
+          "cue": "sc42_004",
+          "text_file": "voiceover/scene_4_2_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Speculative decoding uses a smaller draft model to cheaply guess the next several tokens."
+        },
+        {
+          "cue": "sc42_005",
+          "text_file": "voiceover/scene_4_2_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "These proposal tokens are then passed in parallel to the main generator for verification."
+        },
+        {
+          "cue": "sc42_006",
+          "text_file": "voiceover/scene_4_2_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_006.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Tokens that match the main generator's prediction are kept, while tokens that do not match are discarded."
+        },
+        {
+          "cue": "sc42_007",
+          "text_file": "voiceover/scene_4_2_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Decoding is often memory-bound."
+        },
+        {
+          "cue": "sc42_008",
+          "text_file": "voiceover/scene_4_2_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Speculative decoding can harm throughput at low context lengths, but it can improve both throughput and latency at long context lengths, according to the MagicDec results."
+        },
+        {
+          "cue": "sc42_009",
+          "text_file": "voiceover/scene_4_2_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The concept to convey is that speculative decoding turns part of the sequential work into parallel work."
+        },
+        {
+          "cue": "sc42_010",
+          "text_file": "voiceover/scene_4_2_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Instead of the main model generating one token at a time, the draft model proposes several tokens in advance."
+        },
+        {
+          "cue": "sc42_011",
+          "text_file": "voiceover/scene_4_2_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The main model then checks those proposals all at once."
+        },
+        {
+          "cue": "sc42_012",
+          "text_file": "voiceover/scene_4_2_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "If the tokens are easy to predict, many proposals are kept and the system saves many sequential decode steps."
+        },
+        {
+          "cue": "sc42_013",
+          "text_file": "voiceover/scene_4_2_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Speculative decoding is not always beneficial."
+        },
+        {
+          "cue": "sc42_014",
+          "text_file": "voiceover/scene_4_2_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "At low context lengths, the overhead of the draft model and verification can hurt throughput."
+        },
+        {
+          "cue": "sc42_015",
+          "text_file": "voiceover/scene_4_2_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc42_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "At long context lengths, memory-bound decoding is heavier, so the benefit of checking many proposals in parallel becomes clearer."
+        }
+      ]
+    },
+    "scene_4_3": {
+      "title": "Scene 4.3 - KV cache reuse, prefix sharing, KV cache compression và recap, takeaways",
+      "directory": "voiceover/scene_4_3_sentence",
+      "files": [
+        {
+          "cue": "sc43_001",
+          "text_file": "voiceover/scene_4_3_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "For meta-generation, the question is how meta-generators interact with real-world efficiency and hardware utilization, and how we can design more efficient meta-generators."
+        },
+        {
+          "cue": "sc43_002",
+          "text_file": "voiceover/scene_4_3_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_002.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Common deployment and parallel generation often have redundant shared prefix content in prompts."
+        },
+        {
+          "cue": "sc43_003",
+          "text_file": "voiceover/scene_4_3_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_003.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "PagedAttention in vLLM avoids redundant storage by mapping KV cache blocks to physical pages in VRAM."
+        },
+        {
+          "cue": "sc43_004",
+          "text_file": "voiceover/scene_4_3_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_004.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "KV cache reuse is not limited to a single shared prefix."
+        },
+        {
+          "cue": "sc43_005",
+          "text_file": "voiceover/scene_4_3_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_005.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Multiple levels of prefix sharing can appear, for example a long few-shot prompt combined with Best-of-N generation."
+        },
+        {
+          "cue": "sc43_006",
+          "text_file": "voiceover/scene_4_3_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_006.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "RadixAttention in SGLang supports complex prefix-sharing patterns and evicts least-recently-used KV cache blocks when needed."
+        },
+        {
+          "cue": "sc43_007",
+          "text_file": "voiceover/scene_4_3_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_007.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Hydragen makes shared-prefix attention components faster by leveraging Tensor Cores."
+        },
+        {
+          "cue": "sc43_008",
+          "text_file": "voiceover/scene_4_3_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_008.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The KV cache compression section emphasizes that KV cache size is a bottleneck for larger batches and longer-context inference."
+        },
+        {
+          "cue": "sc43_009",
+          "text_file": "voiceover/scene_4_3_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The three directions are token dropping, quantization, and architectural modification."
+        },
+        {
+          "cue": "sc43_010",
+          "text_file": "voiceover/scene_4_3_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Architectural tweaks such as Multi-Query Attention or Grouped-Query Attention reduce the number of Key and Value attention heads to shrink the KV cache."
+        },
+        {
+          "cue": "sc43_011",
+          "text_file": "voiceover/scene_4_3_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_011.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Meta-generators are efficient when trajectories can run in parallel and long inputs can share prefixes to reuse KV caches."
+        },
+        {
+          "cue": "sc43_012",
+          "text_file": "voiceover/scene_4_3_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_012.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Token budget is not the only indicator of meta-generator efficiency."
+        },
+        {
+          "cue": "sc43_013",
+          "text_file": "voiceover/scene_4_3_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_013.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Prefix sharing appears naturally in meta-generation."
+        },
+        {
+          "cue": "sc43_014",
+          "text_file": "voiceover/scene_4_3_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_014.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "For example, Best-of-N uses the same prompt to generate many candidates; tree search has many branches sharing a prefix; and chatbots or few-shot prompting often use the same long system prompt."
+        },
+        {
+          "cue": "sc43_015",
+          "text_file": "voiceover/scene_4_3_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_015.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "If each request stores a separate KV cache for the same prefix, VRAM is wasted."
+        },
+        {
+          "cue": "sc43_016",
+          "text_file": "voiceover/scene_4_3_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_016.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "PagedAttention solves redundant storage at the memory-page level."
+        },
+        {
+          "cue": "sc43_017",
+          "text_file": "voiceover/scene_4_3_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_017.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "RadixAttention extends the idea to multiple levels of prefix sharing using a prefix tree."
+        },
+        {
+          "cue": "sc43_018",
+          "text_file": "voiceover/scene_4_3_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_018.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Hydragen focuses on making attention over the shared prefix faster by using Tensor Cores."
+        },
+        {
+          "cue": "sc43_019",
+          "text_file": "voiceover/scene_4_3_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_019.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "These three techniques send the same message: the structure of the prompt and the meta-generator can create opportunities for system optimization."
+        },
+        {
+          "cue": "sc43_020",
+          "text_file": "voiceover/scene_4_3_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_020.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "For KV cache compression, each direction acts on one part of the cache size."
+        },
+        {
+          "cue": "sc43_021",
+          "text_file": "voiceover/scene_4_3_sentence/021.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_021.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Token dropping reduces the effective context length, quantization reduces the bytes used per value, and architectural modification reduces the number of Key and Value heads."
+        },
+        {
+          "cue": "sc43_022",
+          "text_file": "voiceover/scene_4_3_sentence/022.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_022.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Each technique saves memory by shrinking a different part of the same bottleneck."
+        },
+        {
+          "cue": "sc43_023",
+          "text_file": "voiceover/scene_4_3_sentence/023.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_023.mp3",
+          "source_paragraph_file": "009.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "To summarize, the tutorial has three large parts: primitive generators that produce one token at a time; meta-generators, which are ways of calling generators; and efficient meta-generation, which optimizes the hardware system when running those algorithms."
+        },
+        {
+          "cue": "sc43_024",
+          "text_file": "voiceover/scene_4_3_sentence/024.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_024.mp3",
+          "source_paragraph_file": "010.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "To optimize meta-generation, we have strategies such as chaining, parallel generation, tree search, and refinement."
+        },
+        {
+          "cue": "sc43_025",
+          "text_file": "voiceover/scene_4_3_sentence/025.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_025.mp3",
+          "source_paragraph_file": "010.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "We allocate test-time compute to improve performance and design around cost-performance trade-offs."
+        },
+        {
+          "cue": "sc43_026",
+          "text_file": "voiceover/scene_4_3_sentence/026.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_026.mp3",
+          "source_paragraph_file": "010.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "At the systems level, parallelizability reduces latency and increases throughput."
+        },
+        {
+          "cue": "sc43_027",
+          "text_file": "voiceover/scene_4_3_sentence/027.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_027.mp3",
+          "source_paragraph_file": "010.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Prompt structure and meta-generator structure determine much of the real-world efficiency, so token budget is only a simplification."
+        },
+        {
+          "cue": "sc43_028",
+          "text_file": "voiceover/scene_4_3_sentence/028.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_028.mp3",
+          "source_paragraph_file": "011.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Future directions will focus on hybrid systems that combine parallel and sequential improvement, learning to search with backtracking and self-correction, optimizing agents that interact with external environments, and automatically allocating compute flexibly."
+        },
+        {
+          "cue": "sc43_029",
+          "text_file": "voiceover/scene_4_3_sentence/029.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_029.mp3",
+          "source_paragraph_file": "011.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "But there is also a warning: many scientific conclusions today are based on only a few benchmark tasks, so stronger evidence will require broader evaluation."
+        },
+        {
+          "cue": "sc43_030",
+          "text_file": "voiceover/scene_4_3_sentence/030.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_030.mp3",
+          "source_paragraph_file": "012.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "There is an important warning here: many conclusions are still based on a few tasks."
+        },
+        {
+          "cue": "sc43_031",
+          "text_file": "voiceover/scene_4_3_sentence/031.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_031.mp3",
+          "source_paragraph_file": "012.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Meta-generation techniques show many strong results, but how general those conclusions are still depends on the tasks, evaluator, generator, and budget that were tested."
+        },
+        {
+          "cue": "sc43_032",
+          "text_file": "voiceover/scene_4_3_sentence/032.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc43_032.mp3",
+          "source_paragraph_file": "012.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "So the looking-ahead section is not only a list of future directions; it is also a reminder that the field needs broader evidence."
+        }
+      ]
+    },
+    "scene_5_1": {
+      "title": "Scene 5.1 - Panel session",
+      "directory": "voiceover/scene_5_1_sentence",
+      "files": [
+        {
+          "cue": "sc51_001",
+          "text_file": "voiceover/scene_5_1_sentence/001.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_001.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "A natural question is whether better pretrained models in the future will remove the need for inference-time algorithms."
+        },
+        {
+          "cue": "sc51_002",
+          "text_file": "voiceover/scene_5_1_sentence/002.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_002.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The general answer is that these directions are complementary."
+        },
+        {
+          "cue": "sc51_003",
+          "text_file": "voiceover/scene_5_1_sentence/003.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_003.mp3",
+          "source_paragraph_file": "001.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "If models learn to search better during training, we may need less inference-time compute, but we will still need inference-time algorithms to refine, extend capability, backtrack, evaluate, or use feedback."
+        },
+        {
+          "cue": "sc51_004",
+          "text_file": "voiceover/scene_5_1_sentence/004.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_004.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The next question is the limit of inference scaling."
+        },
+        {
+          "cue": "sc51_005",
+          "text_file": "voiceover/scene_5_1_sentence/005.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_005.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "We can distinguish domains with clear verification, such as math and code, from harder domains such as writing, biology, drug discovery, or problems involving ambiguity and correctness."
+        },
+        {
+          "cue": "sc51_006",
+          "text_file": "voiceover/scene_5_1_sentence/006.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_006.mp3",
+          "source_paragraph_file": "002.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "One bottleneck is verifier quality: if the verifier cannot distinguish false positives from true positives, increasing compute will not solve the problem by itself."
+        },
+        {
+          "cue": "sc51_007",
+          "text_file": "voiceover/scene_5_1_sentence/007.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_007.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Verification can also be harder than generation, for example proving that a program is safe for every input."
+        },
+        {
+          "cue": "sc51_008",
+          "text_file": "voiceover/scene_5_1_sentence/008.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_008.mp3",
+          "source_paragraph_file": "003.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "There is also the question of whether systems reasoning can solve very complex social problems such as poverty or climate change, and whether architectural limits may be related to state tracking or sequence length."
+        },
+        {
+          "cue": "sc51_009",
+          "text_file": "voiceover/scene_5_1_sentence/009.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_009.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The efficiency question is whether there is still room to optimize the current architecture, or whether we are only waiting for new accelerators."
+        },
+        {
+          "cue": "sc51_010",
+          "text_file": "voiceover/scene_5_1_sentence/010.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_010.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "A useful direction is co-design across algorithms, modeling, and hardware."
+        },
+        {
+          "cue": "sc51_011",
+          "text_file": "voiceover/scene_5_1_sentence/011.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_011.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Hardware was previously designed mainly for training, while inference may become a larger share of total compute."
+        },
+        {
+          "cue": "sc51_012",
+          "text_file": "voiceover/scene_5_1_sentence/012.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_012.mp3",
+          "source_paragraph_file": "004.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Final points include hybrid systems that use code when useful, generative verifiers, inference scaling laws, and the need for the open-source community to focus more on tools for this direction."
+        },
+        {
+          "cue": "sc51_013",
+          "text_file": "voiceover/scene_5_1_sentence/013.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_013.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "An important nuance is that inference-time algorithms do not necessarily have to do the heavy lifting forever."
+        },
+        {
+          "cue": "sc51_014",
+          "text_file": "voiceover/scene_5_1_sentence/014.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_014.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "If future models learn better search during training, inference-time algorithms may become a lighter maintenance or refinement layer."
+        },
+        {
+          "cue": "sc51_015",
+          "text_file": "voiceover/scene_5_1_sentence/015.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_015.mp3",
+          "source_paragraph_file": "005.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "But they can still be necessary because many tasks require feedback, backtracking, tool use, or evaluation at run time."
+        },
+        {
+          "cue": "sc51_016",
+          "text_file": "voiceover/scene_5_1_sentence/016.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_016.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The limits of inference scaling depend on the difference between tasks with clear outcome supervision and more ambiguous tasks."
+        },
+        {
+          "cue": "sc51_017",
+          "text_file": "voiceover/scene_5_1_sentence/017.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_017.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Math and code are easier to scale because they have clear verifiers or tests."
+        },
+        {
+          "cue": "sc51_018",
+          "text_file": "voiceover/scene_5_1_sentence/018.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_018.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Writing, biology, drug discovery, societal issues, or problems requiring expensive human verification are harder."
+        },
+        {
+          "cue": "sc51_019",
+          "text_file": "voiceover/scene_5_1_sentence/019.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_019.mp3",
+          "source_paragraph_file": "006.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "When verification is not easier than generation, merely increasing samples or compute is not enough."
+        },
+        {
+          "cue": "sc51_020",
+          "text_file": "voiceover/scene_5_1_sentence/020.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_020.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Important open questions include learning search during pretraining, self-improvement for chain-of-thought, downstream generalization, and whether reasoning learned at a certain length can scale to longer contexts."
+        },
+        {
+          "cue": "sc51_021",
+          "text_file": "voiceover/scene_5_1_sentence/021.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_021.mp3",
+          "source_paragraph_file": "007.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "These are open directions, not settled conclusions."
+        },
+        {
+          "cue": "sc51_022",
+          "text_file": "voiceover/scene_5_1_sentence/022.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_022.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "The systems perspective expands from software optimization to hardware and hybrid architecture."
+        },
+        {
+          "cue": "sc51_023",
+          "text_file": "voiceover/scene_5_1_sentence/023.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_023.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "One direction is co-designing the model, algorithm, and hardware because inference may take a larger share of compute than before."
+        },
+        {
+          "cue": "sc51_024",
+          "text_file": "voiceover/scene_5_1_sentence/024.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_024.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "Another direction is hybrid systems that know when to use code or tools because that is more efficient than forcing the LLM to generate every token itself."
+        },
+        {
+          "cue": "sc51_025",
+          "text_file": "voiceover/scene_5_1_sentence/025.txt",
+          "audio_file": "voiceover/generated_sentence_level/sc51_025.mp3",
+          "source_paragraph_file": "008.txt",
+          "source_start": null,
+          "source_end": null,
+          "anchor": "",
+          "text": "A further idea is generative verifiers: if the verifier is also a language model, then we can apply inference-time compute to the verifier, leading to another meta level."
+        }
+      ]
+    }
+  }
+}

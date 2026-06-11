@@ -1,0 +1,1 @@
+Therefore, the cost-performance trade-off must consider both the algorithm and how the system executes that algorithm.

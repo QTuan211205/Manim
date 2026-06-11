@@ -1,0 +1,1 @@
+It does not cut off the tail; instead, it rescales logits using a softmax divided by tau.

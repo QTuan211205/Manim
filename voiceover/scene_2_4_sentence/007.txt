@@ -1,0 +1,1 @@
+Common variants include Top-k, Top-p, epsilon sampling, eta sampling, and Min-p.

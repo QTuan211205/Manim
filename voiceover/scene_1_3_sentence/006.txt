@@ -1,0 +1,1 @@
+In such a system, the model can be combined with evaluators, verifiers, code interpreters, search engines, or other external tools.

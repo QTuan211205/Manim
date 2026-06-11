@@ -1,0 +1,1 @@
+Second, weighted voting is better than ordinary voting when the combined verifier and generator scores assign more total mass to correct answers.

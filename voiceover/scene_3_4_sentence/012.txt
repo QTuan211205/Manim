@@ -1,0 +1,1 @@
+The general process is to collect bad-to-better data pairs by generating samples and evaluating reward, then update the corrector to produce a better output from a bad one, and repeat.

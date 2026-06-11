@@ -1,0 +1,1 @@
+With a compound AI system, part of the computational burden can be handed to reliable specialized tools such as a code interpreter or search engine.

@@ -1,0 +1,1 @@
+Top-k always keeps a fixed number of tokens, while Top-p adapts based on the cumulative probability of the leading tokens.

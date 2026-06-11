@@ -1,0 +1,1 @@
+This ratio shows that if an operation performs more than 100 FLOP per byte, the compute cost is almost free compared with the data-transfer cost.

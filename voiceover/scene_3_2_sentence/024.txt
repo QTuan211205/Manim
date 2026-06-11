@@ -1,0 +1,1 @@
+Self-consistency uses this by marginalizing out the reasoning paths and choosing the most strongly supported answer.

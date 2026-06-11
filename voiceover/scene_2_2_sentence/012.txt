@@ -1,0 +1,1 @@
+Beam search keeps "a singer" and "a songwriter", pruning "an American", even though that branch began with the best greedy choice.

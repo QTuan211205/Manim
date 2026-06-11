@@ -1,0 +1,1 @@
+Latency is how long the user must wait for a response; throughput is how many requests complete per second.

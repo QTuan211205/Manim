@@ -1,0 +1,1 @@
+Constrained decoding appears when we embed an LLM inside a larger system and need structured output, such as JSON.

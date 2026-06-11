@@ -1,0 +1,1 @@
+Future directions will focus on hybrid systems that combine parallel and sequential improvement, learning to search with backtracking and self-correction, optimizing agents that interact with external environments, and automatically allocating compute flexibly.

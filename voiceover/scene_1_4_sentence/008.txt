@@ -1,0 +1,1 @@
+So before discussing meta-generators, we first look at how a generator produces a single sequence.

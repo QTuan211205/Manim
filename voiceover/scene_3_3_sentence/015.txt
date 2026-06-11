@@ -1,0 +1,1 @@
+If the task cannot be decomposed into states, if the environment does not provide intermediate information, or if the reward signal is weak, tree search may not provide benefits that justify its cost.

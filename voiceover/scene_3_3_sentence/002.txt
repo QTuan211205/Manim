@@ -1,0 +1,1 @@
+When using tree search, we must choose the states, the transitions from one state to the next, the scoring function for each state, and a strategy such as breadth-first or depth-first search.

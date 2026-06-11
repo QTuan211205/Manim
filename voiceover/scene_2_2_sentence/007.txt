@@ -1,0 +1,1 @@
+By contrast, a non-greedy sequence can begin with a lower-probability token, such as "a", and still reach a much higher overall probability.

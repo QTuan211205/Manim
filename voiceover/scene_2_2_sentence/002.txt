@@ -1,0 +1,1 @@
+In other words, it chooses the sequence that the model assigns the largest probability to.

@@ -1,0 +1,1 @@
+When we call a normal LLM API, we can view that call as a generator.

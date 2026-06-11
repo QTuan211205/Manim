@@ -1,0 +1,1 @@
+We can compare chain-of-thought to a writable tape, increasing expressivity through variable output length.

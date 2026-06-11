@@ -1,0 +1,1 @@
+If we must load the weights from memory anyway, we want to use that same load for many inputs at once.

@@ -1,0 +1,1 @@
+Primitives are building blocks: the basic pieces used to construct more complex meta-generation algorithms.

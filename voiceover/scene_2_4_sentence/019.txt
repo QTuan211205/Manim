@@ -1,0 +1,1 @@
+Temperature does not decide which tokens are removed.

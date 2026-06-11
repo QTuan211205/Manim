@@ -1,0 +1,1 @@
+If the tokens are easy to predict, many proposals are kept and the system saves many sequential decode steps.

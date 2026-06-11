@@ -1,0 +1,1 @@
+Latency, throughput, and quality usually trade off against one another under a fixed budget.

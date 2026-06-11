@@ -1,0 +1,1 @@
+Meta-generators are efficient when trajectories can run in parallel and long inputs can share prefixes to reuse KV caches.

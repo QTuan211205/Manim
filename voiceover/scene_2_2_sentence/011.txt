@@ -1,0 +1,1 @@
+At step 2, we compare cumulative scores for the children: "a singer" at 0.117, "a songwriter" at 0.104, "an American" at 0.016, and "an artist" at 0.008.

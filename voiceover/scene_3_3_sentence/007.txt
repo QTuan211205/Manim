@@ -1,0 +1,1 @@
+After tree search, we can take candidates and aggregate them, for example through voting.

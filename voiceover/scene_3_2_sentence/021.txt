@@ -1,0 +1,1 @@
+But if the reward model is imperfect, the system may optimize too strongly for the reward model instead of true acceptability; this is the over-optimization problem.

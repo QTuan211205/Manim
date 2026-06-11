@@ -1,0 +1,1 @@
+The chain acts like a multi-step program, where the outer process is the meta-generator and the inner calls are generators or tools.

@@ -1,0 +1,1 @@
+Chain-of-thought is the canonical example: generate a thought, then generate an answer.

@@ -1,0 +1,1 @@
+The optimal model size and strategy change with the compute budget; sometimes smaller models are better.

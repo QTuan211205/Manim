@@ -1,0 +1,1 @@
+Token healing rewinds the tokenizer and enforces the untokenized text as the prefix for the next token.

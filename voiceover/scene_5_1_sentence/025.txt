@@ -1,0 +1,1 @@
+A further idea is generative verifiers: if the verifier is also a language model, then we can apply inference-time compute to the verifier, leading to another meta level.

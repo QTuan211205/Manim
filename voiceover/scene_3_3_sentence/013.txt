@@ -1,0 +1,1 @@
+This lets it stop a bad branch early, backtrack, or allocate more budget to promising branches.

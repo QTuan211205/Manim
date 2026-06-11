@@ -1,0 +1,1 @@
+The heavy tail can come from under-training, the mode-seeking nature of cross-entropy loss, and low-rank constraints in the output layer.

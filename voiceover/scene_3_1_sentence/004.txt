@@ -1,0 +1,1 @@
+We already know how to generate probable outputs by sampling from the model conditioned on the input, but if those probable outputs are not acceptable, we need an additional strategy.

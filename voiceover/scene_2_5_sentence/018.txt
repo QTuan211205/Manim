@@ -1,0 +1,1 @@
+For constrained decoding, the core concept is that a state machine turns a schema into the set of valid tokens at each step.

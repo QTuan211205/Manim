@@ -1,0 +1,1 @@
+Memory-bound means the processor can compute faster than data can be moved from memory, so it waits for data.

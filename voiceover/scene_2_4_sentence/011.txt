@@ -1,0 +1,1 @@
+High tau, greater than or equal to 1, increases diversity but can make outputs incoherent.

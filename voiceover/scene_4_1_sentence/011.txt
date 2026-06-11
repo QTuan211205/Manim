@@ -1,0 +1,1 @@
+For a single decoding step, optimization directions include reducing memory bandwidth through quantization or distillation, increasing FLOP per second through FlashAttention, which improves hardware utilization without changing the number of operations, or reducing FLOP through Mixture-of-Experts, which uses fewer FLOP per token than a dense model.

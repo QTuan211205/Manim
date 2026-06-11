@@ -1,0 +1,1 @@
+This is why batching can be nearly cost-free for memory-bound operations.

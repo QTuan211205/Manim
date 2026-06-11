@@ -1,0 +1,1 @@
+The summary of primitive generators is this: decoding has two views, optimization and sampling; there is a diversity-coherence trade-off; and constrained decoding enforces structure on LLM outputs.
