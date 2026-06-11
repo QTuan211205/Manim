@@ -15,6 +15,7 @@
 - When the user asks for slide-based visuals, use actual images/crops from the provided slide PDF instead of recreating charts or diagrams manually.
 - Source text should appear below slide-derived images when requested.
 - Audio timing should follow visual meaning: keep the screen blank or neutral until the narration reaches the relevant concept, then show the matching visual cue.
+- Audio/visual cue correctness has priority over avoiding long holds or silence-like gaps. Do not use "no silence longer than 2 seconds" as an acceptance rule when a hold is needed for the audio cue to land correctly.
 - For title/box beats, hold the visual long enough to be read; do not transition immediately after it appears.
 
 ## Manim Audio Rendering
@@ -22,7 +23,7 @@
 - For audio or timing changes, render with cache disabled and flushed:
   `manim -ql --flush_cache --disable_caching scene_1_1.py Scene1_1`.
 - Normal cached renders can reuse stale partial movie files and produce a final MP4 with missing or shifted audio, even when the scene code calls `add_sound`.
-- Verify audio timing after render with `ffmpeg` silence detection. For example, the first Scene 1.1 voiceover should now begin around 3 seconds.
+- Verify audio timing after render by checking the visual cue against the intended audio timestamp. `ffmpeg` silence detection may be used only as diagnostic information, not as a pass/fail rule.
 - Do not trust a successful Manim render alone for audio correctness. Also check scene code for expected voiceover files, validate that every expected file exists, and use render/audio probes when timing changes are involved.
 - When concatenating rendered scenes, do not use plain concat if a scene's audio stream is shorter than its video stream. Pad each scene's audio to that scene's video duration before concatenating, otherwise later scene audio can shift earlier or the combined output can be too short.
 
@@ -53,8 +54,12 @@
 
 - Scene display text and inline scene comments should stay in English unless the user explicitly requests another language.
 - After language edits, scan scene files with a precise Vietnamese-character regex instead of broad Unicode ranges, because broad ranges also catch math symbols and proper names.
+- For slide-based scene fixes, treat `slide/neurips2024metageneration-tutorial-all.pdf` as the source of truth. Do not add visual text or concepts that are not in the relevant slides or matched narration.
 
 ## Current Status
 
-- Left off at Scene 2.1.
-- Need to fix audio: the voiceovers have been migrated to the sentence-level audio files, but the animation and wait timings need to be adjusted to align correctly with the audio tracks.
+- Scene 2.1 audio timing has been adjusted after migrating to sentence-level audio.
+- Scene 2.1 visual content was simplified to match the existing narration: causal LM distribution, decoding rule, autoregressive loop, choice tree, and objective groups. Extra tokenizer/self-attention/causal-mask/softmax visuals were removed because the audio did not explain them directly.
+- Scene 2.1 from about 30s onward should stay limited to PDF slides 30-31: `Decoding is search` and `Token-level generation (outline)`. Do not include Scene 2.2 content there: MAP, greedy decoding, beam search, probabilities, pruning, beam size, or BFS.
+- Scene 2.1 uses a shared `rt(...)` timing scale, with explicit `wait_until(...)` cue holds where needed, so visuals land on the correct continuous `sc21_001.mp3` through `sc21_015.mp3` audio sequence. When audio cannot be regenerated, prioritize cue timing over compressing the scene to avoid pauses.
+- Scene 2.1 cue verification should be done against `voiceover/scene_2_1_sentence/*.txt` sentence timings. Key current checks: `005.txt` search starts around 21.45s, `009.txt` outline with `Optimization`, `Sampling`, and `Constrained generation, structured outputs` is visible around 33s, `010-011.txt` show language-model vs decoding-algorithm distinction, `012.txt` shows the same-model decoding-rule list, and `013-015.txt` show choice tree/local choice/final sequence. Do not evaluate this scene with the old no-silence rule.
