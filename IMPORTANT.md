@@ -5,18 +5,28 @@
 - Read this file before making or rendering scene changes.
 - Update this file whenever a new problem, cause, fix, verification rule, or recurring user requirement is discovered.
 - Treat audio completeness as a hard requirement: every audio file that belongs to a scene must be scheduled and must survive the final render.
+- Whenever a scene is created or modified, audio must be attached, and all rules, personalization preferences, and notes in this file must be strictly followed.
 - Only do the exact changes the user requests. Do not make extra scene, audio, layout, or style edits without being asked.
 - Always ask carefully before acting when the request is unclear. If any requirement, target scene/time, asset, or expected visual result is ambiguous, ask the user for clarification before editing or rendering.
+
 
 ## User Style Preferences
 
 - Keep visuals simple. Avoid adding explanatory text, decorative headers, or extra scenes unless explicitly requested.
+- When a scene feels like it is only reading text aloud, replace text-heavy beats with visuals that explain the spoken term or idea: slide-derived diagrams/graphs, native Manim diagrams, simple data-flow animations, candidate cards, scoring gauges, voting bins, or other concrete visual mechanisms.
 - Use colors consistently across a scene. Prefer a restrained, continuous palette over many accent colors.
 - When the user asks for slide-based visuals, use actual images/crops from the provided slide PDF instead of recreating charts or diagrams manually.
 - Source text should appear below slide-derived images when requested.
+- When using slide-derived visuals, do not use the whole slide unless explicitly requested. Crop only the relevant image, graph, table, or diagram region.
+- Slide crops must include the full visual content of the relevant image/graph/diagram, including important arrows, output boxes, axis labels, legends, and right/left margins. Do not crop so tightly that edge content is clipped. Add enough margin around the visual, but still do not use the entire slide.
+- Do not replace scene text with slide text screenshots. Slide-derived replacements should be actual visual material such as images, graphs, tables, or diagrams; keep plain formula/text beats as native Manim text unless the user asks otherwise.
+- If the user provides an exact source string or URL for slide-derived visuals, use that exact text below each crop.
+- For visuals cropped from `slide/neurips2024metageneration-tutorial-all.pdf`, when the slide crop itself does not already include a source/citation underneath, use `https://neurips.cc/virtual/2024/tutorial/99522` as the source text below the crop.
 - Audio timing should follow visual meaning: keep the screen blank or neutral until the narration reaches the relevant concept, then show the matching visual cue.
+- Always compare the on-screen video text with the currently playing audio content; they must be synchronized.
 - Audio/visual cue correctness has priority over avoiding long holds or silence-like gaps. Do not use "no silence longer than 2 seconds" as an acceptance rule when a hold is needed for the audio cue to land correctly.
 - For title/box beats, hold the visual long enough to be read; do not transition immediately after it appears.
+- For explaining next-token decoding concepts (sampling, truncation, temperature), prefer dynamic, custom bar charts over static formulas or tables. Visual cues should include: (1) scanning selector arrows for sampling, (2) red vertical cutoff gates for truncation, (3) adaptive width gates comparing Top-k vs. Top-p under flat vs. peaked distributions, and (4) temperature sliders that morph bar heights to show peakedness/uniformity.
 
 ## Manim Audio Rendering
 
@@ -27,7 +37,7 @@
 - Do not trust a successful Manim render alone for audio correctness. Also check scene code for expected voiceover files, validate that every expected file exists, and use render/audio probes when timing changes are involved.
 - When concatenating rendered scenes, do not use plain concat if a scene's audio stream is shorter than its video stream. Pad each scene's audio to that scene's video duration before concatenating, otherwise later scene audio can shift earlier or the combined output can be too short.
 
-## Chapter 1 Voiceovers
+## Chapter 1 Voiceovers (TO BE EDITED, DONT READ)
 
 - Chapter 1 scenes must use every matching sentence-level file in `voiceover/generated_sentence_level`.
 - Scene 1.1 uses `sc11_001.mp3` through `sc11_007.mp3`.
@@ -48,6 +58,8 @@
 
 - For layout edits, render the affected section or full scene, extract representative frames with `ffmpeg`, and inspect them.
 - Use actual visual evidence for overlap/alignment fixes. Recent examples: the “How should we call, control...” question and the “Inference algorithms + LLM OS” diagram needed frame checks after code changes.
+- When the user reports a problem at a specific timestamp, extract frames at that timestamp and nearby timestamps before and after the fix, then inspect them visually. Do not rely on code inspection alone for overlap, alignment, or crop-boundary fixes.
+- For slide-crop fixes, make a contact sheet or inspect the cropped asset directly before rendering, then inspect rendered frames where the crop appears. Confirm that the crop covers the whole intended visual without using the full slide.
 - If a partial render is used for inspection, remember it can overwrite the normal scene output path. Regenerate the full scene afterward.
 
 ## Text Language
@@ -56,10 +68,4 @@
 - After language edits, scan scene files with a precise Vietnamese-character regex instead of broad Unicode ranges, because broad ranges also catch math symbols and proper names.
 - For slide-based scene fixes, treat `slide/neurips2024metageneration-tutorial-all.pdf` as the source of truth. Do not add visual text or concepts that are not in the relevant slides or matched narration.
 
-## Current Status
-
-- Scene 2.1 audio timing has been adjusted after migrating to sentence-level audio.
-- Scene 2.1 visual content was simplified to match the existing narration: causal LM distribution, decoding rule, autoregressive loop, choice tree, and objective groups. Extra tokenizer/self-attention/causal-mask/softmax visuals were removed because the audio did not explain them directly.
-- Scene 2.1 from about 30s onward should stay limited to PDF slides 30-31: `Decoding is search` and `Token-level generation (outline)`. Do not include Scene 2.2 content there: MAP, greedy decoding, beam search, probabilities, pruning, beam size, or BFS.
-- Scene 2.1 uses a shared `rt(...)` timing scale, with explicit `wait_until(...)` cue holds where needed, so visuals land on the correct continuous `sc21_001.mp3` through `sc21_015.mp3` audio sequence. When audio cannot be regenerated, prioritize cue timing over compressing the scene to avoid pauses.
-- Scene 2.1 cue verification should be done against `voiceover/scene_2_1_sentence/*.txt` sentence timings. Key current checks: `005.txt` search starts around 21.45s, `009.txt` outline with `Optimization`, `Sampling`, and `Constrained generation, structured outputs` is visible around 33s, `010-011.txt` show language-model vs decoding-algorithm distinction, `012.txt` shows the same-model decoding-rule list, and `013-015.txt` show choice tree/local choice/final sequence. Do not evaluate this scene with the old no-silence rule.
+## Current Status 

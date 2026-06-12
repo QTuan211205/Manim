@@ -31,6 +31,10 @@ fontconfig/
 
 # Image formats
 *.png
+!content/chapter2/scene_2.2/assets/*_crop.png
+!content/chapter2/scene_2.3/assets/*_crop.png
+!content/chapter2/scene_2.4/assets/*_crop.png
+!content/chapter3/scene_3.2/assets/*.png
 *.jpg
 *.jpeg
 *.gif

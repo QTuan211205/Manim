@@ -1,769 +1,277 @@
 import os
 import tempfile
 from pathlib import Path
-from manim import *
-import numpy as np
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+from manim import *
+
 config.text_dir = os.path.join(tempfile.gettempdir(), "manim_text")
 config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
-VOICEOVER_DIR = Path(__file__).resolve().parents[2] / "voiceover" / "generated_unsorted"
+VOICEOVER_DIR = Path(__file__).resolve().parents[3] / "voiceover" / "generated_sentence_level"
+ASSET_DIR = Path(__file__).resolve().parent / "assets"
+
+VOICEOVERS = [
+    ("sc22_001.mp3", 3.900952),
+    ("sc22_002.mp3", 4.551111),
+    ("sc22_003.mp3", 3.900952),
+    ("sc22_004.mp3", 5.154830),
+    ("sc22_005.mp3", 5.665669),
+    ("sc22_006.mp3", 7.894785),
+    ("sc22_007.mp3", 8.962902),
+    ("sc22_008.mp3", 3.250794),
+    ("sc22_009.mp3", 5.758549),
+    ("sc22_010.mp3", 8.080544),
+    ("sc22_011.mp3", 14.535692),
+    ("sc22_012.mp3", 7.476825),
+    ("sc22_013.mp3", 5.572789),
+    ("sc22_014.mp3", 5.433469),
+    ("sc22_015.mp3", 9.891701),
+    ("sc22_016.mp3", 4.133152),
+    ("sc22_017.mp3", 8.730703),
+    ("sc22_018.mp3", 6.780227),
+]
 
 
-def add_voiceover(scene, filename, time_offset=0.0, duration=0.0):
-    scene.add_sound(str(VOICEOVER_DIR / filename), time_offset=time_offset)
-    return time_offset + duration
-
-
-def finish_voiceovers(scene, voiceover_end, padding=0.25):
-    current_time = getattr(scene.renderer, "time", 0.0)
-    remaining = voiceover_end + padding - current_time
-    if remaining > 0:
-        scene.wait(remaining)
-
-
-# Note: visual/narration alignment comment translated from Vietnamese.
-def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
+def create_text(text, font_size=24, font="Noto Sans", color=WHITE, **kwargs):
     if font_size < 20:
-        t = Text(text, font_size=36, font=font, color=color, **kwargs)
-        t.scale(font_size / 36)
-        return t
+        item = Text(text, font_size=36, font=font, color=color, **kwargs)
+        item.scale(font_size / 36)
+        return item
     return Text(text, font_size=font_size, font=font, color=color, **kwargs)
 
-# Note: visual/narration alignment comment translated from Vietnamese.
-def create_markup_text(text, font_size=24, font="Arial", **kwargs):
+
+def create_markup_text(text, font_size=24, font="Noto Sans", **kwargs):
     if font_size < 20:
-        t = MarkupText(text, font_size=36, font=font, **kwargs)
-        t.scale(font_size / 36)
-        return t
+        item = MarkupText(text, font_size=36, font=font, **kwargs)
+        item.scale(font_size / 36)
+        return item
     return MarkupText(text, font_size=font_size, font=font, **kwargs)
 
 
+def labeled_box(text, width, height=0.5, color=BLUE_B, fill="#181a1e", font_size=18):
+    box = RoundedRectangle(
+        width=width,
+        height=height,
+        corner_radius=0.06,
+        color=color,
+        fill_color=fill,
+        fill_opacity=0.9,
+        stroke_width=1.6,
+    )
+    label = create_text(text, font_size=font_size, color=WHITE)
+    label.move_to(box.get_center())
+    return VGroup(box, label)
+
+
+def slide_visual(filename, width=7.3):
+    image = ImageMobject(str(ASSET_DIR / filename))
+    image.scale_to_fit_width(width)
+    source = create_text("https://neurips.cc/virtual/2024/tutorial/99522", font_size=14, color=GRAY_A)
+    source.next_to(image, DOWN, buff=0.12)
+    return Group(image, source).move_to(ORIGIN).shift(DOWN * 0.15)
+
+
 class Scene2_2(MovingCameraScene):
+    def schedule_voiceovers(self):
+        starts = {}
+        current = 0.0
+        missing = []
+
+        for index, (filename, duration) in enumerate(VOICEOVERS, start=1):
+            audio_path = VOICEOVER_DIR / filename
+            if not audio_path.exists():
+                missing.append(str(audio_path))
+            starts[index] = current
+            self.add_sound(str(audio_path), time_offset=current)
+            current += duration
+
+        if missing:
+            raise FileNotFoundError("Missing scene 2.2 voiceover files:\n" + "\n".join(missing))
+
+        return starts, current
+
+    def wait_until(self, target_time):
+        current_time = getattr(self.renderer, "time", 0.0)
+        if target_time > current_time:
+            self.wait(target_time - current_time)
+
+    def replace_content(self, old_group, new_group, run_time=0.6):
+        if old_group is None:
+            self.play(FadeIn(new_group, shift=UP * 0.12), run_time=run_time)
+        else:
+            self.play(FadeOut(old_group, shift=DOWN * 0.08), FadeIn(new_group, shift=UP * 0.08), run_time=run_time)
+        return new_group
+
     def construct(self):
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.camera.background_color = "#111111"
+        cue_start, voiceover_end = self.schedule_voiceovers()
 
-        # Voiceover audio is scheduled from actual MP3 durations.
-        voiceover_end = 0.0
-        voiceover_end = add_voiceover(self, "sc22_1.mp3", voiceover_end, 15.961)
-        voiceover_end = add_voiceover(self, "sc22_2.mp3", voiceover_end, 30.354)
-        voiceover_end = add_voiceover(self, "sc22_3.mp3", voiceover_end, 30.354)
-        voiceover_end = add_voiceover(self, "sc22_4.mp3", voiceover_end, 17.580)
-        voiceover_end = add_voiceover(self, "sc22_5.mp3", voiceover_end, 23.432)
+        title = create_text("Optimization in Decoding", font_size=30, color=BLUE_A)
+        subtitle = create_text("MAP, Greedy Decoding, and Beam Search", font_size=18, color=GRAY_A)
+        header = VGroup(title, subtitle).arrange(DOWN, buff=0.18)
+        header.to_edge(UP, buff=0.35)
+        self.play(FadeIn(header, shift=DOWN * 0.15), run_time=0.8)
 
+        content = None
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        chapter_title = create_text("Optimization in Decoding", font_size=24, color=BLUE_A)
-        chapter_sub = create_text("(Decoding as Optimization)", font_size=18, color=GRAY_A)
-        chapter_sub.next_to(chapter_title, DOWN, buff=0.15)
-        chapter_header = VGroup(chapter_title, chapter_sub)
-        chapter_header.move_to(ORIGIN)
-
-        self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.2)
-        self.wait(3.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        sub_title = create_text("Greedy vs. Beam Search (Greedy vs. Beam Search)", font_size=16, color=BLUE_B)
-        sub_title.to_edge(UP, buff=0.4)
-        
-        self.play(
-            ReplacementTransform(chapter_header, sub_title),
-            run_time=1.2
-        )
-        self.wait(2.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        map_title = create_text("Maximum a posteriori objective (MAP Objective)", font_size=13, color=GRAY_A)
-        map_title.next_to(sub_title, DOWN, buff=0.4)
-        
+        # 001-003: MAP objective and the two optimization algorithms.
+        self.wait_until(cue_start[1] + 0.5)
         map_formula = create_markup_text(
             "<span color='#ebcb8b'>argmax<sub><i>x</i></sub></span> "
             "<span color='#8fbcbb'><i>p</i><sub><i>θ</i></sub>(<i>x</i>)</span>",
-            font_size=24
+            font_size=34,
         )
-        map_formula.move_to(UP * 0.8)
-        
-        map_box = RoundedRectangle(
-            width=3.6, 
-            height=0.9, 
-            color=BLUE_E, 
-            fill_color="#181a1e", 
-            fill_opacity=0.8, 
-            corner_radius=0.08
-        )
-        map_box.move_to(map_formula.get_center())
-        map_group = VGroup(map_box, map_formula)
+        map_caption = create_text("MAP decoding searches for the highest-probability sequence", font_size=22, color=WHITE)
+        content = VGroup(map_formula, map_caption).arrange(DOWN, buff=0.5).move_to(ORIGIN)
+        self.play(FadeIn(content, shift=UP * 0.15), run_time=0.8)
 
-        self.play(
-            Write(map_title),
-            FadeIn(map_group, shift=UP * 0.2),
-            run_time=1.2
-        )
-        self.wait(3.2)
+        self.wait_until(cue_start[2] + 0.35)
+        chooses_text = create_text("Choose the sequence the model assigns the largest probability to", font_size=22, color=BLUE_A)
+        chooses_text.next_to(map_formula, DOWN, buff=0.5)
+        self.play(ReplacementTransform(map_caption, chooses_text), run_time=0.55)
+        content = VGroup(map_formula, chooses_text)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        brace_x = Brace(map_box, DOWN, color=BLUE_C)
-        lbl_x = create_text("Complete output token sequence", font_size=10, color=BLUE_A)
-        lbl_x.next_to(brace_x, DOWN, buff=0.1)
-        
-        self.play(
-            Create(brace_x),
-            Write(lbl_x),
-            run_time=0.8
-        )
-        self.wait(5.0)
+        self.wait_until(cue_start[3] + 0.25)
+        greedy_card = labeled_box("Greedy decoding", 3.0, color=BLUE_B, fill="#111a25", font_size=20)
+        beam_card = labeled_box("Beam search", 2.6, color=YELLOW, fill="#211e11", font_size=20)
+        algorithm_cards = VGroup(greedy_card, beam_card).arrange(RIGHT, buff=0.8)
+        algorithm_label = create_text("Two common optimization algorithms", font_size=22, color=GRAY_A)
+        next_content = VGroup(algorithm_label, algorithm_cards).arrange(DOWN, buff=0.5).move_to(ORIGIN)
+        content = self.replace_content(content, next_content)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(map_title),
-            FadeOut(map_group),
-            FadeOut(brace_x),
-            FadeOut(lbl_x),
-            run_time=1.0
-        )
-        self.wait(1.5)
-
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        greedy_header = create_text("1. Greedy Decoding (Greedy Decoding)", font_size=13, color=BLUE_B)
-        greedy_header.next_to(sub_title, DOWN, buff=0.3)
-        
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # 004-007: Greedy makes local choices and can miss MAP.
+        self.wait_until(cue_start[4] + 0.2)
         greedy_formula = create_markup_text(
             "<i>x</i><sub><i>t</i></sub> = "
-            "<span color='#ebcb8b'>argmax<sub><i>w in V</i></sub></span> "
+            "<span color='#ebcb8b'>argmax<sub><i>w</i></sub></span> "
             "<i>p</i><sub><i>θ</i></sub>(<i>w</i> | <i>x</i><sub>&lt;<i>t</i></sub>)",
-            font_size=20
+            font_size=30,
         )
-        greedy_formula.move_to(UP * 1.7)
-        greedy_formula_box = RoundedRectangle(width=4.2, height=0.7, color=BLUE_E, fill_color="#121820", fill_opacity=0.9, corner_radius=0.06)
-        greedy_formula_box.move_to(greedy_formula.get_center())
-        greedy_formula_group = VGroup(greedy_formula_box, greedy_formula)
+        greedy_note = create_text("Highest-probability token at each step", font_size=22, color=BLUE_A)
+        next_content = VGroup(greedy_formula, greedy_note).arrange(DOWN, buff=0.5).move_to(ORIGIN)
+        content = self.replace_content(content, next_content)
 
-        self.play(
-            Write(greedy_header),
-            FadeIn(greedy_formula_group, shift=DOWN * 0.15),
-            run_time=1.0
-        )
-        self.wait(4.0)
+        self.wait_until(cue_start[5] + 0.25)
+        next_content = slide_visual("slide_23_greedy_table_crop.png", width=10.0)
+        content = self.replace_content(content, next_content)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        divider_line = Line(np.array([1.5, 1.2, 0]), np.array([1.5, -3.2, 0]), color=GRAY, stroke_width=1.5).set_stroke(opacity=0.4)
-        self.play(Create(divider_line), run_time=0.6)
+        self.wait_until(cue_start[6] + 0.25)
+        prompt = labeled_box("Taylor Swift is", 2.6, color=GRAY_B, font_size=18)
+        an = labeled_box('"an"', 1.0, color=RED_B, fill="#281719", font_size=18)
+        american = labeled_box('"American"', 1.7, color=RED_B, fill="#281719", font_size=16)
+        an_score = create_text("0.80 -> 0.016 cumulative", font_size=18, color=RED_A)
+        greedy_path = VGroup(an, american).arrange(DOWN, buff=0.45)
+        greedy_path.next_to(prompt, DOWN, buff=0.55)
+        an_score.next_to(greedy_path, RIGHT, buff=0.55)
+        local_label = create_text("Greedy starts with the locally best token", font_size=22, color=RED_A)
+        tree_1 = VGroup(prompt, greedy_path, an_score, local_label)
+        local_label.next_to(tree_1, DOWN, buff=0.45)
+        tree_1.move_to(ORIGIN)
+        content = self.replace_content(content, tree_1)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Root node
-        root_box = RoundedRectangle(width=1.8, height=0.4, color=GRAY_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-        root_box.move_to(np.array([-2.0, 1.0, 0]))
-        root_txt = create_text("Taylor Swift is", font_size=9, color=WHITE)
-        root_txt.move_to(root_box.get_center())
-        root_node = VGroup(root_box, root_txt)
+        self.wait_until(cue_start[7] + 0.25)
+        a = labeled_box('"a"', 1.0, color=GREEN_B, fill="#102418", font_size=18)
+        singer = labeled_box('"singer"', 1.5, color=GREEN_B, fill="#102418", font_size=16)
+        songwriter = labeled_box('"songwriter"', 2.0, color=GREEN_B, fill="#102418", font_size=15)
+        non_greedy_path = VGroup(a, singer, songwriter).arrange(DOWN, buff=0.35)
+        non_greedy_score = create_text("0.13 -> 0.117 / 0.104 cumulative", font_size=18, color=GREEN_A)
+        non_greedy_label = create_text("A lower first token can lead to a better sequence", font_size=22, color=GREEN_A)
+        comparison = VGroup(
+            VGroup(greedy_path.copy(), an_score.copy()).arrange(RIGHT, buff=0.4),
+            VGroup(non_greedy_path, non_greedy_score).arrange(RIGHT, buff=0.45),
+            non_greedy_label,
+        ).arrange(DOWN, buff=0.5).move_to(ORIGIN)
+        content = self.replace_content(content, comparison)
 
-        self.play(FadeIn(root_node, shift=UP * 0.15), run_time=0.8)
-        self.wait(2.2)
+        # 008-013: Beam search keeps a finite beam and prunes by cumulative score.
+        self.wait_until(cue_start[8] + 0.2)
+        next_content = slide_visual("slide_24_beam_graph_crop.png", width=6.9)
+        content = self.replace_content(content, next_content)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        def get_sidebar(step_title, candidates, active_idx=0):
-            sidebar_group = VGroup()
-            title = create_text(step_title, font_size=10, color=BLUE_A)
-            sidebar_group.add(title)
-            
-            rows_group = VGroup()
-            for idx, (word, prob) in enumerate(candidates):
-                color = YELLOW if idx == active_idx else WHITE
-                word_txt = create_text(f'"{word}"', font_size=9, color=color)
-                prob_txt = create_text(f"{prob:.3f}", font_size=9, color=color)
-                row = VGroup(word_txt, prob_txt).arrange(RIGHT, buff=0.8)
-                
-                if idx == active_idx:
-                    row_bg = RoundedRectangle(width=3.2, height=0.35, color=YELLOW, fill_color=YELLOW, fill_opacity=0.15, stroke_width=1, corner_radius=0.04)
-                    row_bg.move_to(row.get_center())
-                    row = VGroup(row_bg, row)
-                rows_group.add(row)
-            
-            rows_group.arrange(DOWN, buff=0.15, aligned_edge=LEFT)
-            sidebar_group.add(rows_group)
-            sidebar_group.arrange(DOWN, buff=0.3, aligned_edge=LEFT)
-            sidebar_group.move_to(np.array([4.2, 0.5, 0]))
-            return sidebar_group
+        self.wait_until(cue_start[9] + 0.25)
+        keep = labeled_box("Keep top K branches", 3.3, color=YELLOW, fill="#211e11", font_size=18)
+        expand = labeled_box("Expand them", 2.4, color=BLUE_B, fill="#111a25", font_size=18)
+        arrow = Arrow(keep.get_right(), expand.get_left(), buff=0.25, color=GRAY_A)
+        beam_loop = VGroup(keep, arrow, expand).arrange(RIGHT, buff=0.55).move_to(ORIGIN)
+        beam_loop_label = create_text("Beam size K controls the number of active branches", font_size=21, color=GRAY_A)
+        beam_loop_label.next_to(beam_loop, DOWN, buff=0.45)
+        content = self.replace_content(content, VGroup(beam_loop, beam_loop_label))
 
-        step1_cands = [("an", 0.80), ("a", 0.13), ("the", 0.06), ("to", 0.0004)]
-        sb1 = get_sidebar("Prediction Step 1 (t=1)", step1_cands, active_idx=0)
-        self.play(FadeIn(sb1), run_time=0.8)
-        self.wait(2.7)
+        self.wait_until(cue_start[10] + 0.25)
+        step1_rows = VGroup(
+            create_text('Step 1, K = 2', font_size=24, color=YELLOW),
+            create_text('"an"   0.80   keep', font_size=21, color=YELLOW),
+            create_text('"a"    0.13   keep', font_size=21, color=YELLOW),
+            create_text('"the"  0.06   prune', font_size=21, color=GRAY_B),
+            create_text('"to"   0.0004 prune', font_size=21, color=GRAY_B),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.22).move_to(ORIGIN)
+        content = self.replace_content(content, step1_rows)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        an_box = RoundedRectangle(width=0.6, height=0.4, color=GRAY_B, fill_color="#202022", fill_opacity=0.9, corner_radius=0.04)
-        an_box.move_to(np.array([-2.0, 0.0, 0]))
-        an_txt = create_text("an", font_size=9, color=WHITE)
-        an_txt.move_to(an_box.get_center())
-        an_prob = create_text("0.80", font_size=8, color=GRAY_A).next_to(an_box, RIGHT, buff=0.1)
-        an_node = VGroup(an_box, an_txt, an_prob)
-        line_root_an = Line(root_box.get_bottom(), an_box.get_top(), color=GRAY_C, stroke_width=1.5)
+        self.wait_until(cue_start[11] + 0.25)
+        step2_rows = VGroup(
+            create_text("Step 2 cumulative scores", font_size=24, color=YELLOW),
+            create_text('"a singer"       0.117', font_size=21, color=GREEN_A),
+            create_text('"a songwriter"   0.104', font_size=21, color=GREEN_A),
+            create_text('"an American"    0.016', font_size=21, color=RED_A),
+            create_text('"an artist"      0.008', font_size=21, color=RED_A),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.22).move_to(ORIGIN)
+        content = self.replace_content(content, step2_rows)
 
-        self.play(
-            Create(line_root_an),
-            FadeIn(an_node, shift=DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
+        self.wait_until(cue_start[12] + 0.25)
+        keep_rows = VGroup(
+            create_text('Keep: "a singer" and "a songwriter"', font_size=24, color=GREEN_A),
+            create_text('Prune: "an American"', font_size=24, color=RED_A),
+            create_text("The branch that started with the greedy token is removed", font_size=21, color=GRAY_A),
+        ).arrange(DOWN, buff=0.35).move_to(ORIGIN)
+        content = self.replace_content(content, keep_rows)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        step2_cands = [("American", 0.02), ("artist", 0.01)]
-        sb2 = get_sidebar("Prediction Step 2 (t=2)", step2_cands, active_idx=0)
-        
-        self.play(
-            FadeOut(sb1),
-            FadeIn(sb2),
-            run_time=0.8
-        )
-        self.wait(2.7)
+        self.wait_until(cue_start[13] + 0.25)
+        k1_note = VGroup(
+            create_text("When K = 1", font_size=30, color=YELLOW),
+            create_text("Beam search is exactly greedy decoding", font_size=24, color=WHITE),
+        ).arrange(DOWN, buff=0.35).move_to(ORIGIN)
+        content = self.replace_content(content, k1_note)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        american_box = RoundedRectangle(width=1.3, height=0.4, color=BLUE_C, fill_color="#0f1b2b", fill_opacity=0.9, corner_radius=0.04)
-        american_box.move_to(np.array([-3.2, -1.0, 0]))
-        american_txt = create_text("American", font_size=8, color=WHITE)
-        american_txt.move_to(american_box.get_center())
-        american_prob = create_text("0.02", font_size=8, color=BLUE_A).next_to(american_box, LEFT, buff=0.05)
-        american_node = VGroup(american_box, american_txt, american_prob)
-        line_an_american = Line(an_box.get_bottom(), american_box.get_top(), color=BLUE_D, stroke_width=2.5)
+        # 014-018: Closing comparison.
+        self.wait_until(cue_start[14] + 0.2)
+        greedy_summary = VGroup(
+            create_text("Greedy decoding", font_size=28, color=BLUE_A),
+            create_text("Local choice: best token right now", font_size=24, color=WHITE),
+        ).arrange(DOWN, buff=0.35).move_to(ORIGIN)
+        content = self.replace_content(content, greedy_summary)
 
-        self.play(
-            Create(line_an_american),
-            FadeIn(american_node, shift=LEFT * 0.1 + DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
+        self.wait_until(cue_start[15] + 0.25)
+        greedy_tradeoff = VGroup(
+            create_text("Simple and cheap", font_size=26, color=BLUE_A),
+            create_text("But not guaranteed globally optimal", font_size=24, color=RED_A),
+            create_text("A better sequence may begin with a weaker first token", font_size=21, color=GRAY_A),
+        ).arrange(DOWN, buff=0.32).move_to(ORIGIN)
+        content = self.replace_content(content, greedy_tradeoff)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        step3_cands = [("singer", 0.05), ("songwriter", 0.01)]
-        sb3 = get_sidebar("Prediction Step 3 (t=3)", step3_cands, active_idx=0)
+        self.wait_until(cue_start[16] + 0.2)
+        search_scale = VGroup(
+            labeled_box("Greedy", 1.9, color=BLUE_B, fill="#111a25", font_size=18),
+            labeled_box("Beam search", 2.6, color=YELLOW, fill="#211e11", font_size=18),
+            labeled_box("Exhaustive", 2.3, color=RED_B, fill="#281719", font_size=18),
+        ).arrange(RIGHT, buff=0.45).move_to(ORIGIN)
+        search_label = create_text("Beam search sits between greedy and exhaustive search", font_size=22, color=GRAY_A)
+        search_label.next_to(search_scale, DOWN, buff=0.45)
+        content = self.replace_content(content, VGroup(search_scale, search_label))
 
-        self.play(
-            FadeOut(sb2),
-            FadeIn(sb3),
-            run_time=0.8
-        )
-        self.wait(2.7)
+        self.wait_until(cue_start[17] + 0.25)
+        exhaustive_note = VGroup(
+            create_text("Exhaustive search expands too many possibilities", font_size=25, color=RED_A),
+            create_text("Language-model vocabularies can have tens or hundreds of thousands of tokens", font_size=20, color=GRAY_A),
+        ).arrange(DOWN, buff=0.4).move_to(ORIGIN)
+        content = self.replace_content(content, exhaustive_note)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        singer_box = RoundedRectangle(width=0.9, height=0.4, color=BLUE_C, fill_color="#0f1b2b", fill_opacity=0.9, corner_radius=0.04)
-        singer_box.move_to(np.array([-3.2, -2.0, 0]))
-        singer_txt = create_text("singer", font_size=9, color=WHITE)
-        singer_txt.move_to(singer_box.get_center())
-        singer_prob = create_text("0.05", font_size=8, color=BLUE_A).next_to(singer_box, LEFT, buff=0.05)
-        singer_node = VGroup(singer_box, singer_txt, singer_prob)
-        line_american_singer = Line(american_box.get_bottom(), singer_box.get_top(), color=BLUE_D, stroke_width=2.5)
+        self.wait_until(cue_start[18] + 0.25)
+        final_note = VGroup(
+            create_text("Beam search keeps a finite beam", font_size=28, color=YELLOW),
+            create_text("More branches than greedy, with cost controlled by K", font_size=23, color=WHITE),
+        ).arrange(DOWN, buff=0.35).move_to(ORIGIN)
+        content = self.replace_content(content, final_note)
 
-        self.play(
-            Create(line_american_singer),
-            FadeIn(singer_node, shift=DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        step4_cands = [("<eos>", 1.0), ("and", 0.0)]
-        sb4 = get_sidebar("Prediction Step 4 (t=4)", step4_cands, active_idx=0)
-
-        self.play(
-            FadeOut(sb3),
-            FadeIn(sb4),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        eos_box = RoundedRectangle(width=0.8, height=0.4, color=BLUE_C, fill_color="#0f1b2b", fill_opacity=0.9, corner_radius=0.04)
-        eos_box.move_to(np.array([-3.2, -3.0, 0]))
-        eos_txt = create_text("<eos>", font_size=9, color=WHITE)
-        eos_txt.move_to(eos_box.get_center())
-        eos_prob = create_text("1.0", font_size=8, color=BLUE_A).next_to(eos_box, LEFT, buff=0.05)
-        eos_node = VGroup(eos_box, eos_txt, eos_prob)
-        line_singer_eos = Line(singer_box.get_bottom(), eos_box.get_top(), color=BLUE_D, stroke_width=2.5)
-
-        self.play(
-            Create(line_singer_eos),
-            FadeIn(eos_node, shift=DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        greedy_cum_label = create_markup_text(
-            "<span color='#ff6b6b'><i>p</i><sub>cum</sub> = 8.00 × 10<sup>-4</sup></span>",
-            font_size=12
-        )
-        greedy_cum_label.next_to(eos_box, DOWN, buff=0.15)
-        greedy_bad_txt = create_text("Shortsighted (Shortsighted)", font_size=10, color="#ff6b6b")
-        greedy_bad_txt.next_to(greedy_cum_label, DOWN, buff=0.08)
-        greedy_bad_group = VGroup(greedy_cum_label, greedy_bad_txt)
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        greedy_bad_bg = RoundedRectangle(
-            width=greedy_bad_group.get_width() + 0.3,
-            height=greedy_bad_group.get_height() + 0.15,
-            color=RED_E, fill_color="#2c1618", fill_opacity=0.85,
-            corner_radius=0.05, stroke_width=1.5
-        )
-        greedy_bad_bg.move_to(greedy_bad_group.get_center())
-        greedy_bad_group = VGroup(greedy_bad_bg, greedy_cum_label, greedy_bad_txt)
-
-        self.play(
-            FadeIn(greedy_bad_group, shift=UP * 0.1),
-            run_time=0.8
-        )
-        self.wait(3.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(FadeOut(sb4), run_time=0.4)
-        
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        a_box = RoundedRectangle(width=0.6, height=0.4, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-        a_box.move_to(np.array([-0.8, 0.0, 0]))
-        a_txt = create_text("a", font_size=9, color=WHITE)
-        a_txt.move_to(a_box.get_center())
-        a_prob = create_text("0.13", font_size=8, color=GRAY_A).next_to(a_box, RIGHT, buff=0.05)
-        a_node = VGroup(a_box, a_txt, a_prob)
-        line_root_a = Line(root_box.get_bottom(), a_box.get_top(), color=GRAY_C, stroke_width=1.5)
-
-        self.play(
-            Create(line_root_a),
-            FadeIn(a_node, shift=RIGHT * 0.1 + DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        singer_non_box = RoundedRectangle(width=0.9, height=0.4, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-        singer_non_box.move_to(np.array([-0.8, -1.0, 0]))
-        singer_non_txt = create_text("singer", font_size=9, color=WHITE)
-        singer_non_txt.move_to(singer_non_box.get_center())
-        singer_non_prob = create_text("0.90", font_size=8, color=GRAY_A).next_to(singer_non_box, RIGHT, buff=0.05)
-        singer_non_node = VGroup(singer_non_box, singer_non_txt, singer_non_prob)
-        line_a_singer_non = Line(a_box.get_bottom(), singer_non_box.get_top(), color=GRAY_C, stroke_width=1.5)
-
-        self.play(
-            Create(line_a_singer_non),
-            FadeIn(singer_non_node, shift=RIGHT * 0.1 + DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        comma_box = RoundedRectangle(width=0.5, height=0.4, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-        comma_box.move_to(np.array([-0.8, -2.0, 0]))
-        comma_txt = create_text(",", font_size=9, color=WHITE)
-        comma_txt.move_to(comma_box.get_center())
-        comma_prob = create_text("0.26", font_size=8, color=GRAY_A).next_to(comma_box, RIGHT, buff=0.05)
-        comma_node = VGroup(comma_box, comma_txt, comma_prob)
-        line_singer_comma = Line(singer_non_box.get_bottom(), comma_box.get_top(), color=GRAY_C, stroke_width=1.5)
-
-        self.play(
-            Create(line_singer_comma),
-            FadeIn(comma_node, shift=DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        songwriter_box = RoundedRectangle(width=1.3, height=0.4, color=GREEN_C, fill_color="#0e2316", fill_opacity=0.9, corner_radius=0.04)
-        songwriter_box.move_to(np.array([-0.8, -3.0, 0]))
-        songwriter_txt = create_text("songwriter", font_size=8, color=WHITE)
-        songwriter_txt.move_to(songwriter_box.get_center())
-        songwriter_prob = create_text("0.80", font_size=8, color=GREEN_A).next_to(songwriter_box, RIGHT, buff=0.05)
-        songwriter_node = VGroup(songwriter_box, songwriter_txt, songwriter_prob)
-        line_comma_songwriter = Line(comma_box.get_bottom(), songwriter_box.get_top(), color=GREEN_D, stroke_width=2.5)
-
-        self.play(
-            Create(line_comma_songwriter),
-            FadeIn(songwriter_node, shift=DOWN * 0.1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        nongreedy_cum_label = create_markup_text(
-            "<span color='#2ecc71'><i>p</i><sub>cum</sub> = 2.43 × 10<sup>-2</sup></span>",
-            font_size=12
-        )
-        nongreedy_cum_label.next_to(songwriter_box, DOWN, buff=0.15)
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        nongreedy_cum_bg = RoundedRectangle(
-            width=nongreedy_cum_label.get_width() + 0.3,
-            height=nongreedy_cum_label.get_height() + 0.15,
-            color=GREEN_E, fill_color="#0e2316", fill_opacity=0.85,
-            corner_radius=0.05, stroke_width=1.5
-        )
-        nongreedy_cum_bg.move_to(nongreedy_cum_label.get_center())
-        
-        self.play(
-            FadeIn(nongreedy_cum_bg),
-            Write(nongreedy_cum_label),
-            run_time=0.8
-        )
-        self.wait(3.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        vs_label = create_text("30x higher!", font_size=14, color="#2ecc71")
-        vs_label.move_to(np.array([4.0, -0.5, 0]))
-        vs_label_bg = RoundedRectangle(
-            width=vs_label.get_width() + 0.4,
-            height=vs_label.get_height() + 0.25,
-            color=GREEN, fill_color="#0e2316", fill_opacity=0.9,
-            corner_radius=0.06, stroke_width=2
-        )
-        vs_label_bg.move_to(vs_label.get_center())
-        vs_label = VGroup(vs_label_bg, vs_label)
-        
-        self.play(
-            Write(vs_label),
-            nongreedy_cum_label.animate.scale(1.2),
-            songwriter_box.animate.set_color(GREEN).set_stroke(width=3),
-            an_box.animate.set_color(RED).set_stroke(width=2),
-            american_box.animate.set_color(RED_D),
-            singer_box.animate.set_color(RED_D),
-            eos_box.animate.set_color(RED_D),
-            run_time=1.2
-        )
-        self.wait(5.5)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(greedy_header),
-            FadeOut(greedy_formula_group),
-            FadeOut(divider_line),
-            FadeOut(root_node),
-            FadeOut(line_root_an),
-            FadeOut(an_node),
-            FadeOut(line_an_american),
-            FadeOut(american_node),
-            FadeOut(line_american_singer),
-            FadeOut(singer_node),
-            FadeOut(line_singer_eos),
-            FadeOut(eos_node),
-            FadeOut(greedy_bad_group),
-            FadeOut(line_root_a),
-            FadeOut(a_node),
-            FadeOut(line_a_singer_non),
-            FadeOut(singer_non_node),
-            FadeOut(line_singer_comma),
-            FadeOut(comma_node),
-            FadeOut(line_comma_songwriter),
-            FadeOut(songwriter_node),
-            FadeOut(nongreedy_cum_label),
-            FadeOut(nongreedy_cum_bg),
-            FadeOut(vs_label),
-            run_time=1.2
-        )
-        self.wait(1.5)
-
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        beam_header = create_text("2. Beam Search (Beam Search, K = 2)", font_size=13, color=YELLOW)
-        beam_header.next_to(sub_title, DOWN, buff=0.3)
-        self.play(Write(beam_header), run_time=0.8)
-
-        # Divider line
-        divider_line_bs = Line(np.array([1.5, 1.2, 0]), np.array([1.5, -3.2, 0]), color=GRAY, stroke_width=1.5).set_stroke(opacity=0.4)
-        self.play(Create(divider_line_bs), run_time=0.6)
-
-        # Config box/card at bottom-left
-        config_box = RoundedRectangle(width=4.0, height=1.1, color=BLUE_E, fill_color="#181a1e", fill_opacity=0.85, corner_radius=0.06, stroke_width=1.5)
-        config_box.move_to(np.array([-2.75, -2.6, 0]))
-        
-        lbl_gpt2 = create_text("Configuration: GPT2, beam size 2 (K = 2)", font_size=9, color=BLUE_A)
-        lbl_bfs = create_text("Algorithm: width-limited BFS", font_size=9, color=BLUE_A)
-        lbl_greedy_note = create_text("Note: Beam size 1 is Greedy decoding", font_size=8, color=GRAY_A)
-        
-        config_texts = VGroup(lbl_gpt2, lbl_bfs, lbl_greedy_note).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
-        config_texts.move_to(config_box.get_center())
-        config_group = VGroup(config_box, config_texts)
-        
-        self.play(FadeIn(config_group, shift=UP * 0.15), run_time=0.8)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        bs_root_box = RoundedRectangle(width=1.8, height=0.4, color=GRAY_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-        bs_root_box.move_to(np.array([-2.75, 2.6, 0]))
-        bs_root_txt = create_text("Taylor Swift is", font_size=9, color=WHITE)
-        bs_root_txt.move_to(bs_root_box.get_center())
-        bs_root_node = VGroup(bs_root_box, bs_root_txt)
-        
-        self.play(FadeIn(bs_root_node, shift=UP * 0.1), run_time=0.8)
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        def get_queue_sidebar(step_title, candidates, active_k=2):
-            sidebar_group = VGroup()
-            title = create_text(step_title, font_size=10, color=YELLOW)
-            sidebar_group.add(title)
-            
-            content_group = VGroup()
-            for idx, (path_name, score) in enumerate(candidates):
-                color = YELLOW if idx < active_k else GRAY_B
-                path_txt = create_text(f'"{path_name}"', font_size=8, color=color)
-                score_txt = create_text(f"{score:.4f}", font_size=8, color=color)
-                row = VGroup(path_txt, score_txt).arrange(RIGHT, buff=0.4)
-                
-                # Note: visual/narration alignment comment translated from Vietnamese.
-                if idx < active_k:
-                    row_bg = RoundedRectangle(width=3.4, height=0.35, color=YELLOW, fill_color=YELLOW, fill_opacity=0.08, stroke_width=1, corner_radius=0.04)
-                    row_bg.move_to(row.get_center())
-                    row = VGroup(row_bg, row)
-                
-                # Note: visual/narration alignment comment translated from Vietnamese.
-                if idx == active_k:
-                    prune_line = Line(LEFT * 1.7, RIGHT * 1.7, color=RED, stroke_width=1.5).set_stroke(opacity=0.7)
-                    prune_lbl = create_text("Pruned (Pruned) > K", font_size=7, color=RED)
-                    prune_lbl.next_to(prune_line, RIGHT, buff=0.1)
-                    prune_group = VGroup(prune_line, prune_lbl)
-                    content_group.add(prune_group)
-                
-                content_group.add(row)
-            
-            content_group.arrange(DOWN, aligned_edge=LEFT, buff=0.15)
-            content_group.next_to(title, DOWN, buff=0.3)
-            sidebar_group.add(content_group)
-            sidebar_group.move_to(np.array([4.2, -0.6, 0]))
-            return sidebar_group
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        bs_nodes_t1 = []
-        bs_lines_t1 = []
-        labels_t1 = ["an", "a", "the", "to"]
-        probs_t1 = [0.80, 0.13, 0.06, 0.0004]
-        x_coords_t1 = [-5.0, -3.5, -2.0, -0.5]
-        
-        for idx, (label, p, x_val) in enumerate(zip(labels_t1, probs_t1, x_coords_t1)):
-            color = YELLOW if idx < 2 else GRAY_C
-            box = RoundedRectangle(width=0.6 if len(label)<3 else 0.8, height=0.4, color=color, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-            box.move_to(np.array([x_val, 1.2, 0]))
-            txt = create_text(label, font_size=9, color=WHITE)
-            txt.move_to(box.get_center())
-            p_lbl = create_text(f"{p}", font_size=8, color=color).next_to(box, DOWN, buff=0.05)
-            
-            node_grp = VGroup(box, txt, p_lbl)
-            line = Line(bs_root_box.get_bottom(), box.get_top(), color=color, stroke_width=2.5 if idx<2 else 1.5)
-            
-            bs_nodes_t1.append(node_grp)
-            bs_lines_t1.append(line)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        bs_q1 = get_queue_sidebar("Queue Step 1 (t=1)", [("an", 0.80), ("a", 0.13), ("the", 0.06), ("to", 0.0004)])
-        
-        self.play(
-            LaggedStart(*[Create(l) for l in bs_lines_t1], lag_ratio=0.1),
-            LaggedStart(*[FadeIn(n, shift=DOWN*0.1) for n in bs_nodes_t1], lag_ratio=0.1),
-            FadeIn(bs_q1),
-            run_time=1.5
-        )
-        self.wait(3.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        beam_box_1 = RoundedRectangle(
-            width=2.5, 
-            height=1.0, 
-            color=YELLOW, 
-            fill_color=YELLOW, 
-            fill_opacity=0.05, 
-            stroke_width=2, 
-            corner_radius=0.08
-        )
-        beam_box_1.move_to(np.array([-4.25, 1.05, 0]))
-        lbl_beam_1 = create_text("Beam K=2", font_size=8, color=YELLOW).next_to(beam_box_1, UP, buff=0.05)
-
-        self.play(
-            Create(beam_box_1),
-            Write(lbl_beam_1),
-            run_time=0.8
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            bs_nodes_t1[2].animate.set_opacity(0.15),
-            bs_nodes_t1[3].animate.set_opacity(0.15),
-            bs_lines_t1[2].animate.set_opacity(0.15),
-            bs_lines_t1[3].animate.set_opacity(0.15),
-            run_time=0.8
-        )
-        self.wait(3.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # 1. "an" -> "American" (0.80*0.02 = 0.016), "artist" (0.80*0.01 = 0.008)
-        # 2. "a" -> "singer" (0.13*0.90 = 0.117), "songwriter" (0.13*0.80 = 0.104)
-        bs_nodes_t2 = []
-        bs_lines_t2 = []
-        labels_t2 = [("American", 0.02, 0.016), ("artist", 0.01, 0.008), ("singer", 0.90, 0.117), ("songwriter", 0.80, 0.104)]
-        x_coords_t2 = [-5.75, -4.55, -3.35, -2.15]
-        parent_indices = [0, 0, 1, 1] # Note: visual/narration alignment comment translated from Vietnamese.
-
-        for idx, ((lbl, p_trans, p_cum), x_val, p_idx) in enumerate(zip(labels_t2, x_coords_t2, parent_indices)):
-            color = YELLOW if idx >= 2 else GRAY_C  # Note: visual/narration alignment comment translated from Vietnamese.
-            box = RoundedRectangle(width=0.8 if len(lbl)<6 else 1.1, height=0.4, color=color, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-            box.move_to(np.array([x_val, -0.2, 0]))
-            txt = create_text(lbl, font_size=8, color=WHITE)
-            txt.move_to(box.get_center())
-            p_lbl = create_markup_text(f"<i>p</i><sub>cum</sub> = {p_cum:.3f}", font_size=7, color=color).next_to(box, DOWN, buff=0.05)
-            
-            node_grp = VGroup(box, txt, p_lbl)
-            line = Line(bs_nodes_t1[p_idx][0].get_bottom(), box.get_top(), color=color, stroke_width=2.0 if idx>=2 else 1.2)
-            
-            bs_nodes_t2.append(node_grp)
-            bs_lines_t2.append(line)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        bs_q2 = get_queue_sidebar(
-            "Queue Step 2 (t=2)", 
-            [("a singer", 0.1170), ("a songwriter", 0.1040), ("an American", 0.0160), ("an artist", 0.0080)]
-        )
-
-        self.play(
-            FadeOut(bs_q1),
-            FadeIn(bs_q2),
-            LaggedStart(*[Create(l) for l in bs_lines_t2], lag_ratio=0.08),
-            LaggedStart(*[FadeIn(n, shift=DOWN*0.1) for n in bs_nodes_t2], lag_ratio=0.08),
-            run_time=1.5
-        )
-        self.wait(4.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        beam_box_2 = RoundedRectangle(
-            width=2.6, 
-            height=1.1, 
-            color=YELLOW, 
-            fill_color=YELLOW, 
-            fill_opacity=0.05, 
-            stroke_width=2, 
-            corner_radius=0.08
-        )
-        beam_box_2.move_to(np.array([-2.75, -0.35, 0]))
-
-        self.play(
-            ReplacementTransform(beam_box_1, beam_box_2),
-            lbl_beam_1.animate.next_to(beam_box_2, UP, buff=0.05),
-            run_time=1.0
-        )
-        self.wait(2.7)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            bs_nodes_t2[0].animate.set_opacity(0.15),
-            bs_nodes_t2[1].animate.set_opacity(0.15),
-            bs_lines_t2[0].animate.set_opacity(0.15),
-            bs_lines_t2[1].animate.set_opacity(0.15),
-            bs_nodes_t1[0].animate.set_opacity(0.15), # Note: visual/narration alignment comment translated from Vietnamese.
-            bs_lines_t1[0].animate.set_opacity(0.15),
-            run_time=0.8
-        )
-        self.wait(3.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            bs_nodes_t2[2][0].animate.set_color(GREEN).set_stroke(width=3),
-            bs_nodes_t2[3][0].animate.set_color(GREEN).set_stroke(width=3),
-            bs_nodes_t1[1][0].animate.set_color(GREEN).set_stroke(width=2.5),
-            bs_lines_t2[2].animate.set_color(GREEN).set_stroke(width=3.5),
-            bs_lines_t2[3].animate.set_color(GREEN).set_stroke(width=3.5),
-            bs_lines_t1[1].animate.set_color(GREEN).set_stroke(width=3.5),
-            run_time=1.2
-        )
-        self.wait(2.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        prune_explain = create_text("Beam K=2 changes direction, removing the 'an' branch (greedy choice is pruned!)", font_size=10, color=GREEN_A)
-        prune_explain.next_to(beam_box_2, DOWN, buff=0.45).shift(LEFT * 0.2)
-        
-        self.play(
-            FadeIn(prune_explain, shift=UP * 0.15),
-            run_time=0.8
-        )
-        self.wait(6.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(beam_header),
-            FadeOut(divider_line_bs),
-            FadeOut(bs_root_node),
-            FadeOut(bs_nodes_t1[0]), FadeOut(bs_nodes_t1[1]), FadeOut(bs_nodes_t1[2]), FadeOut(bs_nodes_t1[3]),
-            FadeOut(bs_lines_t1[0]), FadeOut(bs_lines_t1[1]), FadeOut(bs_lines_t1[2]), FadeOut(bs_lines_t1[3]),
-            FadeOut(beam_box_2),
-            FadeOut(lbl_beam_1),
-            FadeOut(bs_nodes_t2[0]), FadeOut(bs_nodes_t2[1]), FadeOut(bs_nodes_t2[2]), FadeOut(bs_nodes_t2[3]),
-            FadeOut(bs_lines_t2[0]), FadeOut(bs_lines_t2[1]), FadeOut(bs_lines_t2[2]), FadeOut(bs_lines_t2[3]),
-            FadeOut(bs_q2),
-            FadeOut(prune_explain),
-            FadeOut(config_group),
-            run_time=1.2
-        )
-        self.wait(1.5)
-
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        summary_title = create_text("Beam Search Rule Summary", font_size=16, color=BLUE_B)
-        summary_title.to_edge(UP, buff=1.0)
-        
-        rule_1 = create_markup_text("• When <color color='#e67e22'>K = 1</color>: Beam Search becomes <b>Greedy Decoding (Greedy)</b>", font_size=12)
-        rule_2 = create_markup_text("• When <color color='#2ecc71'>K increases</color>: Increase accuracy (MAP), expand the search space", font_size=12)
-        rule_3 = create_markup_text("• <color color='#e74c3c'>Hardware cost</color>: Computational complexity increases <b>linearly with K</b>", font_size=12)
-        
-        rules_group = VGroup(rule_1, rule_2, rule_3).arrange(DOWN, aligned_edge=LEFT, buff=0.45)
-        rules_group.move_to(ORIGIN)
-
-        self.play(Write(summary_title), run_time=0.8)
-        self.wait(2.7)
-        
-        for rule in rules_group:
-            self.play(FadeIn(rule, shift=RIGHT * 0.2), run_time=0.8)
-            self.wait(4.0)
-
-        self.wait(4.5)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(summary_title),
-            FadeOut(rules_group),
-            FadeOut(sub_title),
-            run_time=1.2
-        )
-        self.wait(2.7)
-        finish_voiceovers(self, voiceover_end)
+        self.wait_until(voiceover_end + 0.35)
+        self.play(FadeOut(content), FadeOut(header), run_time=0.8)

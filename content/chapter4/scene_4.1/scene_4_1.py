@@ -3,28 +3,79 @@ import tempfile
 from pathlib import Path
 import random
 from manim import *
+import numpy as np
 
-# Note: visual/narration alignment comment translated from Vietnamese.
 config.text_dir = os.path.join(tempfile.gettempdir(), "manim_text")
 config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
-VOICEOVER_DIR = Path(__file__).resolve().parents[2] / "voiceover" / "generated_unsorted"
+VOICEOVER_DIR = Path(__file__).resolve().parents[3] / "voiceover" / "generated_sentence_level"
+
+SCENE_4_1_DURATIONS = {
+    "sc41_001.mp3": 3.158,
+    "sc41_002.mp3": 8.173,
+    "sc41_003.mp3": 3.065,
+    "sc41_004.mp3": 6.362,
+    "sc41_005.mp3": 6.177,
+    "sc41_006.mp3": 12.028,
+    "sc41_007.mp3": 7.105,
+    "sc41_008.mp3": 5.944,
+    "sc41_009.mp3": 13.746,
+    "sc41_010.mp3": 9.195,
+    "sc41_011.mp3": 20.759,
+    "sc41_012.mp3": 5.016,
+    "sc41_013.mp3": 5.944,
+    "sc41_014.mp3": 4.458,
+    "sc41_015.mp3": 4.319,
+    "sc41_016.mp3": 5.062,
+    "sc41_017.mp3": 4.365,
+    "sc41_018.mp3": 8.266,
+    "sc41_019.mp3": 5.294,
+    "sc41_020.mp3": 9.427,
+}
+SCENE_4_1_VOICEOVERS = tuple(SCENE_4_1_DURATIONS)
+
+
+def validate_scene_voiceover_files():
+    available = sorted(path.name for path in VOICEOVER_DIR.glob("sc41_*.mp3"))
+    expected = sorted(SCENE_4_1_VOICEOVERS)
+    if available != expected:
+        missing = sorted(set(expected) - set(available))
+        extra = sorted(set(available) - set(expected))
+        raise FileNotFoundError(
+            f"Scene 4.1 voiceover mismatch. Missing: {missing or 'none'}; extra: {extra or 'none'}"
+        )
 
 
 def add_voiceover(scene, filename, time_offset=0.0, duration=0.0):
+    if filename not in SCENE_4_1_DURATIONS:
+        raise KeyError(f"Unexpected Scene 4.1 voiceover: {filename}")
+    if not (VOICEOVER_DIR / filename).exists():
+        raise FileNotFoundError(f"Missing Scene 4.1 voiceover file: {filename}")
     scene.add_sound(str(VOICEOVER_DIR / filename), time_offset=time_offset)
+    scene.played_voiceovers.append(filename)
     return time_offset + duration
 
 
-def finish_voiceovers(scene, voiceover_end, padding=0.25):
-    current_time = getattr(scene.renderer, "time", 0.0)
-    remaining = voiceover_end + padding - current_time
-    if remaining > 0:
-        scene.wait(remaining)
+def schedule_scene_voiceovers(scene):
+    validate_scene_voiceover_files()
+    scene.played_voiceovers = []
+    voiceover_end = 0.0
+    for filename, duration in SCENE_4_1_DURATIONS.items():
+        voiceover_end = add_voiceover(scene, filename, voiceover_end, duration)
+    return voiceover_end
 
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+def assert_all_scene_voiceovers_played(scene):
+    played = tuple(scene.played_voiceovers)
+    expected = tuple(SCENE_4_1_VOICEOVERS)
+    if played != expected:
+        missing = [filename for filename in expected if filename not in played]
+        raise RuntimeError(
+            f"Scene 4.1 did not schedule every voiceover. Played: {played}; missing: {missing or 'none'}"
+        )
+
+
 def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
     base_size = 48
     scale_factor = font_size / base_size
@@ -32,7 +83,7 @@ def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
     t.scale(scale_factor)
     return t
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
 def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
     base_size = 48
     scale_factor = font_size / base_size
@@ -40,7 +91,7 @@ def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
     t.scale(scale_factor)
     return t
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
 def get_checkmark(color=GREEN, stroke_width=2.5):
     checkmark = VMobject(color=color, stroke_width=stroke_width)
     checkmark.set_points_as_corners([
@@ -50,7 +101,7 @@ def get_checkmark(color=GREEN, stroke_width=2.5):
     ])
     return checkmark
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
 def get_crossmark(color=RED, stroke_width=2.5):
     cross = VGroup()
     line1 = Line(LEFT * 0.12 + UP * 0.12, RIGHT * 0.12 + DOWN * 0.12, color=color, stroke_width=stroke_width)
@@ -60,32 +111,22 @@ def get_crossmark(color=RED, stroke_width=2.5):
 
 
 class Scene4_1(Scene):
+    def wait_until(self, target_time):
+        current_time = getattr(self.renderer, "time", 0.0)
+        if target_time > current_time:
+            self.wait(target_time - current_time)
+
     def construct(self):
-        # Note: visual/narration alignment comment translated from Vietnamese.
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.camera.background_color = "#111111"
+        voiceover_end = schedule_scene_voiceovers(self)
 
-        # Voiceover audio is scheduled from actual MP3 durations.
-        voiceover_end = 0.0
-        voiceover_end = add_voiceover(self, "sc41_1.mp3", voiceover_end, 10.960)
-        voiceover_end = add_voiceover(self, "sc41_2.mp3", voiceover_end, 17.508)
-        voiceover_end = add_voiceover(self, "sc41_3.mp3", voiceover_end, 21.409)
-        voiceover_end = add_voiceover(self, "sc41_4.mp3", voiceover_end, 30.975)
-        voiceover_end = add_voiceover(self, "sc41_5.mp3", voiceover_end, 20.387)
-        voiceover_end = add_voiceover(self, "sc41_6.mp3", voiceover_end, 17.879)
-        voiceover_end = add_voiceover(self, "sc41_7.mp3", voiceover_end, 15.557)
-        voiceover_end = add_voiceover(self, "sc41_8.mp3", voiceover_end, 24.520)
+        cue_start = {}
+        current = 0.0
+        for idx, (filename, duration) in enumerate(SCENE_4_1_DURATIONS.items(), start=1):
+            cue_start[idx] = current
+            current += duration
 
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # Cue 1 (sc41_001): Title screen.
         chapter_title = create_text("Chapter 4: Systems Efficiency", font_size=24, color=YELLOW)
         chapter_sub = create_text("Part 4.1: Hardware Bottlenecks & The Nature of KV Cache", font_size=18, color=GRAY_A)
         chapter_sub.next_to(chapter_title, DOWN, buff=0.15)
@@ -93,9 +134,9 @@ class Scene4_1(Scene):
         chapter_header.move_to(ORIGIN)
 
         self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.2)
-        self.wait(5.0)
+        self.wait_until(cue_start[2])
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # Cue 2 (sc41_002): Transition to sub_title.
         sub_title = create_text("Hardware Bottlenecks & Nature of KV Cache", font_size=15, color=YELLOW)
         sub_title.to_edge(UP, buff=0.4)
         
@@ -103,19 +144,11 @@ class Scene4_1(Scene):
             ReplacementTransform(chapter_header, sub_title),
             run_time=1.2
         )
-        self.wait(3.0)
+        self.wait_until(cue_start[3])
 
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # Cue 3 (sc41_003): Latency vs Throughput introduction (perf_title).
         perf_title = create_markup_text("<b>Latency (Latency) vs. Throughput (Throughput)</b>", font_size=14, color=YELLOW).move_to(UP * 2.0)
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         card_latency = RoundedRectangle(width=4.5, height=2.4, color=BLUE_B, fill_color="#121824", fill_opacity=0.9, corner_radius=0.06)
         card_latency.move_to(LEFT * 2.8 + DOWN * 0.2)
         lbl_latency = create_markup_text(
@@ -126,7 +159,6 @@ class Scene4_1(Scene):
             font_size=8.5, color=WHITE, line_spacing=1.3
         ).move_to(card_latency.get_center())
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         card_throughput = RoundedRectangle(width=4.5, height=2.4, color=GREEN_B, fill_color="#122418", fill_opacity=0.9, corner_radius=0.06)
         card_throughput.move_to(RIGHT * 2.8 + DOWN * 0.2)
         lbl_throughput = create_markup_text(
@@ -137,43 +169,40 @@ class Scene4_1(Scene):
             font_size=8.5, color=WHITE, line_spacing=1.3
         ).move_to(card_throughput.get_center())
 
+        self.play(FadeIn(perf_title), run_time=1.0)
+        self.wait_until(cue_start[4])
+
+        # Cue 4 (sc41_004): Card latency and card throughput appear.
         self.play(
-            FadeIn(perf_title),
             FadeIn(card_latency), Write(lbl_latency),
             FadeIn(card_throughput), Write(lbl_throughput),
             run_time=1.5
         )
-        self.wait(8.0)
+        self.wait_until(cue_start[5])
 
+        # Cue 5 (sc41_005): Latency vs Throughput discussion, then fade out.
+        self.wait_until(cue_start[5] + 2.0)
         self.play(
             FadeOut(perf_title),
             FadeOut(card_latency), FadeOut(lbl_latency),
             FadeOut(card_throughput), FadeOut(lbl_throughput),
             run_time=1.0
         )
-        self.wait(1.0)
+        self.wait_until(cue_start[6])
 
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # Cue 6 (sc41_006): Hardware block diagram intro (intro_text).
         intro_text = create_markup_text(
             "<b>Hardware block diagram &amp; memory bandwidth</b>",
             font_size=14, color=YELLOW
         ).move_to(UP * 2.0)
         self.play(Write(intro_text), run_time=1.5)
-        self.wait(8.0)
+        self.wait_until(cue_start[7])
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # Cue 7 (sc41_007): GPU Core vs VRAM blocks and memory bandwidth bridge.
         gpu_box = RoundedRectangle(width=2.8, height=2.2, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
         gpu_box.move_to(LEFT * 4.0 + DOWN * 0.5)
         gpu_lbl = create_text("GPU COMPUTE CORE\n(GPU Core)", font_size=11, color=ORANGE).next_to(gpu_box, UP, buff=0.15)
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         gpu_cores = VGroup()
         for r in range(4):
             for c in range(4):
@@ -181,12 +210,10 @@ class Scene4_1(Scene):
                 core.move_to(gpu_box.get_center() + RIGHT * (c - 1.5) * 0.45 + UP * (r - 1.5) * 0.4)
                 gpu_cores.add(core)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         vram_box = RoundedRectangle(width=2.8, height=2.2, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
         vram_box.move_to(RIGHT * 4.0 + DOWN * 0.5)
         vram_lbl = create_text("VRAM MEMORY\n(Model weights & KV Cache)", font_size=11, color=BLUE_A).next_to(vram_box, UP, buff=0.15)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         vram_grids = VGroup()
         for r in range(4):
             for c in range(3):
@@ -194,7 +221,6 @@ class Scene4_1(Scene):
                 grid.move_to(vram_box.get_center() + RIGHT * (c - 1.0) * 0.75 + UP * (r - 1.5) * 0.42)
                 vram_grids.add(grid)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         bridge_upper = Line(start=gpu_box.get_right() + UP * 0.3, end=vram_box.get_left() + UP * 0.3, color=GRAY, stroke_width=2.5)
         bridge_lower = Line(start=gpu_box.get_right() + DOWN * 0.3, end=vram_box.get_left() + DOWN * 0.3, color=GRAY, stroke_width=2.5)
         bridge_lbl = create_markup_text(
@@ -209,9 +235,9 @@ class Scene4_1(Scene):
             Create(bridge_upper), Create(bridge_lower), Write(bridge_lbl),
             run_time=2.0
         )
-        self.wait(4.0)
+        self.wait_until(cue_start[8])
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # Cue 8 (sc41_008): NVIDIA H100 GPU specs card appears.
         specs_box = RoundedRectangle(width=8.0, height=1.6, color=GOLD_A, fill_color="#181812", fill_opacity=0.95, corner_radius=0.08)
         specs_box.move_to(DOWN * 2.7)
         specs_title = create_text("NVIDIA H100 SXM GPU specs", font_size=10, color=GOLD_B).next_to(specs_box.get_top(), DOWN, buff=0.12)
@@ -225,23 +251,21 @@ class Scene4_1(Scene):
         specs_group = VGroup(specs_box, specs_title, specs_text)
 
         self.play(FadeIn(specs_group, shift=UP * 0.15), run_time=1.0)
-        self.wait(8.0)
+        self.wait_until(cue_start[9])
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # Cue 9 (sc41_009): NVIDIA H100 GPU specs detail, H100 specs group.
         packets = VGroup()
         for i in range(5):
             packet = RoundedRectangle(width=0.4, height=0.3, color=BLUE_A, fill_color=BLUE, fill_opacity=0.8, corner_radius=0.03)
             packet.move_to(vram_box.get_center())
             packets.add(packet)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.play(
             LaggedStart(
                 *[p.animate(run_time=1.5, rate_func=linear).move_to(gpu_box.get_center()) for p in packets],
                 lag_ratio=0.3
             )
         )
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.play(
             *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.8) for c in gpu_cores]
         )
@@ -249,13 +273,11 @@ class Scene4_1(Scene):
             *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores],
             FadeOut(packets)
         )
-        self.wait(5.0)
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        self.wait_until(cue_start[10] - 0.8)
         self.play(FadeOut(intro_text), FadeOut(specs_group), run_time=0.8)
+        self.wait_until(cue_start[10])
 
+        # Cue 10 (sc41_010): FLOP/byte ratio.
         formula_title = create_text("Arithmetic Intensity (Arithmetic Intensity)", font_size=13, color=GOLD_B).move_to(UP * 2.3)
         formula_box = RoundedRectangle(width=8.2, height=0.55, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
         formula_box.move_to(UP * 1.4)
@@ -271,467 +293,16 @@ class Scene4_1(Scene):
             Write(formula_txt),
             run_time=1.5
         )
-        self.wait(8.0)
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        self.wait_until(cue_start[11] - 0.8)
         self.play(
             FadeOut(formula_title),
             FadeOut(formula_box),
             FadeOut(formula_txt),
             run_time=0.8
         )
+        self.wait_until(cue_start[11])
 
-        time_title = create_text("Execution time of one operation", font_size=13, color=GOLD_B).move_to(UP * 2.3)
-        time_box = RoundedRectangle(width=8.6, height=0.6, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
-        time_box.move_to(UP * 1.4)
-
-        time_txt = create_markup_text(
-            "Time = max ( <span foreground=\"#00FF7F\">GEMM/GEMV FLOPs</span> / <span foreground=\"#00FF7F\">GPU FLOP/s</span> , <span foreground=\"#33AAFF\">Load weights (GB)</span> / <span foreground=\"#33AAFF\">VRAM bandwidth (GB/s)</span> )",
-            font_size=8.5, color=WHITE
-        ).move_to(time_box.get_center())
-
-        self.play(
-            Write(time_title),
-            FadeIn(time_box),
-            Write(time_txt),
-            run_time=1.5
-        )
-        self.wait(10.0)
-
-        self.play(
-            FadeOut(time_title),
-            FadeOut(time_box),
-            FadeOut(time_txt),
-            run_time=0.8
-        )
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        prefill_title = create_text(
-            "Prefill phase (Prompt processing) - Compute-bound",
-            font_size=13, color="#00FFFF", weight=BOLD
-        ).move_to(UP * 2.2)
-
-        prefill_math = create_markup_text(
-            "- Operation: matrix-matrix multiplication (GEMM) : Q × K<sup>T</sup>\n"
-            "- Large prompt length T ⇒ Number of operations O(T · d<sup>2</sup>) much larger than weights O(d<sup>2</sup>)\n"
-            "- <b>extremely high arithmetic intensity</b> ⇒ Limited by GPU compute speed.",
-            font_size=10, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 1.3)
-
-        self.play(
-            Write(prefill_title),
-            Write(prefill_math),
-            run_time=1.5
-        )
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        prefill_packets = VGroup()
-        for i in range(12):
-            p = RoundedRectangle(width=0.35, height=0.25, color=BLUE_A, fill_color=BLUE_B, fill_opacity=0.9, corner_radius=0.03)
-            p.move_to(vram_box.get_center() + np.array([random.uniform(-0.3, 0.3), random.uniform(-0.3, 0.3), 0]))
-            prefill_packets.add(p)
-
-        prefill_anims = []
-        for idx, p in enumerate(prefill_packets):
-            dest_pos = gpu_box.get_center() + np.array([random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), 0])
-            prefill_anims.append(p.animate(run_time=random.uniform(1.0, 1.6), rate_func=linear).move_to(dest_pos))
-
-        gpu_status_lbl = create_text("GPU utilization: 100%\n(Compute bottleneck - Compute-bound)", font_size=10, color=GREEN).next_to(gpu_box, DOWN, buff=0.2)
-
-        self.play(
-            FadeIn(prefill_packets),
-            run_time=0.5
-        )
-        self.play(
-            *[c.animate(run_time=0.3).set_fill(ORANGE, opacity=0.9) for c in gpu_cores]
-        )
-        
-        self.play(
-            *prefill_anims,
-            FadeIn(gpu_status_lbl),
-            run_time=1.8
-        )
-        self.play(
-            FadeOut(prefill_packets),
-            run_time=0.5
-        )
-        self.wait(10.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(prefill_title),
-            FadeOut(prefill_math),
-            FadeOut(gpu_status_lbl),
-            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores],
-            run_time=0.8
-        )
-        self.wait(1.0)
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        decode_title = create_text(
-            "Decode phase (Sequential token generation) - Memory-bound",
-            font_size=13, color="#FF3333", weight=BOLD
-        ).move_to(UP * 2.2)
-
-        decode_math = create_markup_text(
-            "- Operation: matrix-vector multiplication (GEMV) : W × x\n"
-            "- Generate one token at a time (T = 1) ⇒ Compute O(d<sup>2</sup>), memory loading O(d<sup>2</sup>)\n"
-            "- <b>extremely low arithmetic intensity (~1 FLOP/Byte)</b> ⇒ GPU idles while waiting for weights from VRAM.",
-            font_size=10, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 1.3)
-
-        self.play(
-            Write(decode_title),
-            Write(decode_math),
-            run_time=1.5
-        )
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        large_weight_box = RoundedRectangle(width=1.6, height=1.3, color=BLUE_D, fill_color=BLUE_E, fill_opacity=0.9, corner_radius=0.05)
-        large_weight_box.move_to(vram_box.get_center())
-        large_weight_lbl = create_text("Model Weights\n(Tens of GB)", font_size=8, color=WHITE).move_to(large_weight_box.get_center())
-        large_weight = VGroup(large_weight_box, large_weight_lbl)
-
-        token_dot = Dot(color=YELLOW, radius=0.08).move_to(gpu_box.get_center())
-        token_lbl = create_text("1 new token", font_size=8, color=YELLOW).next_to(token_dot, UP, buff=0.1)
-
-        gpu_idle_lbl = create_markup_text(
-            "<span foreground=\"#FF5555\"><b>GPU Idle (95% Idle)</b></span>\n"
-            "Waiting for weights from VRAM...",
-            font_size=9, color=WHITE, line_spacing=1.1
-        ).next_to(gpu_box, DOWN, buff=0.2)
-
-        self.play(
-            FadeIn(large_weight),
-            FadeIn(token_dot), FadeIn(token_lbl),
-            run_time=1.0
-        )
-        self.wait(3.0)
-
-        self.play(
-            FadeOut(token_dot),
-            FadeOut(token_lbl),
-            run_time=0.6
-        )
-        self.wait(0.5)
-
-        self.play(
-            large_weight.animate(run_time=4.0, rate_func=linear).move_to(gpu_box.get_center()),
-            FadeIn(gpu_idle_lbl),
-            *[c.animate(run_time=0.8).set_fill(ORANGE, opacity=0.35) for c in gpu_cores],
-        )
-        self.play(
-            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores]
-        )
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(large_weight),
-            FadeOut(gpu_idle_lbl),
-            FadeOut(decode_title),
-            FadeOut(decode_math),
-            FadeOut(gpu_box), FadeOut(gpu_lbl), FadeOut(gpu_cores),
-            FadeOut(vram_box), FadeOut(vram_lbl), FadeOut(vram_grids),
-            FadeOut(bridge_upper), FadeOut(bridge_lower), FadeOut(bridge_lbl),
-            run_time=1.0
-        )
-        self.wait(1.0)
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        batch_title = create_text("Batching mechanism (Batching) in decoding", font_size=13, color=YELLOW).move_to(UP * 2.5)
-        batch_intro = create_markup_text(
-            "Batching $B$ inputs in parallel allows <b>loading model weights only once</b>,\n"
-            "sharing VRAM weight-loading cost to utilize GPU resources.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(UP * 1.9)
-
-        self.play(
-            Write(batch_title),
-            Write(batch_intro),
-            run_time=1.5
-        )
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        batch_rects = VGroup()
-        batch_lbls = VGroup()
-        for idx in range(4):
-            rect = RoundedRectangle(width=1.8, height=0.5, color=GREEN, fill_color="#122418", fill_opacity=0.9, corner_radius=0.04)
-            rect.move_to(LEFT * 3.3 + DOWN * (0.8 * (1.5 - idx) + 0.4))
-            lbl = create_text(f"Request {idx+1}", font_size=8, color=WHITE).move_to(rect.get_center())
-            batch_rects.add(rect)
-            batch_lbls.add(lbl)
-
-        shared_weight = RoundedRectangle(width=2.5, height=1.6, color=BLUE_B, fill_color="#121824", fill_opacity=0.9, corner_radius=0.06)
-        shared_weight.move_to(RIGHT * 3.0 + DOWN * 0.4)
-        shared_lbl = create_text("Model Weights\n(Load once)", font_size=8, color=BLUE_A).move_to(shared_weight.get_center())
-
-        arrow_group = VGroup()
-        for idx in range(4):
-            arr = Arrow(start=shared_weight.get_left(), end=batch_rects[idx].get_right(), color=GOLD, stroke_width=1.5)
-            arrow_group.add(arr)
-
-        self.play(
-            FadeIn(batch_rects), Write(batch_lbls),
-            FadeIn(shared_weight), Write(shared_lbl),
-            run_time=1.5
-        )
-        self.play(Create(arrow_group), run_time=1.0)
-        self.wait(10.0)
-
-        self.play(
-            FadeOut(batch_title), FadeOut(batch_intro),
-            FadeOut(batch_rects), FadeOut(batch_lbls),
-            FadeOut(shared_weight), FadeOut(shared_lbl),
-            FadeOut(arrow_group),
-            run_time=1.0
-        )
-        self.wait(1.0)
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        kv_title = create_text("How the Key-Value Cache Works (KV Cache)", font_size=13, color=GOLD_B)
-        kv_title.move_to(UP * 2.2)
-        self.play(Write(kv_title), run_time=0.8)
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        no_kv_lbl = create_markup_text(
-            "<span foreground=\"#FF5555\"><b>Case 1: Without KV Cache</b></span>\n"
-            "The model must recompute the Key and Value\n"
-            "for all previous tokens at every new decoding step.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(UP * 1.2)
-        self.play(Write(no_kv_lbl), run_time=1.2)
-        self.wait(8.0)
-
-        tok1 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
-        tok1.move_to(LEFT * 2.2 + DOWN * 0.2)
-        tok1_lbl = create_text("Token 1", font_size=8, color=WHITE).move_to(tok1.get_center())
-
-        tok2 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
-        tok2.move_to(LEFT * 1.1 + DOWN * 0.2)
-        tok2_lbl = create_text("Token 2", font_size=8, color=WHITE).move_to(tok2.get_center())
-
-        tok3 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
-        tok3.move_to(RIGHT * 0.0 + DOWN * 0.2)
-        tok3_lbl = create_text("Token 3", font_size=8, color=WHITE).move_to(tok3.get_center())
-
-        old_tokens = VGroup(tok1, tok1_lbl, tok2, tok2_lbl, tok3, tok3_lbl)
-        self.play(FadeIn(old_tokens), run_time=1.0)
-        self.wait(8.0)
-
-        tok4 = RoundedRectangle(width=0.9, height=0.5, color=YELLOW, fill_color="#2b2614", fill_opacity=0.95, corner_radius=0.04)
-        tok4.move_to(RIGHT * 1.1 + DOWN * 0.2)
-        tok4_lbl = create_text("Token 4", font_size=8, color=YELLOW).move_to(tok4.get_center())
-
-        recompute_arrows = VGroup(
-            Arrow(start=tok1.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.35),
-            Arrow(start=tok2.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.25),
-            Arrow(start=tok3.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.15)
-        )
-        recompute_lbl = create_text("Repeatedly recompute Key-Value from scratch!", font_size=8, color=RED).next_to(recompute_arrows[1], UP, buff=0.1)
-
-        self.play(
-            FadeIn(tok4), Write(tok4_lbl),
-            Create(recompute_arrows), Write(recompute_lbl),
-            run_time=1.5
-        )
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(no_kv_lbl),
-            FadeOut(old_tokens),
-            FadeOut(tok4), FadeOut(tok4_lbl),
-            FadeOut(recompute_arrows), FadeOut(recompute_lbl),
-            run_time=1.0
-        )
-        self.wait(2.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        with_kv_lbl = create_markup_text(
-            "<span foreground=\"#00FF7F\"><b>Case 2: With KV Cache (optimized)</b></span>\n"
-            "Key and Value vectors for old tokens are stored in VRAM.\n"
-            "When a new token arrives, only compute it and append it to the cache.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(UP * 1.3)
-
-        gpu_box = RoundedRectangle(width=2.8, height=2.2, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        gpu_box.move_to(LEFT * 4.0 + DOWN * 0.5)
-        gpu_lbl = create_text("GPU COMPUTE CORE\n(GPU Core)", font_size=11, color=ORANGE).next_to(gpu_box, UP, buff=0.15)
-
-        gpu_cores = VGroup()
-        for r in range(4):
-            for c in range(4):
-                core = Square(side_length=0.25, color=ORANGE, fill_color=ORANGE, fill_opacity=0.2, stroke_width=1)
-                core.move_to(gpu_box.get_center() + RIGHT * (c - 1.5) * 0.45 + UP * (r - 1.5) * 0.4)
-                gpu_cores.add(core)
-
-        vram_box = RoundedRectangle(width=2.8, height=2.2, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        vram_box.move_to(RIGHT * 4.0 + DOWN * 0.5)
-        vram_lbl = create_text("VRAM MEMORY\n(Model weights & KV Cache)", font_size=11, color=BLUE_A).next_to(vram_box, UP, buff=0.15)
-
-        bridge_upper = Line(start=gpu_box.get_right() + UP * 0.3, end=vram_box.get_left() + UP * 0.3, color=GRAY, stroke_width=2.5)
-        bridge_lower = Line(start=gpu_box.get_right() + DOWN * 0.3, end=vram_box.get_left() + DOWN * 0.3, color=GRAY, stroke_width=2.5)
-        bridge_lbl = create_markup_text(
-            "Memory bandwidth\n"
-            "<span foreground=\"#888888\"><b>Memory Bandwidth (GB/s)</b></span>",
-            font_size=9, color=WHITE, line_spacing=1.1
-        ).move_to(DOWN * 0.5)
-
-        self.play(
-            Write(with_kv_lbl),
-            FadeIn(gpu_box), FadeIn(gpu_lbl), FadeIn(gpu_cores),
-            FadeIn(vram_box), FadeIn(vram_lbl),
-            Create(bridge_upper), Create(bridge_lower), FadeIn(bridge_lbl),
-            run_time=1.5
-        )
-        self.wait(6.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        kv_cache_subbox = RoundedRectangle(width=2.5, height=1.4, color=GREEN_C, fill_color="#142b1a", fill_opacity=0.4, corner_radius=0.05)
-        kv_cache_subbox.move_to(RIGHT * 4.0 + DOWN * 0.72)
-        cache_lbl = create_text("KV Cache (VRAM)", font_size=9, color=GREEN, weight=BOLD).next_to(kv_cache_subbox, UP, buff=0.1)
-
-        cache_rows = VGroup()
-        for idx in range(3):
-            row_rect = Rectangle(width=2.2, height=0.22, color=GREEN_E, fill_color=GREEN_E, fill_opacity=0.2, stroke_width=1)
-            row_rect.move_to(RIGHT * 4.0 + DOWN * (0.3 + idx * 0.28))
-            row_lbl = create_text(f"Key-Value Token {idx+1}", font_size=7, color=WHITE).move_to(row_rect.get_center())
-            cache_rows.add(VGroup(row_rect, row_lbl))
-
-        self.play(
-            FadeIn(kv_cache_subbox), Write(cache_lbl),
-            FadeIn(cache_rows),
-            run_time=1.5
-        )
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        tok4_new = RoundedRectangle(width=1.0, height=0.5, color=YELLOW, fill_color="#2b2614", fill_opacity=0.95, corner_radius=0.04)
-        tok4_new.move_to(LEFT * 4.0 + UP * 0.2)
-        tok4_new_lbl = create_text("Token 4", font_size=8, color=YELLOW).move_to(tok4_new.get_center())
-
-        self.play(
-            FadeIn(tok4_new), Write(tok4_new_lbl),
-            *[c.animate(run_time=0.5).set_fill(ORANGE, opacity=0.9) for c in gpu_cores],
-            run_time=1.0
-        )
-        self.play(
-            *[c.animate(run_time=0.5).set_fill(ORANGE, opacity=0.2) for c in gpu_cores]
-        )
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        new_kv_rect = Rectangle(width=2.2, height=0.22, color=YELLOW, fill_color=YELLOW, fill_opacity=0.4, stroke_width=1.5)
-        new_kv_rect.move_to(LEFT * 4.0 + DOWN * 0.3)
-        new_kv_lbl = create_text("Key-Value Token 4", font_size=7, color=YELLOW).move_to(new_kv_rect.get_center())
-        new_kv_group = VGroup(new_kv_rect, new_kv_lbl)
-
-        success_lbl = create_text("Store directly in the cache grid. No need to recompute old tokens.", font_size=8, color=GREEN_B).move_to(DOWN * 1.7)
-
-        self.play(
-            FadeIn(new_kv_group),
-            run_time=0.8
-        )
-        self.wait(2.0)
-        
-        self.play(
-            new_kv_group.animate(run_time=1.8).move_to(RIGHT * 4.0 + DOWN * 1.14).set_color(GREEN_C),
-            FadeIn(success_lbl),
-        )
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(kv_title),
-            FadeOut(with_kv_lbl),
-            FadeOut(kv_cache_subbox), FadeOut(cache_lbl),
-            FadeOut(cache_rows),
-            FadeOut(tok4_new), FadeOut(tok4_new_lbl),
-            FadeOut(new_kv_group), FadeOut(success_lbl),
-            FadeOut(gpu_box), FadeOut(gpu_lbl), FadeOut(gpu_cores),
-            FadeOut(vram_box), FadeOut(vram_lbl),
-            FadeOut(bridge_upper), FadeOut(bridge_lower), FadeOut(bridge_lbl),
-            run_time=1.2
-        )
-        self.wait(2.0)
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        size_title = create_text("KV Cache memory size", font_size=13, color=YELLOW).move_to(UP * 2.2)
-        size_box = RoundedRectangle(width=8.6, height=0.6, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
-        size_box.move_to(UP * 1.4)
-
-        size_txt = create_markup_text(
-            "Size = ( <span foreground=\"#FFC66D\">batch</span> · <span foreground=\"#FFC66D\">n<sub>ctx</sub></span> ) · ( 2 · <span foreground=\"#FF5555\">n<sub>layer</sub></span> · <span foreground=\"#FF5555\">n<sub>heads</sub></span> · <span foreground=\"#FF5555\">head<sub>dim</sub></span> ) · <span foreground=\"#33AAFF\">n<sub>bytes</sub></span>",
-            font_size=8.5, color=WHITE
-        ).move_to(size_box.get_center())
-
-        size_desc = create_markup_text(
-            "• <span foreground=\"#FFC66D\">batch · n<sub>ctx</sub></span> : Scales linearly with batch and context length.\n"
-            "• The remaining factors are fixed by each model architecture.\n"
-            "⇒ The longer the context, the larger the KV Cache, making it the main VRAM bottleneck.",
-            font_size=9.5, color=WHITE, line_spacing=1.3
-        ).move_to(DOWN * 0.4)
-
-        self.play(
-            Write(size_title),
-            FadeIn(size_box),
-            Write(size_txt),
-            Write(size_desc),
-            run_time=1.5
-        )
-        self.wait(10.0)
-
-        self.play(
-            FadeOut(size_title),
-            FadeOut(size_box),
-            FadeOut(size_txt),
-            FadeOut(size_desc),
-            run_time=1.0
-        )
-        self.wait(1.0)
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # Cue 11 (sc41_011): Single decoding step optimization directions.
         opt_title = create_text("Single-token decoding optimization (Single-token optimization)", font_size=13, color=YELLOW).move_to(UP * 2.2)
 
         # Card 1: Memory Bandwidth ↓
@@ -774,8 +345,7 @@ class Scene4_1(Scene):
             FadeIn(card_flop_total), Write(lbl_flop_total),
             run_time=1.8
         )
-        self.wait(12.0)
-
+        self.wait_until(cue_start[12] - 1.0)
         self.play(
             FadeOut(opt_title),
             FadeOut(card_mem), FadeOut(lbl_mem),
@@ -783,11 +353,397 @@ class Scene4_1(Scene):
             FadeOut(card_flop_total), FadeOut(lbl_flop_total),
             run_time=1.0
         )
-        self.wait(1.0)
+        self.wait_until(cue_start[12])
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # Cue 12 (sc41_012): Compute-bound concept.
+        prefill_title = create_text(
+            "Prefill phase (Prompt processing) - Compute-bound",
+            font_size=13, color="#00FFFF", weight=BOLD
+        ).move_to(UP * 2.2)
+
+        prefill_math = create_markup_text(
+            "- Operation: matrix-matrix multiplication (GEMM) : Q × K<sup>T</sup>\n"
+            "- Large prompt length T ⇒ Number of operations O(T · d<sup>2</sup>) much larger than weights O(d<sup>2</sup>)\n"
+            "- <b>extremely high arithmetic intensity</b> ⇒ Limited by GPU compute speed.",
+            font_size=10, color=WHITE, line_spacing=1.3
+        ).move_to(UP * 1.3)
+
+        self.play(
+            Write(prefill_title),
+            Write(prefill_math),
+            run_time=1.5
+        )
+
+        prefill_packets = VGroup()
+        for i in range(12):
+            p = RoundedRectangle(width=0.35, height=0.25, color=BLUE_A, fill_color=BLUE_B, fill_opacity=0.9, corner_radius=0.03)
+            p.move_to(vram_box.get_center() + np.array([random.uniform(-0.3, 0.3), random.uniform(-0.3, 0.3), 0]))
+            prefill_packets.add(p)
+
+        prefill_anims = []
+        for idx, p in enumerate(prefill_packets):
+            dest_pos = gpu_box.get_center() + np.array([random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), 0])
+            prefill_anims.append(p.animate(run_time=random.uniform(1.0, 1.6), rate_func=linear).move_to(dest_pos))
+
+        gpu_status_lbl = create_text("GPU utilization: 100%\n(Compute bottleneck - Compute-bound)", font_size=10, color=GREEN).next_to(gpu_box, DOWN, buff=0.2)
+
+        self.play(
+            FadeIn(prefill_packets),
+            run_time=0.5
+        )
+        self.play(
+            *[c.animate(run_time=0.3).set_fill(ORANGE, opacity=0.9) for c in gpu_cores]
+        )
+        self.play(
+            *prefill_anims,
+            FadeIn(gpu_status_lbl),
+            run_time=1.8
+        )
+        self.play(
+            FadeOut(prefill_packets),
+            run_time=0.5
+        )
+        self.wait_until(cue_start[13] - 0.8)
+        self.play(
+            FadeOut(prefill_title),
+            FadeOut(prefill_math),
+            FadeOut(gpu_status_lbl),
+            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores],
+            run_time=0.8
+        )
+        self.wait_until(cue_start[13])
+
+        # Cue 13 (sc41_013): Memory-bound concept.
+        decode_title = create_text(
+            "Decode phase (Sequential token generation) - Memory-bound",
+            font_size=13, color="#FF3333", weight=BOLD
+        ).move_to(UP * 2.2)
+
+        decode_math = create_markup_text(
+            "- Operation: matrix-vector multiplication (GEMV) : W × x\n"
+            "- Generate one token at a time (T = 1) ⇒ Compute O(d<sup>2</sup>), memory loading O(d<sup>2</sup>)\n"
+            "- <b>extremely low arithmetic intensity (~1 FLOP/Byte)</b> ⇒ GPU idles while waiting for weights from VRAM.",
+            font_size=10, color=WHITE, line_spacing=1.3
+        ).move_to(UP * 1.3)
+
+        self.play(
+            Write(decode_title),
+            Write(decode_math),
+            run_time=1.5
+        )
+
+        large_weight_box = RoundedRectangle(width=1.6, height=1.3, color=BLUE_D, fill_color=BLUE_E, fill_opacity=0.9, corner_radius=0.05)
+        large_weight_box.move_to(vram_box.get_center())
+        large_weight_lbl = create_text("Model Weights\n(Tens of GB)", font_size=8, color=WHITE).move_to(large_weight_box.get_center())
+        large_weight = VGroup(large_weight_box, large_weight_lbl)
+
+        token_dot = Dot(color=YELLOW, radius=0.08).move_to(gpu_box.get_center())
+        token_lbl = create_text("1 new token", font_size=8, color=YELLOW).next_to(token_dot, UP, buff=0.1)
+
+        gpu_idle_lbl = create_markup_text(
+            "<span foreground=\"#FF5555\"><b>GPU Idle (95% Idle)</b></span>\n"
+            "Waiting for weights from VRAM...",
+            font_size=9, color=WHITE, line_spacing=1.1
+        ).next_to(gpu_box, DOWN, buff=0.2)
+
+        self.play(
+            FadeIn(large_weight),
+            FadeIn(token_dot), FadeIn(token_lbl),
+            run_time=1.0
+        )
+        self.wait(1.0)
+        self.play(
+            FadeOut(token_dot),
+            FadeOut(token_lbl),
+            run_time=0.6
+        )
+        self.play(
+            large_weight.animate(run_time=2.0, rate_func=linear).move_to(gpu_box.get_center()),
+            FadeIn(gpu_idle_lbl),
+            *[c.animate(run_time=0.8).set_fill(ORANGE, opacity=0.35) for c in gpu_cores],
+        )
+        self.play(
+            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores]
+        )
+        self.wait_until(cue_start[14] - 1.0)
+        self.play(
+            FadeOut(large_weight),
+            FadeOut(gpu_idle_lbl),
+            FadeOut(decode_title),
+            FadeOut(decode_math),
+            FadeOut(gpu_box), FadeOut(gpu_lbl), FadeOut(gpu_cores),
+            FadeOut(vram_box), FadeOut(vram_lbl), FadeOut(vram_grids),
+            FadeOut(bridge_upper), FadeOut(bridge_lower), FadeOut(bridge_lbl),
+            run_time=1.0
+        )
+        self.wait_until(cue_start[14])
+
+        # Cue 14 (sc41_014): Operation time model (max of compute and memory).
+        time_title = create_text("Execution time of one operation", font_size=13, color=GOLD_B).move_to(UP * 2.3)
+        time_box = RoundedRectangle(width=8.6, height=0.6, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
+        time_box.move_to(UP * 1.4)
+
+        time_txt = create_markup_text(
+            "Time = max ( <span foreground=\"#00FF7F\">GEMM/GEMV FLOPs</span> / <span foreground=\"#00FF7F\">GPU FLOP/s</span> , <span foreground=\"#33AAFF\">Load weights (GB)</span> / <span foreground=\"#33AAFF\">VRAM bandwidth (GB/s)</span> )",
+            font_size=8.5, color=WHITE
+        ).move_to(time_box.get_center())
+
+        self.play(
+            Write(time_title),
+            FadeIn(time_box),
+            Write(time_txt),
+            run_time=1.5
+        )
+        self.wait_until(cue_start[15] - 0.8)
+        self.play(
+            FadeOut(time_title),
+            FadeOut(time_box),
+            FadeOut(time_txt),
+            run_time=0.8
+        )
+        self.wait_until(cue_start[15])
+
+        # Cue 15 (sc41_015): Batching importance.
+        batch_title = create_text("Batching mechanism (Batching) in decoding", font_size=13, color=YELLOW).move_to(UP * 2.5)
+        batch_intro = create_markup_text(
+            "Batching $B$ inputs in parallel allows <b>loading model weights only once</b>,\n"
+            "sharing VRAM weight-loading cost to utilize GPU resources.",
+            font_size=10, color=WHITE, line_spacing=1.2
+        ).move_to(UP * 1.9)
+
+        self.play(
+            Write(batch_title),
+            Write(batch_intro),
+            run_time=1.5
+        )
+        self.wait_until(cue_start[16])
+
+        # Cue 16 (sc41_016): Why load weights once for many inputs.
+        batch_rects = VGroup()
+        batch_lbls = VGroup()
+        for idx in range(4):
+            rect = RoundedRectangle(width=1.8, height=0.5, color=GREEN, fill_color="#122418", fill_opacity=0.9, corner_radius=0.04)
+            rect.move_to(LEFT * 3.3 + DOWN * (0.8 * (1.5 - idx) + 0.4))
+            lbl = create_text(f"Request {idx+1}", font_size=8, color=WHITE).move_to(rect.get_center())
+            batch_rects.add(rect)
+            batch_lbls.add(lbl)
+
+        shared_weight = RoundedRectangle(width=2.5, height=1.6, color=BLUE_B, fill_color="#121824", fill_opacity=0.9, corner_radius=0.06)
+        shared_weight.move_to(RIGHT * 3.0 + DOWN * 0.4)
+        shared_lbl = create_text("Model Weights\n(Load once)", font_size=8, color=BLUE_A).move_to(shared_weight.get_center())
+
+        arrow_group = VGroup()
+        for idx in range(4):
+            arr = Arrow(start=shared_weight.get_left(), end=batch_rects[idx].get_right(), color=GOLD, stroke_width=1.5)
+            arrow_group.add(arr)
+
+        self.play(
+            FadeIn(batch_rects), Write(batch_lbls),
+            FadeIn(shared_weight), Write(shared_lbl),
+            run_time=1.5
+        )
+        self.play(Create(arrow_group), run_time=1.0)
+        self.wait_until(cue_start[17])
+
+        # Cue 17 (sc41_017): Cost-free batching explanation.
+        self.wait_until(cue_start[17] + 2.0)
+        self.play(
+            FadeOut(batch_title), FadeOut(batch_intro),
+            FadeOut(batch_rects), FadeOut(batch_lbls),
+            FadeOut(shared_weight), FadeOut(shared_lbl),
+            FadeOut(arrow_group),
+            run_time=1.0
+        )
+        self.wait_until(cue_start[18])
+
+        # Cue 18 (sc41_018): KV cache introduction.
+        kv_title = create_text("How the Key-Value Cache Works (KV Cache)", font_size=13, color=GOLD_B)
+        kv_title.move_to(UP * 2.2)
+        self.play(Write(kv_title), run_time=0.8)
+
+        no_kv_lbl = create_markup_text(
+            "<span foreground=\"#FF5555\"><b>Case 1: Without KV Cache</b></span>\n"
+            "The model must recompute the Key and Value\n"
+            "for all previous tokens at every new decoding step.",
+            font_size=10, color=WHITE, line_spacing=1.2
+        ).move_to(UP * 1.2)
+        self.play(Write(no_kv_lbl), run_time=1.2)
+
+        tok1 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
+        tok1.move_to(LEFT * 2.2 + DOWN * 0.2)
+        tok1_lbl = create_text("Token 1", font_size=8, color=WHITE).move_to(tok1.get_center())
+
+        tok2 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
+        tok2.move_to(LEFT * 1.1 + DOWN * 0.2)
+        tok2_lbl = create_text("Token 2", font_size=8, color=WHITE).move_to(tok2.get_center())
+
+        tok3 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
+        tok3.move_to(RIGHT * 0.0 + DOWN * 0.2)
+        tok3_lbl = create_text("Token 3", font_size=8, color=WHITE).move_to(tok3.get_center())
+
+        old_tokens = VGroup(tok1, tok1_lbl, tok2, tok2_lbl, tok3, tok3_lbl)
+        self.play(FadeIn(old_tokens), run_time=1.0)
+
+        tok4 = RoundedRectangle(width=0.9, height=0.5, color=YELLOW, fill_color="#2b2614", fill_opacity=0.95, corner_radius=0.04)
+        tok4.move_to(RIGHT * 1.1 + DOWN * 0.2)
+        tok4_lbl = create_text("Token 4", font_size=8, color=YELLOW).move_to(tok4.get_center())
+
+        recompute_arrows = VGroup(
+            Arrow(start=tok1.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.35),
+            Arrow(start=tok2.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.25),
+            Arrow(start=tok3.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.15)
+        )
+        recompute_lbl = create_text("Repeatedly recompute Key-Value from scratch!", font_size=8, color=RED).next_to(recompute_arrows[1], UP, buff=0.1)
+
+        self.play(
+            FadeIn(tok4), Write(tok4_lbl),
+            Create(recompute_arrows), Write(recompute_lbl),
+            run_time=1.5
+        )
+        self.wait_until(cue_start[19] - 1.0)
+        self.play(
+            FadeOut(no_kv_lbl),
+            FadeOut(old_tokens),
+            FadeOut(tok4), FadeOut(tok4_lbl),
+            FadeOut(recompute_arrows), FadeOut(recompute_lbl),
+            run_time=1.0
+        )
+        self.wait_until(cue_start[19])
+
+        # Cue 19 (sc41_019): Prefill vs Decode stages in KV cache.
+        with_kv_lbl = create_markup_text(
+            "<span foreground=\"#00FF7F\"><b>Case 2: With KV Cache (optimized)</b></span>\n"
+            "Key and Value vectors for old tokens are stored in VRAM.\n"
+            "When a new token arrives, only compute it and append it to the cache.",
+            font_size=10, color=WHITE, line_spacing=1.2
+        ).move_to(UP * 1.3)
+
+        gpu_box = RoundedRectangle(width=2.8, height=2.2, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
+        gpu_box.move_to(LEFT * 4.0 + DOWN * 0.5)
+        gpu_lbl = create_text("GPU COMPUTE CORE\n(GPU Core)", font_size=11, color=ORANGE).next_to(gpu_box, UP, buff=0.15)
+
+        gpu_cores = VGroup()
+        for r in range(4):
+            for c in range(4):
+                core = Square(side_length=0.25, color=ORANGE, fill_color=ORANGE, fill_opacity=0.2, stroke_width=1)
+                core.move_to(gpu_box.get_center() + RIGHT * (c - 1.5) * 0.45 + UP * (r - 1.5) * 0.4)
+                gpu_cores.add(core)
+
+        vram_box = RoundedRectangle(width=2.8, height=2.2, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
+        vram_box.move_to(RIGHT * 4.0 + DOWN * 0.5)
+        vram_lbl = create_text("VRAM MEMORY\n(Model weights & KV Cache)", font_size=11, color=BLUE_A).next_to(vram_box, UP, buff=0.15)
+
+        bridge_upper = Line(start=gpu_box.get_right() + UP * 0.3, end=vram_box.get_left() + UP * 0.3, color=GRAY, stroke_width=2.5)
+        bridge_lower = Line(start=gpu_box.get_right() + DOWN * 0.3, end=vram_box.get_left() + DOWN * 0.3, color=GRAY, stroke_width=2.5)
+        bridge_lbl = create_markup_text(
+            "Memory bandwidth\n"
+            "<span foreground=\"#888888\"><b>Memory Bandwidth (GB/s)</b></span>",
+            font_size=9, color=WHITE, line_spacing=1.1
+        ).move_to(DOWN * 0.5)
+
+        self.play(
+            Write(with_kv_lbl),
+            FadeIn(gpu_box), FadeIn(gpu_lbl), FadeIn(gpu_cores),
+            FadeIn(vram_box), FadeIn(vram_lbl),
+            Create(bridge_upper), Create(bridge_lower), FadeIn(bridge_lbl),
+            run_time=1.5
+        )
+
+        kv_cache_subbox = RoundedRectangle(width=2.5, height=1.4, color=GREEN_C, fill_color="#142b1a", fill_opacity=0.4, corner_radius=0.05)
+        kv_cache_subbox.move_to(RIGHT * 4.0 + DOWN * 0.72)
+        cache_lbl = create_text("KV Cache (VRAM)", font_size=9, color=GREEN, weight=BOLD).next_to(kv_cache_subbox, UP, buff=0.1)
+
+        cache_rows = VGroup()
+        for idx in range(3):
+            row_rect = Rectangle(width=2.2, height=0.22, color=GREEN_E, fill_color=GREEN_E, fill_opacity=0.2, stroke_width=1)
+            row_rect.move_to(RIGHT * 4.0 + DOWN * (0.3 + idx * 0.28))
+            row_lbl = create_text(f"Key-Value Token {idx+1}", font_size=7, color=WHITE).move_to(row_rect.get_center())
+            cache_rows.add(VGroup(row_rect, row_lbl))
+
+        self.play(
+            FadeIn(kv_cache_subbox), Write(cache_lbl),
+            FadeIn(cache_rows),
+            run_time=1.5
+        )
+
+        tok4_new = RoundedRectangle(width=1.0, height=0.5, color=YELLOW, fill_color="#2b2614", fill_opacity=0.95, corner_radius=0.04)
+        tok4_new.move_to(LEFT * 4.0 + UP * 0.2)
+        tok4_new_lbl = create_text("Token 4", font_size=8, color=YELLOW).move_to(tok4_new.get_center())
+
+        self.play(
+            FadeIn(tok4_new), Write(tok4_new_lbl),
+            *[c.animate(run_time=0.5).set_fill(ORANGE, opacity=0.9) for c in gpu_cores],
+            run_time=1.0
+        )
+        self.play(
+            *[c.animate(run_time=0.5).set_fill(ORANGE, opacity=0.2) for c in gpu_cores]
+        )
+
+        new_kv_rect = Rectangle(width=2.2, height=0.22, color=YELLOW, fill_color=YELLOW, fill_opacity=0.4, stroke_width=1.5)
+        new_kv_rect.move_to(LEFT * 4.0 + DOWN * 0.3)
+        new_kv_lbl = create_text("Key-Value Token 4", font_size=7, color=YELLOW).move_to(new_kv_rect.get_center())
+        new_kv_group = VGroup(new_kv_rect, new_kv_lbl)
+
+        success_lbl = create_text("Store directly in the cache grid. No need to recompute old tokens.", font_size=8, color=GREEN_B).move_to(DOWN * 1.7)
+
+        self.play(
+            FadeIn(new_kv_group),
+            run_time=0.8
+        )
+        self.play(
+            new_kv_group.animate(run_time=1.8).move_to(RIGHT * 4.0 + DOWN * 1.14).set_color(GREEN_C),
+            FadeIn(success_lbl),
+        )
+
+        self.wait_until(cue_start[20] - 1.2)
+        self.play(
+            FadeOut(kv_title),
+            FadeOut(with_kv_lbl),
+            FadeOut(kv_cache_subbox), FadeOut(cache_lbl),
+            FadeOut(cache_rows),
+            FadeOut(tok4_new), FadeOut(tok4_new_lbl),
+            FadeOut(new_kv_group), FadeOut(success_lbl),
+            FadeOut(gpu_box), FadeOut(gpu_lbl), FadeOut(gpu_cores),
+            FadeOut(vram_box), FadeOut(vram_lbl),
+            FadeOut(bridge_upper), FadeOut(bridge_lower), FadeOut(bridge_lbl),
+            run_time=1.2
+        )
+        self.wait_until(cue_start[20])
+
+        # Cue 20 (sc41_020): KV cache memory footprint bottleneck.
+        size_title = create_text("KV Cache memory size", font_size=13, color=YELLOW).move_to(UP * 2.2)
+        size_box = RoundedRectangle(width=8.6, height=0.6, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
+        size_box.move_to(UP * 1.4)
+
+        size_txt = create_markup_text(
+            "Size = ( <span foreground=\"#FFC66D\">batch</span> · <span foreground=\"#FFC66D\">n<sub>ctx</sub></span> ) · ( 2 · <span foreground=\"#FF5555\">n<sub>layer</sub></span> · <span foreground=\"#FF5555\">n<sub>heads</sub></span> · <span foreground=\"#FF5555\">head<sub>dim</sub></span> ) · <span foreground=\"#33AAFF\">n<sub>bytes</sub></span>",
+            font_size=8.5, color=WHITE
+        ).move_to(size_box.get_center())
+
+        size_desc = create_markup_text(
+            "• <span foreground=\"#FFC66D\">batch · n<sub>ctx</sub></span> : Scales linearly with batch and context length.\n"
+            "• The remaining factors are fixed by each model architecture.\n"
+            "⇒ The longer the context, the larger the KV Cache, making it the main VRAM bottleneck.",
+            font_size=9.5, color=WHITE, line_spacing=1.3
+        ).move_to(DOWN * 0.4)
+
+        self.play(
+            Write(size_title),
+            FadeIn(size_box),
+            Write(size_txt),
+            Write(size_desc),
+            run_time=1.5
+        )
+        self.wait(5.0)
+
+        self.play(
+            FadeOut(size_title),
+            FadeOut(size_box),
+            FadeOut(size_txt),
+            FadeOut(size_desc),
+            run_time=0.8
+        )
+
         recap_title = create_text("Summary: Comparing Prefill and Decode Phases", font_size=13, color=YELLOW)
         recap_title.to_edge(UP, buff=0.4)
         self.play(
@@ -795,14 +751,11 @@ class Scene4_1(Scene):
             FadeIn(recap_title),
             run_time=1.0
         )
-        self.wait(3.0)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         comparison_table = VGroup()
         headers = ["Phase", "Operation type", "Arithmetic intensity", "Bottleneck type"]
         header_colors = [BLUE_A, WHITE, WHITE, RED]
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         header_group = VGroup()
         for idx, h_text in enumerate(headers):
             cell = RoundedRectangle(width=2.5, height=0.6, color=GRAY_D, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
@@ -811,7 +764,6 @@ class Scene4_1(Scene):
             header_group.add(VGroup(cell, lbl))
         comparison_table.add(header_group)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         table_rows = [
             ("Prefill Stage", "Matrix-Matrix multiply\n(GEMM)", "very high (proportional to T)", "Compute-bound\n(compute bottleneck)"),
             ("Decode Stage", "Matrix-Vector multiply\n(GEMV)", "Extremely low (~1 FLOP/B)", "Memory-bound\n(memory bottleneck)")
@@ -842,9 +794,8 @@ class Scene4_1(Scene):
             Write(solution_note),
             run_time=1.8
         )
-        self.wait(15.0)
+        self.wait_until(voiceover_end)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.play(
             FadeOut(comparison_table),
             FadeOut(solution_note),
@@ -852,4 +803,4 @@ class Scene4_1(Scene):
             run_time=1.2
         )
         self.wait(2.0)
-        finish_voiceovers(self, voiceover_end)
+        assert_all_scene_voiceovers_played(self)

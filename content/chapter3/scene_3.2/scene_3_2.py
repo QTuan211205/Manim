@@ -2,44 +2,100 @@ import os
 import tempfile
 from pathlib import Path
 from manim import *
+import numpy as np
 
-# Note: visual/narration alignment comment translated from Vietnamese.
 config.text_dir = os.path.join(tempfile.gettempdir(), "manim_text")
 config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
-VOICEOVER_DIR = Path(__file__).resolve().parents[2] / "voiceover" / "generated_unsorted"
+VOICEOVER_DIR = Path(__file__).resolve().parents[3] / "voiceover" / "generated_sentence_level"
+ASSET_DIR = Path(__file__).resolve().parent / "assets"
+
+SCENE_3_2_DURATIONS = {
+    "sc32_001.mp3": 9.287982,
+    "sc32_002.mp3": 7.476825,
+    "sc32_003.mp3": 3.297234,
+    "sc32_004.mp3": 7.012426,
+    "sc32_005.mp3": 10.727619,
+    "sc32_006.mp3": 6.315828,
+    "sc32_007.mp3": 4.318912,
+    "sc32_008.mp3": 7.383946,
+    "sc32_009.mp3": 5.665669,
+    "sc32_010.mp3": 2.972154,
+    "sc32_011.mp3": 4.040272,
+    "sc32_012.mp3": 8.730703,
+    "sc32_013.mp3": 5.201270,
+    "sc32_014.mp3": 4.411791,
+    "sc32_015.mp3": 5.201270,
+    "sc32_016.mp3": 5.154830,
+    "sc32_017.mp3": 4.226032,
+    "sc32_018.mp3": 3.715193,
+    "sc32_019.mp3": 4.504671,
+    "sc32_020.mp3": 5.944308,
+    "sc32_021.mp3": 10.263220,
+    "sc32_022.mp3": 10.681179,
+    "sc32_023.mp3": 4.040272,
+    "sc32_024.mp3": 5.712109,
+}
+SCENE_3_2_VOICEOVERS = tuple(SCENE_3_2_DURATIONS)
+
+
+def validate_scene_voiceover_files():
+    available = sorted(path.name for path in VOICEOVER_DIR.glob("sc32_*.mp3"))
+    expected = sorted(SCENE_3_2_VOICEOVERS)
+    if available != expected:
+        missing = sorted(set(expected) - set(available))
+        extra = sorted(set(available) - set(expected))
+        raise FileNotFoundError(
+            f"Scene 3.2 voiceover mismatch. Missing: {missing or 'none'}; extra: {extra or 'none'}"
+        )
 
 
 def add_voiceover(scene, filename, time_offset=0.0, duration=0.0):
+    if filename not in SCENE_3_2_DURATIONS:
+        raise KeyError(f"Unexpected Scene 3.2 voiceover: {filename}")
+    if not (VOICEOVER_DIR / filename).exists():
+        raise FileNotFoundError(f"Missing Scene 3.2 voiceover file: {filename}")
     scene.add_sound(str(VOICEOVER_DIR / filename), time_offset=time_offset)
+    scene.played_voiceovers.append(filename)
     return time_offset + duration
 
 
-def finish_voiceovers(scene, voiceover_end, padding=0.25):
-    current_time = getattr(scene.renderer, "time", 0.0)
-    remaining = voiceover_end + padding - current_time
-    if remaining > 0:
-        scene.wait(remaining)
+def schedule_scene_voiceovers(scene):
+    validate_scene_voiceover_files()
+    scene.played_voiceovers = []
+    voiceover_end = 0.0
+    for filename, duration in SCENE_3_2_DURATIONS.items():
+        voiceover_end = add_voiceover(scene, filename, voiceover_end, duration)
+    return voiceover_end
 
 
-# Note: visual/narration alignment comment translated from Vietnamese.
-def create_text(text, font_size=24, font="Arial", color=WHITE, **kwargs):
+def assert_all_scene_voiceovers_played(scene):
+    played = tuple(scene.played_voiceovers)
+    expected = tuple(SCENE_3_2_VOICEOVERS)
+    if played != expected:
+        missing = [filename for filename in expected if filename not in played]
+        raise RuntimeError(
+            f"Scene 3.2 did not schedule every voiceover. Played: {played}; missing: {missing or 'none'}"
+        )
+
+
+def create_text(text, font_size=24, font="Noto Sans", color=WHITE, **kwargs):
     if font_size < 20:
         t = Text(text, font_size=36, font=font, color=color, **kwargs)
         t.scale(font_size / 36)
         return t
     return Text(text, font_size=font_size, font=font, color=color, **kwargs)
 
-# Note: visual/narration alignment comment translated from Vietnamese.
-def create_markup_text(text, font_size=24, font="Arial", **kwargs):
+
+def create_markup_text(text, font_size=24, font="Noto Sans", **kwargs):
     if font_size < 20:
         t = MarkupText(text, font_size=36, font=font, **kwargs)
         t.scale(font_size / 36)
         return t
     return MarkupText(text, font_size=font_size, font=font, **kwargs)
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
 def get_checkmark(color=GREEN, stroke_width=2.5):
     checkmark = VMobject(color=color, stroke_width=stroke_width)
     checkmark.set_points_as_corners([
@@ -49,7 +105,7 @@ def get_checkmark(color=GREEN, stroke_width=2.5):
     ])
     return checkmark
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
 def get_crossmark(color=RED, stroke_width=2.5):
     cross = VGroup()
     line1 = Line(LEFT * 0.12 + UP * 0.12, RIGHT * 0.12 + DOWN * 0.12, color=color, stroke_width=stroke_width)
@@ -57,32 +113,54 @@ def get_crossmark(color=RED, stroke_width=2.5):
     cross.add(line1, line2)
     return cross
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
 def get_voter_icon(color=BLUE_A):
     voter = VGroup()
-    # Note: visual/narration alignment comment translated from Vietnamese.
     body = RoundedRectangle(width=0.24, height=0.2, corner_radius=0.03, color=color, fill_color=color, fill_opacity=0.3, stroke_width=1.2)
-    # Note: visual/narration alignment comment translated from Vietnamese.
     head = Circle(radius=0.08, color=color, fill_color=color, fill_opacity=0.5, stroke_width=1.2)
     head.next_to(body, UP, buff=0.04)
-    # Note: visual/narration alignment comment translated from Vietnamese.
     eye_l = Circle(radius=0.015, color=WHITE, fill_color=WHITE, fill_opacity=1.0).move_to(head.get_center() + LEFT * 0.03 + UP * 0.015)
     eye_r = Circle(radius=0.015, color=WHITE, fill_color=WHITE, fill_opacity=1.0).move_to(head.get_center() + RIGHT * 0.03 + UP * 0.015)
-    # Note: visual/narration alignment comment translated from Vietnamese.
     antenna = Line(start=head.get_top(), end=head.get_top() + UP * 0.05, color=color, stroke_width=1.2)
     antenna_dot = Circle(radius=0.012, color=color, fill_color=color, fill_opacity=1.0).move_to(antenna.get_end())
-    
     voter.add(body, head, eye_l, eye_r, antenna, antenna_dot)
     return voter
 
-# Note: visual/narration alignment comment translated from Vietnamese.
+
+def create_slide_crop(filename, max_width=7.8, max_height=3.0):
+    image = ImageMobject(str(ASSET_DIR / filename))
+    if image.width > max_width:
+        image.scale_to_fit_width(max_width)
+    if image.height > max_height:
+        image.scale_to_fit_height(max_height)
+    return image
+
+
+def create_source_label(width=7.8):
+    source = create_text(
+        "Source: https://neurips.cc/virtual/2024/tutorial/99522",
+        font_size=4.5,
+        color=GRAY_B,
+    )
+    source.scale_to_fit_width(min(width, 3.8))
+    return source
+
+
+def create_asset_panel(filename, title, max_width=7.8, max_height=2.8):
+    image = create_slide_crop(filename, max_width=max_width, max_height=max_height)
+    title_label = create_text(title, font_size=11, color=BLUE_A)
+    title_label.next_to(image, UP, buff=0.18)
+    source = create_source_label(max_width)
+    source.next_to(image, DOWN, buff=0.12)
+    return Group(title_label, image, source)
+
+
 class Speedometer(VGroup):
     def __init__(self, radius=0.6, title="Reward Model", **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
         self.current_score = 0.0
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.arc = Arc(
             start_angle=PI, 
             angle=-PI, 
@@ -90,12 +168,10 @@ class Speedometer(VGroup):
             stroke_width=4, 
             color=GRAY_D
         )
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.red_zone = Arc(start_angle=PI, angle=-PI/3, radius=radius, stroke_width=4, color=RED)
         self.yellow_zone = Arc(start_angle=2*PI/3, angle=-PI/3, radius=radius, stroke_width=4, color=YELLOW)
         self.green_zone = Arc(start_angle=PI/3, angle=-PI/3, radius=radius, stroke_width=4, color=GREEN)
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.ticks = VGroup()
         for val in [0.0, 0.25, 0.5, 0.75, 1.0]:
             angle = PI - val * PI
@@ -109,10 +185,8 @@ class Speedometer(VGroup):
             tick.rotate(angle - PI/2, about_point=ORIGIN)
             self.ticks.add(tick)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.center_dot = Dot(point=ORIGIN, radius=0.05, color=WHITE)
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.needle = Line(
             start=ORIGIN, 
             end=LEFT * (radius - 0.08), 
@@ -120,7 +194,6 @@ class Speedometer(VGroup):
             stroke_width=2.2
         )
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.title_lbl = create_text(title, font_size=8, color=BLUE_B)
         self.title_lbl.next_to(self.center_dot, DOWN, buff=0.1)
         
@@ -128,191 +201,354 @@ class Speedometer(VGroup):
 
 
 class Scene3_2(Scene):
+    def wait_until(self, target_time):
+        current_time = getattr(self.renderer, "time", 0.0)
+        if target_time > current_time:
+            self.wait(target_time - current_time)
+
+    def replace_content(self, old_group, new_group, run_time=0.55):
+        if old_group is None:
+            self.play(FadeIn(new_group, shift=UP * 0.12), run_time=run_time)
+        else:
+            self.play(FadeOut(old_group, shift=DOWN * 0.08), FadeIn(new_group, shift=UP * 0.08), run_time=run_time)
+            self.remove(*old_group.get_family())
+        return new_group
+
     def construct(self):
-        # =========================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #     h(y^(1), ..., y^(N))`."
-        # 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #     et al., 2024]."
-        # 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #     `over-optimization` trong slide."
-        # 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =========================================================================
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
         self.camera.background_color = "#111111"
+        voiceover_end = schedule_scene_voiceovers(self)
 
-        # Voiceover audio is scheduled from actual MP3 durations.
-        voiceover_end = 0.0
-        voiceover_end = add_voiceover(self, "sc32_1.mp3", voiceover_end, 8.542)
-        voiceover_end = add_voiceover(self, "sc32_2.mp3", voiceover_end, 30.589)
-        voiceover_end = add_voiceover(self, "sc32_3.mp3", voiceover_end, 27.402)
-        voiceover_end = add_voiceover(self, "sc32_4.mp3", voiceover_end, 23.406)
-        voiceover_end = add_voiceover(self, "sc32_5.mp3", voiceover_end, 22.895)
-        voiceover_end = add_voiceover(self, "sc32_6.mp3", voiceover_end, 27.632)
-        voiceover_end = add_voiceover(self, "sc32_7.mp3", voiceover_end, 24.613)
+        cue_start = {}
+        current = 0.0
+        for idx, (filename, duration) in enumerate(SCENE_3_2_DURATIONS.items(), start=1):
+            cue_start[idx] = current
+            current += duration
 
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # --- Chapter Title (Cue 1) ---
         chapter_title = create_text("Chapter 3: High-Level Orchestrators", font_size=24, color=YELLOW)
-        chapter_sub = create_text("Part 3.2: Parallel Generation Algorithms (Best-of-N, Voting, MBR)", font_size=18, color=GRAY_A)
+        chapter_sub = create_text("Part 3.2: Parallel Generation Algorithms\n(Best-of-N, Voting, Weighted Voting)", font_size=16, color=GRAY_A, line_spacing=1.3)
         chapter_sub.next_to(chapter_title, DOWN, buff=0.15)
-        chapter_header = VGroup(chapter_title, chapter_sub)
-        chapter_header.move_to(ORIGIN)
+        chapter_header = VGroup(chapter_title, chapter_sub).move_to(ORIGIN)
 
-        self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.2)
-        self.wait(5.0)
+        self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.0)
+        self.wait(3.0)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         sub_title = create_text("Parallel generation algorithms (Best-of-N, Voting, MBR)", font_size=16, color=YELLOW)
         sub_title.to_edge(UP, buff=0.4)
         
-        self.play(
-            ReplacementTransform(chapter_header, sub_title),
-            run_time=1.2
-        )
-        self.wait(3.0)
+        self.play(ReplacementTransform(chapter_header, sub_title), run_time=1.0)
+        
+        content = None
 
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        part1_title = create_text("1. Best-of-N parallel generation & reward hacking traps", font_size=13, color=BLUE_A)
+        # --- Cue 2: Best-of-N Intro ---
+        self.wait_until(cue_start[2] + 0.25)
+        part1_title = create_text("1. Best-of-N: generate, score, select", font_size=13, color=BLUE_A)
         part1_title.next_to(sub_title, DOWN, buff=0.3)
-        self.play(Write(part1_title), run_time=0.8)
-        self.wait(3.0)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        bon_intro = create_markup_text(
-            "<b>Best-of-N (Rejection Sampling):</b> Generate <i>N</i> independent answers in parallel,\n"
-            "score them with a reward model, and select the best one.",
-            font_size=13, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 2.3)
-        self.play(Write(bon_intro), run_time=2.0)
-        self.wait(10.0)
+        bon_panel = create_asset_panel(
+            "parallel_best_of_n_diagram.png",
+            "Parallel candidates flow through a reward model",
+            max_width=8.4,
+            max_height=2.2,
+        ).move_to(UP * 0.12)
 
-        # RM training box
-        rm_train_box = RoundedRectangle(width=8.4, height=2.4, color=BLUE_B, fill_color="#141c2b", fill_opacity=0.9, corner_radius=0.1)
-        rm_train_box.move_to(DOWN * 0.2)
-        rm_train_title = create_text("Reward Model Training Data", font_size=12, color=BLUE_A).next_to(rm_train_box.get_top(), DOWN, buff=0.15)
-        
-        data1_title = create_markup_text("<b>1. Classification (Correct/Incorrect)</b>", font_size=9.5, color=WHITE)
-        data1_detail = create_markup_text(
-            "• (x, y) → y is correct (reward = 1)\n"
-            "• (x, y) → y is incorrect (reward = 0)\n"
-            "<span foreground='#888888'>[Cobbe et al., 2021]</span>",
-            font_size=8, line_spacing=1.2
+        candidate_cards = VGroup()
+        card_specs = [
+            ("y1", "0.1", RED),
+            ("y2", "1.0", GREEN),
+            ("y3", "0.7", YELLOW),
+        ]
+        for idx, (name, score, color) in enumerate(card_specs):
+            card = RoundedRectangle(
+                width=1.05,
+                height=0.54,
+                color=color,
+                fill_color="#151719",
+                fill_opacity=0.92,
+                corner_radius=0.06,
+            )
+            card.move_to(LEFT * 2.3 + RIGHT * idx * 1.2 + DOWN * 2.25)
+            name_lbl = create_text(name, font_size=8, color=WHITE).move_to(card.get_center() + UP * 0.10)
+            score_lbl = create_text(score, font_size=8, color=color).move_to(card.get_center() + DOWN * 0.12)
+            candidate_cards.add(VGroup(card, name_lbl, score_lbl))
+        winner_ring = SurroundingRectangle(candidate_cards[1], color=GREEN, stroke_width=2.5, buff=0.06)
+        winner_lbl = create_text("select max v(y)", font_size=9, color=GREEN).next_to(winner_ring, DOWN, buff=0.10)
+
+        part1_group = VGroup(part1_title)
+        content = self.replace_content(content, Group(bon_panel, candidate_cards))
+        self.play(Create(winner_ring), FadeIn(winner_lbl), run_time=0.55)
+
+        # --- Cue 3: Best-of-N Formula ---
+        self.wait_until(cue_start[3] + 0.2)
+        bon_formula = create_markup_text(
+            "Best-of-N = argmax<sub>y in candidates</sub> v(y)",
+            font_size=12,
+            color=YELLOW,
         )
-        data1_group = VGroup(data1_title, data1_detail).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
-        
-        data2_title = create_markup_text("<b>2. Preference Data (RLHF/DPO)</b>", font_size=9.5, color=WHITE)
-        data2_detail = create_markup_text(
-            "• (x, y<sub>w</sub>, y<sub>l</sub>) where y<sub>w</sub> > y<sub>l</sub>\n"
-            "• Optimizing pairwise ranking loss\n"
-            "<span foreground='#888888'>[Stiennon et al., 2020]</span>",
-            font_size=8, line_spacing=1.2
+        bon_formula.next_to(bon_panel, DOWN, buff=0.48)
+        quality_axis = NumberLine(
+            x_range=[0, 1, 0.25],
+            length=5.2,
+            color=GRAY_B,
+            include_numbers=False,
+        ).move_to(DOWN * 1.35)
+        low_lbl = create_text("low score", font_size=7, color=GRAY_B).next_to(quality_axis, LEFT, buff=0.12)
+        high_lbl = create_text("high score", font_size=7, color=GREEN).next_to(quality_axis, RIGHT, buff=0.12)
+        score_dots = VGroup(
+            Dot(quality_axis.n2p(0.1), radius=0.05, color=RED),
+            Dot(quality_axis.n2p(0.7), radius=0.05, color=YELLOW),
+            Dot(quality_axis.n2p(1.0), radius=0.06, color=GREEN),
         )
-        data2_group = VGroup(data2_title, data2_detail).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+        score_runner = Triangle(color=GREEN, fill_color=GREEN, fill_opacity=0.9).scale(0.09)
+        score_runner.next_to(quality_axis.n2p(0.1), UP, buff=0.08)
+        formula_group = VGroup(bon_formula, quality_axis, low_lbl, high_lbl, score_dots, score_runner)
+        self.play(
+            FadeOut(candidate_cards),
+            FadeOut(winner_ring),
+            FadeOut(winner_lbl),
+            FadeIn(formula_group),
+            run_time=0.6,
+        )
+        self.play(score_runner.animate.next_to(quality_axis.n2p(1.0), UP, buff=0.08), run_time=0.8)
+        content = Group(bon_panel, formula_group)
+
+        # --- Cue 4: RM Training Data ---
+        self.wait_until(cue_start[4] + 0.2)
+        binary_panel = create_asset_panel(
+            "reward_model_binary_examples.png",
+            "Correct / incorrect examples teach a score",
+            max_width=4.4,
+            max_height=1.55,
+        )
+        preference_panel = create_asset_panel(
+            "reward_model_preference_examples.png",
+            "Preference pairs teach a ranking",
+            max_width=4.4,
+            max_height=1.55,
+        )
+        training_panels = Group(binary_panel, preference_panel).arrange(RIGHT, buff=0.45).move_to(UP * 0.2)
+        rm_core = RoundedRectangle(width=2.0, height=0.7, color=BLUE_A, fill_color="#141c2b", fill_opacity=0.95, corner_radius=0.08)
+        rm_core.move_to(DOWN * 1.65)
+        rm_lbl = create_text("Reward model v(y)", font_size=11, color=BLUE_A).move_to(rm_core.get_center())
+        train_arrows = VGroup(
+            Arrow(binary_panel.get_bottom(), rm_core.get_top() + LEFT * 0.45, color=BLUE_A, stroke_width=1.5, buff=0.08),
+            Arrow(preference_panel.get_bottom(), rm_core.get_top() + RIGHT * 0.45, color=BLUE_A, stroke_width=1.5, buff=0.08),
+        )
+        rm_train_group = Group(training_panels, rm_core, rm_lbl, train_arrows)
+        content = self.replace_content(content, rm_train_group)
+
+        # --- Cue 5: Best-of-N Limit/Over-opt Intro ---
+        self.wait_until(cue_start[5] + 0.2)
+        overopt_panel = create_asset_panel(
+            "overoptimization_graph.png",
+            "More search can overfit an imperfect reward model",
+            max_width=4.2,
+            max_height=2.55,
+        )
+        overopt_panel.move_to(RIGHT * 2.65 + DOWN * 0.15)
+        trap_box = RoundedRectangle(width=4.0, height=2.55, color=RED, fill_color="#261313", fill_opacity=0.78, corner_radius=0.08)
+        trap_box.move_to(LEFT * 2.7 + DOWN * 0.1)
+        trap_title = create_text("Best-looking to v(y)", font_size=11, color=RED).move_to(trap_box.get_top() + DOWN * 0.35)
+        true_quality = create_text("true quality", font_size=9, color=GREEN).move_to(trap_box.get_center() + LEFT * 0.95 + UP * 0.25)
+        rm_score = create_text("reward score", font_size=9, color=BLUE_A).move_to(trap_box.get_center() + RIGHT * 0.95 + UP * 0.25)
+        mismatch_arrow = Arrow(true_quality.get_right(), rm_score.get_left(), color=RED, stroke_width=2.0, buff=0.12)
+        blind_spot = create_text("blind spot", font_size=10, color=RED).move_to(trap_box.get_center() + DOWN * 0.65)
+        overopt_group = Group(overopt_panel, trap_box, trap_title, true_quality, rm_score, mismatch_arrow, blind_spot)
+        content = self.replace_content(content, overopt_group)
+        self.play(Indicate(blind_spot, color=RED), run_time=0.8)
+
+        # --- Cue 6: Voting Intro ---
+        self.wait_until(cue_start[6] + 0.2)
+        self.play(FadeOut(part1_group), run_time=0.25)
+
+        part2_title = create_text("2. Voting: aggregate answers, not only scores", font_size=13, color=BLUE_A)
+        part2_title.next_to(sub_title, DOWN, buff=0.3)
+        part2_group = VGroup(part2_title)
+
+        voting_panel = create_asset_panel(
+            "voting_self_consistency_diagram.png",
+            "Many reasoning paths collapse into answer groups",
+            max_width=8.4,
+            max_height=2.15,
+        ).move_to(UP * 0.22)
+        vote_bins = VGroup()
+        for label, color, x_pos in [("Answer 2", GREEN, -1.4), ("Answer 4", RED, 1.4)]:
+            box = RoundedRectangle(width=1.9, height=0.72, color=color, fill_color="#151719", fill_opacity=0.95, corner_radius=0.06)
+            box.move_to(RIGHT * x_pos + DOWN * 1.7)
+            lbl = create_text(label, font_size=9, color=color).move_to(box.get_center())
+            vote_bins.add(VGroup(box, lbl))
+        vote_tokens = VGroup(*[
+            Dot(LEFT * 3.5 + RIGHT * idx * 0.35 + DOWN * 1.7, radius=0.06, color=GREEN if idx < 3 else RED)
+            for idx in range(4)
+        ])
+        voting_group = Group(part2_group, voting_panel, vote_bins, vote_tokens)
+        content = self.replace_content(content, voting_group)
+        self.play(
+            vote_tokens[0].animate.move_to(vote_bins[0].get_center() + LEFT * 0.35),
+            vote_tokens[1].animate.move_to(vote_bins[0].get_center()),
+            vote_tokens[2].animate.move_to(vote_bins[0].get_center() + RIGHT * 0.35),
+            vote_tokens[3].animate.move_to(vote_bins[1].get_center()),
+            run_time=0.9,
+        )
+
+        # --- Cue 7: Weighted Voting highlight ---
+        self.wait_until(cue_start[7] + 0.15)
+        weighted_panel = create_asset_panel(
+            "weighted_voting_diagram.png",
+            "Weighted voting lets verifier scores change the vote mass",
+            max_width=8.4,
+            max_height=2.2,
+        ).move_to(UP * 0.2)
+        weight_bars = VGroup()
+        weights = [(0.8, GREEN), (0.1, RED), (0.2, RED), (0.9, GREEN)]
+        for idx, (weight, color) in enumerate(weights):
+            bg = RoundedRectangle(width=1.15, height=0.14, color=GRAY_D, fill_color=GRAY_E, fill_opacity=0.7, corner_radius=0.03)
+            bg.move_to(LEFT * 2.0 + RIGHT * idx * 1.35 + DOWN * 1.72)
+            fg = RoundedRectangle(width=1.15 * weight, height=0.14, color=color, fill_color=color, fill_opacity=0.95, corner_radius=0.03)
+            fg.align_to(bg, LEFT).move_to(bg.get_center() + LEFT * (1.15 * (1 - weight) / 2))
+            lbl = create_text(f"{weight:.1f}", font_size=7, color=color).next_to(bg, UP, buff=0.06)
+            weight_bars.add(VGroup(bg, fg, lbl))
+        weighted_group = Group(part2_group, weighted_panel, weight_bars)
+        content = self.replace_content(content, weighted_group)
+        self.play(LaggedStart(*[GrowFromEdge(bar[1], LEFT) for bar in weight_bars], lag_ratio=0.12), run_time=0.8)
+
+        # --- Cue 8: Easy-to-Hard Generalization ---
+        self.wait_until(cue_start[8] + 0.25)
+        easy_graph = create_asset_panel(
+            "voting_vs_weighted_graph.png",
+            "Voting and weighted voting can beat Best-of-N",
+            max_width=5.0,
+            max_height=2.85,
+        )
+        easy_graph.move_to(RIGHT * 2.55 + DOWN * 0.02)
+        easy_ladder = VGroup()
+        ladder_labels = [("easy", GREEN), ("medium", YELLOW), ("hard", RED)]
+        for idx, (label, color) in enumerate(ladder_labels):
+            step = RoundedRectangle(width=1.45, height=0.46, color=color, fill_color="#151719", fill_opacity=0.95, corner_radius=0.05)
+            step.move_to(LEFT * 3.75 + RIGHT * idx * 0.82 + DOWN * (1.25 - idx * 0.55))
+            txt = create_text(label, font_size=8, color=color).move_to(step.get_center())
+            easy_ladder.add(VGroup(step, txt))
+        ladder_arrow = Arrow(easy_ladder[0].get_right(), easy_ladder[-1].get_left(), color=ORANGE, stroke_width=2, buff=0.06)
+        verifier_badge = RoundedRectangle(width=2.2, height=0.62, color=ORANGE, fill_color="#2b1a14", fill_opacity=0.9, corner_radius=0.06)
+        verifier_badge.move_to(LEFT * 3.15 + UP * 1.0)
+        verifier_lbl = create_text("trained verifier transfers", font_size=8, color=ORANGE).move_to(verifier_badge.get_center())
+        easy_hard_group = Group(easy_graph, easy_ladder, ladder_arrow, verifier_badge, verifier_lbl)
+        content = self.replace_content(content, easy_hard_group)
+        self.play(LaggedStart(*[FadeIn(step, shift=UP * 0.12) for step in easy_ladder], lag_ratio=0.15), Create(ladder_arrow), run_time=0.9)
+
+        # --- Cue 9: Convergence Theorem ---
+        self.wait_until(cue_start[9] + 0.2)
+        conv_axes = Axes(
+            x_range=[0, 10, 2],
+            y_range=[0, 1.05, 0.25],
+            x_length=6.1,
+            y_length=2.6,
+            axis_config={"color": GRAY_B, "stroke_width": 1.4},
+        ).move_to(LEFT * 1.2)
+        conv_curve = conv_axes.plot(lambda x: 0.84 * (1 - np.exp(-0.48 * x)), x_range=[0, 9.5], color=GREEN, stroke_width=3)
+        ceiling = DashedLine(conv_axes.c2p(0, 0.84), conv_axes.c2p(9.5, 0.84), color=YELLOW, stroke_width=1.5)
+        ceiling_lbl = create_text("limit as N grows", font_size=8, color=YELLOW).move_to(conv_axes.c2p(7.0, 0.93))
+        samples_lbl = create_text("number of candidates N", font_size=8, color=GRAY_A).next_to(conv_axes.x_axis, DOWN, buff=0.18)
+        acc_lbl = create_text("voting accuracy", font_size=8, color=GRAY_A).next_to(conv_axes.y_axis, LEFT, buff=0.15).rotate(90 * DEGREES)
+        marginalize_card = RoundedRectangle(width=3.15, height=1.2, color=BLUE_A, fill_color="#141c2b", fill_opacity=0.92, corner_radius=0.08)
+        marginalize_card.move_to(RIGHT * 3.35 + UP * 0.25)
+        marginalize_txt = create_markup_text(
+            "sum over paths z\n"
+            "<span foreground='#8fd3ff'>g(z,a|x)</span> × <span foreground='#89ff89'>v(x,z,a)</span>",
+            font_size=9,
+            color=WHITE,
+            line_spacing=1.25,
+        ).move_to(marginalize_card.get_center())
+        convergence_group = VGroup(conv_axes, conv_curve, ceiling, ceiling_lbl, samples_lbl, acc_lbl, marginalize_card, marginalize_txt)
+        content = self.replace_content(content, convergence_group)
+        self.play(Create(conv_curve), Create(ceiling), run_time=1.0)
+
+        # --- Cue 10: Convergence takeaways intro ---
+        self.wait_until(cue_start[10] + 0.15)
+        self.play(Indicate(ceiling_lbl, color=YELLOW), run_time=0.55)
+
+        # --- Cue 11: Takeaway 1 ---
+        self.wait_until(cue_start[11] + 0.15)
+        takeaway1 = create_text("More samples help, then plateau.", font_size=10, color=WHITE)
+        takeaway1.next_to(samples_lbl, DOWN, buff=0.16)
+        self.play(FadeIn(takeaway1, shift=UP * 0.1), run_time=0.4)
+
+        # --- Cue 12: Takeaway 2 ---
+        self.wait_until(cue_start[12] + 0.15)
+        weighted_mass = RoundedRectangle(width=2.8, height=0.42, color=GREEN, fill_color=GREEN_E, fill_opacity=0.22, corner_radius=0.06)
+        weighted_mass.next_to(marginalize_card, DOWN, buff=0.24)
+        weighted_mass_lbl = create_text("correct answers get more v · g mass", font_size=7.5, color=GREEN).move_to(weighted_mass.get_center())
+        self.play(FadeIn(weighted_mass), Write(weighted_mass_lbl), run_time=0.45)
+
+        # --- Cue 13: Takeaway 3 ---
+        self.wait_until(cue_start[13] + 0.15)
+        improve_v = create_text("improve v", font_size=8, color=BLUE_A).move_to(RIGHT * 2.75 + DOWN * 1.45)
+        improve_g = create_text("improve g", font_size=8, color=GREEN).move_to(RIGHT * 3.95 + DOWN * 1.45)
+        improve_arrows = VGroup(
+            Arrow(improve_v.get_top(), marginalize_card.get_bottom() + LEFT * 0.35, color=BLUE_A, stroke_width=1.6, buff=0.05),
+            Arrow(improve_g.get_top(), marginalize_card.get_bottom() + RIGHT * 0.35, color=GREEN, stroke_width=1.6, buff=0.05),
+        )
+        self.play(FadeIn(improve_v), FadeIn(improve_g), Create(improve_arrows), run_time=0.55)
+        content = Group(convergence_group, takeaway1, weighted_mass, weighted_mass_lbl, improve_v, improve_g, improve_arrows)
+
+        # --- Cue 14-17: Limitations of Parallel Meta-Generation ---
+        self.wait_until(cue_start[14] + 0.25)
+        self.play(FadeOut(part2_group), run_time=0.4)
         
-        data_split = VGroup(data1_group, data2_group).arrange(RIGHT, buff=0.6)
-        data_split.move_to(rm_train_box.get_center() + DOWN * 0.15)
-        rm_train_group = VGroup(rm_train_box, rm_train_title, data_split)
-
-        self.play(FadeIn(rm_train_group, shift=UP * 0.15), run_time=1.2)
-        self.wait(12.0)
-        self.play(FadeOut(rm_train_group), run_time=0.8)
-
-        # Best-of-N formula box
-        bon_formula_box = RoundedRectangle(width=8.0, height=1.6, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        bon_formula_box.move_to(DOWN * 0.2)
-        bon_formula_title = create_text("Formula Best-of-N", font_size=11, color=BLUE_B).next_to(bon_formula_box.get_top(), DOWN, buff=0.15)
+        lim_title = create_text("Limitations of Parallel Meta-Generation (Slide 124-125)", font_size=13, color=YELLOW)
+        lim_title.next_to(sub_title, DOWN, buff=0.3)
         
-        bon_formula_txt = create_markup_text(
-            "Best-of-N = argmax<sub>y in {y<sup>(1)</sup>,...,y<sup>(N)</sup>}</sub>  v(y)\n"
-            "Best-of-N ≈ argmax<sub>y</sub> v(y) ≈ argmax<sub>y</sub> A(y)",
-            font_size=11, line_spacing=1.3
-        ).move_to(bon_formula_box.get_center() + DOWN * 0.1)
-        bon_formula_group = VGroup(bon_formula_box, bon_formula_title, bon_formula_txt)
+        lim_box = RoundedRectangle(width=9.2, height=2.6, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
+        lim_box.move_to(DOWN * 0.4)
+        
+        lim_line1 = create_markup_text("• Parallel generators explore output space by generating <b>full sequences</b>.", font_size=10.5, color=GRAY_A)
+        lim_line2 = create_markup_text("• Brings large performance gains in practice, but is <b>bounded by evaluator/generator quality</b>.", font_size=10.5, color=GRAY_A)
+        lim_line3 = create_markup_text("• Crucial insight: The verifier/reward model is used <b>only at the end</b> on completed sequences.", font_size=10.5, color=GRAY_A)
+        lim_line4 = create_markup_text("• Next step: Can we use <b>intermediate evaluations step-by-step</b> more effectively?", font_size=10.5, color=GRAY_A)
+        
+        lim_list = VGroup(lim_line1, lim_line2, lim_line3, lim_line4).arrange(DOWN, buff=0.2, aligned_edge=LEFT).move_to(lim_box.get_center())
+        lim_group = VGroup(lim_title, lim_box, lim_list)
+        
+        content = self.replace_content(content, lim_group)
+        
+        self.play(lim_line1.animate.set_color(WHITE), run_time=0.4)
+        
+        self.wait_until(cue_start[15] + 0.15)
+        self.play(lim_line2.animate.set_color(WHITE), run_time=0.4)
+        
+        self.wait_until(cue_start[16] + 0.15)
+        self.play(lim_line3.animate.set_color(WHITE), run_time=0.4)
+        
+        self.wait_until(cue_start[17] + 0.15)
+        self.play(lim_line4.animate.set_color(WHITE), run_time=0.4)
 
-        self.play(FadeIn(bon_formula_group, shift=UP * 0.15), run_time=1.2)
-        self.wait(10.0)
-        self.play(FadeOut(bon_formula_group), run_time=0.8)
+        # --- Cue 18: Deep Dive Title ---
+        self.wait_until(cue_start[18] + 0.2)
+        
+        dive_title = create_text("Reward Model & Over-Optimization Deep Dive", font_size=13, color=YELLOW)
+        dive_title.next_to(sub_title, DOWN, buff=0.3)
+        
+        dive_intro = create_markup_text(
+            "<b>Reward Model:</b> The bridge between probability and acceptability.\n"
+            "Maps sequence candidate <i>y</i> to score <i>v(y) ∈ [0, 1]</i>.",
+            font_size=12, color=WHITE, line_spacing=1.3
+        ).move_to(DOWN * 0.4)
+        
+        dive_group = VGroup(dive_title, dive_intro)
+        content = self.replace_content(content, dive_group)
 
-        # Prompt x
+        # --- Cue 19: Candidate Generation ---
+        self.wait_until(cue_start[19] + 0.2)
+        
         prompt_box = RoundedRectangle(width=2.2, height=1.0, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        prompt_box.move_to(LEFT * 5.0 + DOWN * 0.3)
+        prompt_box.move_to(LEFT * 5.0 + DOWN * 0.4)
         prompt_lbl = create_text("Prompt x", font_size=12, color=GREEN).move_to(prompt_box.get_center())
-
-        self.play(FadeIn(prompt_box), Write(prompt_lbl), run_time=1.0)
-        self.wait(4.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        prompt_group = VGroup(prompt_box, prompt_lbl)
+        
         y_y_coords = [1.3, 0.5, -0.3, -1.1, -1.9]
         y_boxes = VGroup()
         y_texts = VGroup()
         y_arrows = VGroup()
-
         y_texts_str = [
             'y(1): "The result is 42"',
             'y(2): "17 + 25 = 42"',
@@ -320,7 +556,7 @@ class Scene3_2(Scene):
             'y(4): "17 + 25 = 32"',
             'y(5): "Answer y(5)"'
         ]
-
+        
         for idx, y_val in enumerate(y_y_coords):
             box = RoundedRectangle(width=2.8, height=0.6, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.06)
             box.move_to(LEFT * 1.0 + UP * y_val)
@@ -330,58 +566,42 @@ class Scene3_2(Scene):
             y_boxes.add(box)
             y_texts.add(lbl)
             y_arrows.add(arrow)
+            
+        candidates_group = VGroup(prompt_group, y_boxes, y_texts, y_arrows)
+        content = self.replace_content(content, candidates_group)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            Create(y_arrows),
-            FadeIn(y_boxes),
-            Write(y_texts),
-            run_time=2.0
-        )
-        self.wait(12.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # --- Cue 20: Speedometer Scoring ---
+        self.wait_until(cue_start[20] + 0.2)
+        
         rm_box = RoundedRectangle(width=2.4, height=2.2, color=BLUE_A, fill_color="#141c2b", fill_opacity=0.9, corner_radius=0.08)
-        rm_box.move_to(RIGHT * 4.6 + DOWN * 0.3)
+        rm_box.move_to(RIGHT * 4.6 + DOWN * 0.4)
         
         speedometer = Speedometer(radius=0.7, title="Reward Model (Scoring)")
         speedometer.move_to(rm_box.get_center() + UP * 0.25)
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         digital_score_lbl = create_text("Score: 0.00", font_size=10, color=GRAY_A)
         digital_score_lbl.next_to(speedometer.center_dot, DOWN, buff=0.45)
-
-        self.play(
-            FadeIn(rm_box),
-            FadeIn(speedometer),
-            FadeIn(digital_score_lbl),
-            run_time=1.0
-        )
-        self.wait(6.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        
+        rm_display_group = VGroup(rm_box, speedometer, digital_score_lbl)
+        self.play(FadeIn(rm_display_group), run_time=0.8)
+        
         score_colors = [RED, GREEN, YELLOW, GREEN_B, GREEN]
         score_values = [0.15, 0.88, 0.45, 0.62, 0.99]
         score_labels = VGroup()
         rm_flow_arrows = VGroup()
 
         for idx, y_val in enumerate(y_y_coords):
-            # Note: visual/narration alignment comment translated from Vietnamese.
             flow_arrow = Line(start=y_boxes[idx].get_right(), end=rm_box.get_left() + UP * y_val * 0.25, color=BLUE_A, stroke_width=1.2)
             rm_flow_arrows.add(flow_arrow)
 
-            # Note: visual/narration alignment comment translated from Vietnamese.
             lbl = create_text(f"Score: {score_values[idx]:.2f}", font_size=10, color=score_colors[idx])
             lbl.next_to(y_boxes[idx], RIGHT, buff=0.15)
             
-            # Note: visual/narration alignment comment translated from Vietnamese.
             mask = SurroundingRectangle(lbl, color="#111111", fill_color="#111111", fill_opacity=1.0, stroke_width=0, buff=0.04)
             label_group = VGroup(mask, lbl)
             score_labels.add(label_group)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+            
         for idx in range(5):
-            # Note: visual/narration alignment comment translated from Vietnamese.
             target_score = score_values[idx]
             delta_angle = - (target_score - speedometer.current_score) * PI
             speedometer.current_score = target_score
@@ -394,59 +614,44 @@ class Scene3_2(Scene):
                 Rotate(speedometer.needle, angle=delta_angle, about_point=speedometer.center_dot.get_center()),
                 Transform(digital_score_lbl, new_digital_lbl),
                 FadeIn(score_labels[idx]),
-                run_time=0.8
+                run_time=0.45
             )
-            self.wait(2.0)
-
-        self.wait(8.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+            self.wait(0.2)
+            
         selection_box = RoundedRectangle(width=2.9, height=0.7, color=GREEN, stroke_width=2.5, fill_opacity=0.0, corner_radius=0.08).move_to(y_boxes[1].get_center())
-        self.play(Create(selection_box), run_time=0.8)
-        self.wait(10.0)
-        self.play(FadeOut(selection_box), run_time=0.5)
+        self.play(Create(selection_box), run_time=0.5)
+        self.wait(1.5)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # --- Cue 21: Reward Hacking & Over-Optimization ---
+        self.wait_until(cue_start[21] + 0.2)
+        
         y5_hacking_text = create_text('"...the the the the the..."', font_size=8, color=RED)
         y5_hacking_text.move_to(y_boxes[4].get_center())
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         hacking_warn_box = RoundedRectangle(width=3.2, height=0.8, color=RED, fill_color=RED_E, fill_opacity=0.3, corner_radius=0.08)
         hacking_warn_box.next_to(y_boxes[4], DOWN, buff=0.4)
         hacking_warn_lbl = create_text("Reward Hacking\n(Reward-model exploit)", font_size=10, color=RED).move_to(hacking_warn_box.get_center())
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
         arrow_to_hacking = Arrow(start=hacking_warn_box.get_top(), end=y_boxes[4].get_bottom(), color=RED, stroke_width=1.5, buff=0.05)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         warning_icon = VGroup()
         triangle = Polygon(UP * 0.15, DOWN * 0.1 + LEFT * 0.15, DOWN * 0.1 + RIGHT * 0.15, color=RED, fill_color=RED, fill_opacity=0.9, stroke_width=1)
         excl = create_text("!", font_size=8, color=WHITE).move_to(triangle.get_center() + DOWN * 0.01)
         warning_icon.add(triangle, excl)
         warning_icon.next_to(digital_score_lbl, RIGHT, buff=0.1)
-
+        
         self.play(
             ReplacementTransform(y_texts[4], y5_hacking_text),
             y_boxes[4].animate.set_stroke(color=RED).set_fill(color="#551a1a", opacity=0.9),
-            # Note: visual/narration alignment comment translated from Vietnamese.
             Rotate(speedometer.needle, angle=- (0.99 - speedometer.current_score) * PI, about_point=speedometer.center_dot.get_center()),
             Transform(digital_score_lbl, create_text("Score: 0.99 !!!", font_size=10, color=RED).next_to(speedometer.center_dot, DOWN, buff=0.45)),
             FadeIn(warning_icon),
-            run_time=1.0
-        )
-        speedometer.current_score = 0.99
-        self.wait(6.0)
-
-        self.play(
             FadeIn(hacking_warn_box),
             Write(hacking_warn_lbl),
             Create(arrow_to_hacking),
             run_time=1.0
         )
-        self.wait(30.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        self.wait(2.5)
+        
         overopt_axes = Axes(
             x_range=[0, 10, 1],
             y_range=[0, 1.2, 0.2],
@@ -471,73 +676,47 @@ class Scene3_2(Scene):
         ).next_to(overopt_region, RIGHT, buff=0.15).shift(UP * 0.5)
         
         overopt_group = VGroup(overopt_axes, overopt_x_label, overopt_y_label, rm_curve, rm_lbl, acc_curve, acc_lbl, overopt_region, overopt_region_lbl)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        
         self.play(
-            FadeOut(prompt_box), FadeOut(prompt_lbl),
-            FadeOut(y_boxes), FadeOut(y_texts), FadeOut(y_arrows),
-            FadeOut(rm_box), FadeOut(speedometer), FadeOut(digital_score_lbl), FadeOut(warning_icon),
-            FadeOut(rm_flow_arrows), FadeOut(score_labels), FadeOut(y5_hacking_text),
-            FadeOut(hacking_warn_box), FadeOut(hacking_warn_lbl), FadeOut(arrow_to_hacking),
+            FadeOut(candidates_group), FadeOut(selection_box),
+            FadeOut(rm_display_group), FadeOut(rm_flow_arrows), FadeOut(score_labels),
+            FadeOut(y5_hacking_text), FadeOut(hacking_warn_box), FadeOut(hacking_warn_lbl), FadeOut(arrow_to_hacking), FadeOut(warning_icon),
+            FadeIn(overopt_group),
             run_time=1.0
         )
-        self.play(FadeIn(overopt_group), run_time=1.2)
-        self.wait(15.0)
-        self.play(
-            FadeOut(overopt_group),
-            FadeOut(bon_intro),
-            FadeOut(part1_title),
-            run_time=1.0
-        )
-        self.wait(1.0)
+        self.wait(3.5)
 
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        #
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        part2_title = create_text("2. Majority Voting (Majority Voting) & Self-Consistency method", font_size=13, color=BLUE_A)
-        part2_title.next_to(sub_title, DOWN, buff=0.3)
-        self.play(Write(part2_title), run_time=0.8)
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        voting_intro = create_markup_text(
-            "<b>Self-Consistency (Majority Voting):</b> Generate many intermediate reasoning chains\n"
-            "and vote for the final answer that appears most often.",
-            font_size=13, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 2.0)
-        self.play(Write(voting_intro), run_time=2.0)
-        self.wait(16.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # --- Cue 22: Voting Deep Dive & Math Question ---
+        self.wait_until(cue_start[22] + 0.2)
+        
+        self.play(FadeOut(overopt_group), run_time=0.4)
+        
+        dive_title_2 = create_text("Voting & Self-Consistency Deep Dive", font_size=13, color=YELLOW)
+        dive_title_2.next_to(sub_title, DOWN, buff=0.3)
+        self.play(Transform(dive_title, dive_title_2), run_time=0.5)
+        
         math_question_box = RoundedRectangle(width=9.0, height=0.6, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
         math_question_box.move_to(UP * 0.9)
         math_question_lbl = create_markup_text("<b>Math question:</b> <i>\"John has 17 apples. John buys 25 more apples. How many apples does John have?\"</i>", font_size=11, color=YELLOW)
         math_question_lbl.move_to(math_question_box.get_center())
+        
+        math_q_group = VGroup(math_question_box, math_question_lbl)
+        self.play(FadeIn(math_q_group), run_time=0.8)
+        self.wait(3.0)
 
-        self.play(FadeIn(math_question_box), Write(math_question_lbl), run_time=1.0)
-        self.wait(10.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # --- Cue 23: Intermediate Reasoning Paths ---
+        self.wait_until(cue_start[23] + 0.25)
+        
         cot_y_coords = [0.1, -0.6, -1.3, -2.0]
         cot_boxes = VGroup()
         cot_texts = VGroup()
-
         cot_data = [
             ("Reasoning z1: 17 + 20 = 37, 37 + 5 = 42", "y = 42", "#87FF87"),
             ("Reasoning z2: 17 + 5 = 22, 22 + 20 = 42", "y = 42", "#87FF87"),
             ("Reasoning z3: 10 + 20 = 30, 7 + 5 = 12 -> 42", "y = 42", "#87FF87"),
-            ("Reasoning z4: 17 + 25 = 17 + 20 + 5 = 32", "y = 32 (Sai)", "#FF8787")
+            ("Reasoning z4: 17 + 25 = 17 + 20 + 5 = 32", "y = 32 (Wrong)", "#FF8787")
         ]
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         voters = VGroup()
         for idx in range(4):
             v = get_voter_icon(color=[BLUE_B, BLUE_C, BLUE_D, RED_C][idx])
@@ -548,45 +727,35 @@ class Scene3_2(Scene):
             box = RoundedRectangle(width=7.4, height=0.5, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.05)
             box.move_to(RIGHT * 0.2 + UP * cot_y_coords[idx])
             
-            # Note: visual/narration alignment comment translated from Vietnamese.
             text_str = f"{z_str}  →  <span foreground='{col_str}'><b>{y_str}</b></span>"
-            lbl = create_markup_text(text_str, font_size=10).move_to(box.get_center())
+            lbl = create_markup_text(text_str, font_size=10, color=WHITE).move_to(box.get_center())
             
             cot_boxes.add(box)
             cot_texts.add(lbl)
+            
+        cot_group = VGroup(voters, cot_boxes, cot_texts)
+        self.play(FadeIn(cot_group), run_time=1.0)
+        self.wait(1.5)
 
-        self.play(
-            FadeIn(voters),
-            FadeIn(cot_boxes),
-            Write(cot_texts),
-            run_time=2.0
-        )
-        self.wait(18.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # --- Cue 24: Vote Aggregation & Self-Consistency ---
+        self.wait_until(cue_start[24] + 0.2)
         
-        voter_ans_lbls = VGroup()
         voter_dest_coords = [LEFT * 3.0, LEFT * 1.0, RIGHT * 1.0, RIGHT * 3.0]
-        
+        voter_ans_lbls = VGroup()
+        voter_sub_boxes = VGroup()
         for idx in range(4):
             ans_text = "y = 42" if idx < 3 else "y = 32"
             ans_color = GREEN if idx < 3 else RED
             lbl = create_text(ans_text, font_size=10, color=ans_color)
             lbl.move_to(voter_dest_coords[idx] + UP * 0.20)
             voter_ans_lbls.add(lbl)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        voter_sub_boxes = VGroup()
-        for idx in range(4):
+            
             box = RoundedRectangle(width=1.6, height=1.0, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.8, corner_radius=0.06)
             box.move_to(voter_dest_coords[idx] + UP * 0.45)
             voter_sub_boxes.add(box)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+            
         self.play(
-            FadeOut(math_question_box), FadeOut(math_question_lbl),
+            FadeOut(math_q_group),
             FadeOut(cot_boxes), FadeOut(cot_texts),
             voters[0].animate.move_to(voter_dest_coords[0] + UP * 0.65),
             voters[1].animate.move_to(voter_dest_coords[1] + UP * 0.65),
@@ -594,11 +763,9 @@ class Scene3_2(Scene):
             voters[3].animate.move_to(voter_dest_coords[3] + UP * 0.65),
             FadeIn(voter_sub_boxes),
             FadeIn(voter_ans_lbls),
-            run_time=1.5
+            run_time=1.0
         )
-        self.wait(2.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        
         bin_42 = RoundedRectangle(width=3.6, height=1.6, color=GREEN, fill_color=GREEN_E, fill_opacity=0.1, corner_radius=0.08)
         bin_42.move_to(LEFT * 2.0 + DOWN * 1.4)
         bin_42_lbl = create_text("Group y = 42", font_size=11, color=GREEN).next_to(bin_42.get_top(), DOWN, buff=0.15)
@@ -610,11 +777,9 @@ class Scene3_2(Scene):
         self.play(
             FadeIn(bin_42), Write(bin_42_lbl),
             FadeIn(bin_32), Write(bin_32_lbl),
-            run_time=1.0
+            run_time=0.8
         )
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        
         ballots = VGroup()
         ballot_targets = [
             bin_42.get_center() + DOWN * 0.3 + LEFT * 0.8,
@@ -622,399 +787,59 @@ class Scene3_2(Scene):
             bin_42.get_center() + DOWN * 0.3 + RIGHT * 0.8,
             bin_32.get_center() + DOWN * 0.3
         ]
-        
         for idx in range(4):
             color = GREEN if idx < 3 else RED
-            # Note: visual/narration alignment comment translated from Vietnamese.
             card = RoundedRectangle(width=0.5, height=0.4, color=color, fill_color=color, fill_opacity=0.8, corner_radius=0.04)
             card.move_to(voters[idx].get_center())
             card_lbl = create_text("+1", font_size=8, color=WHITE).move_to(card.get_center())
             ballots.add(VGroup(card, card_lbl))
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         count_42_lbl = create_text("0 votes", font_size=12, color=GREEN).next_to(bin_42, DOWN, buff=0.2)
         count_32_lbl = create_text("0 votes", font_size=12, color=RED).next_to(bin_32, DOWN, buff=0.2)
-        self.play(FadeIn(count_42_lbl), FadeIn(count_32_lbl), run_time=0.8)
+        self.play(FadeIn(count_42_lbl), FadeIn(count_32_lbl), run_time=0.5)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         for idx in range(4):
             target_pos = ballot_targets[idx]
             self.play(
                 ballots[idx].animate.move_to(target_pos),
-                run_time=0.8
+                run_time=0.4
             )
-            # Note: visual/narration alignment comment translated from Vietnamese.
             if idx < 3:
                 new_cnt_lbl = create_text(f"{idx+1} votes", font_size=12, color=GREEN).next_to(bin_42, DOWN, buff=0.2)
-                self.play(Transform(count_42_lbl, new_cnt_lbl), run_time=0.3)
+                self.play(Transform(count_42_lbl, new_cnt_lbl), run_time=0.15)
             else:
                 new_cnt_lbl = create_text("1 votes", font_size=12, color=RED).next_to(bin_32, DOWN, buff=0.2)
-                self.play(Transform(count_32_lbl, new_cnt_lbl), run_time=0.3)
-            self.wait(1.5)
+                self.play(Transform(count_32_lbl, new_cnt_lbl), run_time=0.15)
+            self.wait(0.1)
 
-        self.wait(10.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
         winner_highlight = RoundedRectangle(width=3.9, height=2.8, color=GREEN, stroke_width=3.5, fill_opacity=0, corner_radius=0.1).move_to(
             LEFT * 2.0 + DOWN * 1.85
         )
         winner_tag = create_text("HIGH CONSENSUS - SELECT Y = 42", font_size=10, color=GREEN).next_to(count_42_lbl, DOWN, buff=0.2)
+        self.play(Create(winner_highlight), Write(winner_tag), run_time=0.6)
+        self.wait(1.5)
 
-        self.play(Create(winner_highlight), Write(winner_tag), run_time=1.0)
-        self.wait(12.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        # --- End of Scene Recap: Comparison Table ---
+        self.wait_until(voiceover_end + 0.1)
+        
         self.play(
             FadeOut(voters), FadeOut(voter_sub_boxes), FadeOut(voter_ans_lbls),
             FadeOut(bin_42), FadeOut(bin_42_lbl),
             FadeOut(bin_32), FadeOut(bin_32_lbl),
             FadeOut(ballots), FadeOut(count_42_lbl), FadeOut(count_32_lbl),
             FadeOut(winner_highlight), FadeOut(winner_tag),
-            run_time=1.0
+            FadeOut(dive_title),
+            run_time=0.8
         )
-        self.wait(1.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        voting_formula_box = RoundedRectangle(width=8.5, height=2.0, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        voting_formula_box.move_to(DOWN * 0.4)
-        voting_formula_title = create_text("Formula Voting & Weighted Voting", font_size=12, color=BLUE_B).next_to(voting_formula_box.get_top(), DOWN, buff=0.15)
         
-        voting_formula_txt = create_markup_text(
-            "Voting:   argmax<sub>a</sub>  ∑<sub>i=1</sub><sup>N</sup>  <b>1</b>{y<sup>(i)</sup> = a}\n"
-            "Weighted Voting:   argmax<sub>a</sub>  ∑<sub>i=1</sub><sup>N</sup>  v(y<sup>(i)</sup>) · <b>1</b>{y<sup>(i)</sup> = a}",
-            font_size=11, line_spacing=1.3
-        ).move_to(voting_formula_box.get_center() + DOWN * 0.1)
-        voting_formula_group = VGroup(voting_formula_box, voting_formula_title, voting_formula_txt)
-
-        self.play(FadeIn(voting_formula_group, shift=UP * 0.15), run_time=1.2)
-        self.wait(11.0)
-        self.play(FadeOut(voting_formula_group), run_time=0.8)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        formula_box = RoundedRectangle(width=9.0, height=2.8, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
-        formula_box.move_to(DOWN * 0.4)
-        formula_title = create_text("Mathematical nature: Operation marginalization (Marginalization)", font_size=12, color=BLUE_B).next_to(formula_box.get_top(), DOWN, buff=0.2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        formula_txt = create_markup_text(
-            "argmax<sub>y</sub>  ∑<sub>z</sub>  P( <span foreground='#FFFF00'>y</span>, <span foreground='#5CD65C'>z</span> | X )",
-            font_size=24
-        ).move_to(formula_box.get_center() + UP * 0.1)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        ex_lbl = create_markup_text(
-            "Where:\n"
-            "  • <span foreground='#5CD65C'><b>z</b></span>: Reasoning chains trung gian (Chain of Thought / Scratchpad)\n"
-            "  • <span foreground='#FFFF00'><b>y</b></span>: final answer at the terminal point",
-            font_size=11, line_spacing=1.3
-        ).next_to(formula_box.get_bottom(), UP, buff=0.25)
-        ex_lbl.align_to(formula_box, LEFT).shift(RIGHT * 0.8)
-
-        self.play(
-            FadeIn(formula_box),
-            Write(formula_title),
-            Write(formula_txt),
-            Write(ex_lbl),
-            run_time=1.5
-        )
-        self.wait(15.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(formula_box), FadeOut(formula_title),
-            FadeOut(formula_txt), FadeOut(ex_lbl),
-            run_time=1.0
-        )
-        self.wait(1.0)
-
-        # Convergence Theorem & Takeaways
-        convergence_box = RoundedRectangle(width=9.2, height=3.4, color=BLUE_B, fill_color="#0b1324", fill_opacity=0.9, corner_radius=0.1)
-        convergence_box.move_to(DOWN * 0.3)
-        convergence_title = create_text("Convergence theorem & takeaways", font_size=12, color=BLUE_A).next_to(convergence_box.get_top(), DOWN, buff=0.18)
-        
-        convergence_formula = create_markup_text(
-            "Accuracy →  1/M ∑<sub>i=1</sub><sup>M</sup>  <b>I</b> [ a<sub>i</sub><sup>*</sup> = argmax<sub>a</sub>  ∑<sub>z</sub>  v(x, z, a) g(z, a | x) ]",
-            font_size=9.5, color=YELLOW
-        ).move_to(convergence_box.get_center() + UP * 0.7)
-        
-        takeaways_list = VGroup(
-            create_markup_text("• <b>Takeaway 1:</b> Accuracy converges gradually instead of increasing forever with N.", font_size=8.5, color=WHITE),
-            create_markup_text("• <b>Takeaway 2:</b> Weighted voting beats ordinary voting when <i>v · g</i> concentrates weight correctly.", font_size=8.5, color=WHITE),
-            create_markup_text("• <b>Takeaway 3:</b> To improve the performance ceiling, improve verifier <i>v</i> or generator <i>g</i>.", font_size=8.5, color=WHITE)
-        ).arrange(DOWN, buff=0.18, aligned_edge=LEFT).next_to(convergence_formula, DOWN, buff=0.25).shift(LEFT * 0.2)
-        convergence_group = VGroup(convergence_box, convergence_title, convergence_formula, takeaways_list)
-
-        self.play(FadeIn(convergence_group, shift=UP * 0.15), run_time=1.2)
-        self.wait(22.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(voting_intro), FadeOut(convergence_group), FadeOut(part2_title),
-            run_time=1.2
-        )
-        self.wait(2.0)
-
-        # =====================================================================
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        part3_title = create_text("3. Minimum Bayes risk (Minimum Bayes Risk - MBR)", font_size=13, color=BLUE_A)
-        part3_title.next_to(sub_title, DOWN, buff=0.3)
-        self.play(Write(part3_title), run_time=0.8)
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        mbr_intro = create_markup_text(
-            "<b>Minimum Bayes Risk (MBR):</b> Instead of exact word matching,\n"
-            "MBR compares answer semantics pairwise to select the highest-consensus answer.",
-            font_size=13, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 2.0)
-        self.play(Write(mbr_intro), run_time=2.0)
-        self.wait(18.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        mbr_formula_box = RoundedRectangle(width=7.5, height=1.0, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        mbr_formula_box.move_to(UP * 0.7)
-        mbr_formula_txt = create_markup_text(
-            "argmax<sub>y</sub>  ∑<sub>j</sub>  U( <span foreground='#FFFF00'>y</span>, <span foreground='#A0A0A0'>y<sup>(j)</sup></span> )",
-            font_size=20
-        ).move_to(mbr_formula_box.get_center())
-
-        self.play(FadeIn(mbr_formula_box), Write(mbr_formula_txt), run_time=1.2)
-        self.wait(22.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        cluster_center = LEFT * 3.8 + DOWN * 1.5
-        cluster_title = create_text("Semantic space of answers", font_size=10, color=BLUE_A)
-        cluster_title.move_to(LEFT * 3.8 + DOWN * 0.1)
-        
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        node_coords = {
-            1: cluster_center + UP * 0.0 + LEFT * 0.0,      # Note: visual/narration alignment comment translated from Vietnamese.
-            2: cluster_center + UP * 0.5 + LEFT * 1.0,      # Note: visual/narration alignment comment translated from Vietnamese.
-            4: cluster_center + DOWN * 0.6 + RIGHT * 0.9,   # Note: visual/narration alignment comment translated from Vietnamese.
-            3: cluster_center + DOWN * 0.8 + LEFT * 1.1,    # y(3) xa (outlier)
-            5: cluster_center + UP * 0.8 + RIGHT * 1.1      # y(5) xa (outlier)
-        }
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        connections = VGroup()
-        
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        connections.add(Line(node_coords[1], node_coords[2], color=GREEN, stroke_width=2.5))
-        connections.add(Line(node_coords[1], node_coords[4], color=GREEN, stroke_width=2.5))
-        connections.add(Line(node_coords[2], node_coords[4], color=GREEN, stroke_width=2.0))
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        connections.add(DashedLine(node_coords[1], node_coords[3], color=RED, stroke_width=1.0, dash_length=0.08))
-        connections.add(DashedLine(node_coords[1], node_coords[5], color=RED, stroke_width=1.0, dash_length=0.08))
-        connections.add(DashedLine(node_coords[2], node_coords[3], color=RED, stroke_width=1.0, dash_length=0.08))
-        connections.add(DashedLine(node_coords[4], node_coords[5], color=RED, stroke_width=1.0, dash_length=0.08))
-        
-        connections.set_z_index(1)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        weight_labels = VGroup()
-        weight_data = [
-            ("0.92", node_coords[1]*0.5 + node_coords[2]*0.5 + UP*0.1),
-            ("0.88", node_coords[1]*0.5 + node_coords[4]*0.5 + DOWN*0.1),
-            ("0.20", node_coords[1]*0.5 + node_coords[3]*0.5 + LEFT*0.1),
-            ("0.15", node_coords[1]*0.5 + node_coords[5]*0.5 + RIGHT*0.1)
-        ]
-        for w_val, w_pos in weight_data:
-            w_lbl = create_text(w_val, font_size=8, color=GRAY_A)
-            w_lbl.move_to(w_pos)
-            mask = SurroundingRectangle(w_lbl, color="#111111", fill_color="#111111", fill_opacity=1.0, stroke_width=0, buff=0.02)
-            weight_labels.add(VGroup(mask, w_lbl))
-            
-        weight_labels.set_z_index(2)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        nodes = VGroup()
-        node_colors = [YELLOW, GREEN_B, RED_A, GREEN_C, RED_B]
-        
-        for idx in range(5):
-            y_idx = idx + 1
-            pos = node_coords[y_idx]
-            circle = Circle(radius=0.25, color=node_colors[idx], fill_color="#141517", fill_opacity=1.0, stroke_width=1.5)
-            circle.move_to(pos)
-            lbl = create_text(f"y({y_idx})", font_size=9, color=WHITE).move_to(pos)
-            nodes.add(VGroup(circle, lbl))
-            
-        nodes.set_z_index(3)
-
-        self.play(
-            FadeIn(cluster_title),
-            FadeIn(nodes),
-            Create(connections),
-            FadeIn(weight_labels),
-            run_time=2.0
-        )
-        self.wait(4.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        matrix_center = RIGHT * 1.6 + DOWN * 1.5
-        
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        row_labels = VGroup()
-        col_labels = VGroup()
-
-        cell_size = 0.55
-        start_x = -1.1
-        start_y = 0.4
-
-        for r in range(5):
-            lbl_r = create_text(f"y({r+1})", font_size=9, color=YELLOW)
-            lbl_r.move_to(matrix_center + LEFT * 1.6 + UP * (start_y - r * cell_size))
-            row_labels.add(lbl_r)
-
-            lbl_c = create_text(f"y({r+1})", font_size=9, color=YELLOW)
-            lbl_c.move_to(matrix_center + RIGHT * (start_x + r * cell_size) + UP * 0.8)
-            col_labels.add(lbl_c)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        matrix_data = [
-            ["1.00", "0.92", "0.20", "0.88", "0.15"],  # y1
-            ["0.92", "1.00", "0.15", "0.85", "0.12"],  # y2
-            ["0.20", "0.15", "1.00", "0.18", "0.25"],  # y3
-            ["0.88", "0.85", "0.18", "1.00", "0.15"],  # y4
-            ["0.15", "0.12", "0.25", "0.15", "1.00"]   # y5
-        ]
-
-        matrix_cells = VGroup()
-        matrix_texts = VGroup()
-
-        for r in range(5):
-            for c in range(5):
-                cell_x = start_x + c * cell_size
-                cell_y = start_y - r * cell_size
-                pos = matrix_center + RIGHT * cell_x + UP * cell_y
-
-                # Note: visual/narration alignment comment translated from Vietnamese.
-                val = float(matrix_data[r][c])
-                if r == c:
-                    cell_color = GRAY_D
-                    fill_opacity = 0.5
-                    text_color = WHITE
-                elif val > 0.8:
-                    cell_color = GREEN_E
-                    fill_opacity = 0.35
-                    text_color = GREEN
-                else:
-                    cell_color = RED_E
-                    fill_opacity = 0.15
-                    text_color = GRAY_B
-
-                square = Square(side_length=cell_size, color=GRAY_E, stroke_width=0.8, fill_color=cell_color, fill_opacity=fill_opacity)
-                square.move_to(pos)
-                matrix_cells.add(square)
-
-                txt = create_text(matrix_data[r][c], font_size=7, color=text_color).move_to(pos)
-                matrix_texts.add(txt)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        legend_bar = VGroup()
-        legend_colors = [GREEN, GREEN_B, YELLOW, ORANGE, RED]
-        legend_labels = ["1.0", "0.8", "0.5", "0.3", "0.0"]
-        legend_x = start_x + 6.3 * cell_size
-
-        for idx, color in enumerate(legend_colors):
-            rect = Rectangle(width=0.15, height=0.3, stroke_width=0, fill_color=color, fill_opacity=0.8)
-            rect.move_to(matrix_center + RIGHT * legend_x + UP * (0.6 - idx * 0.3))
-            
-            lbl = create_text(legend_labels[idx], font_size=7, color=GRAY_A)
-            lbl.next_to(rect, RIGHT, buff=0.1)
-            
-            legend_bar.add(VGroup(rect, lbl))
-
-        self.play(
-            Write(row_labels),
-            Write(col_labels),
-            Create(matrix_cells),
-            FadeIn(legend_bar),
-            run_time=1.8
-        )
-        self.wait(5.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(Write(matrix_texts), run_time=2.0)
-        self.wait(19.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        avg_header = create_text("Avg Utility", font_size=9, color=BLUE_A)
-        avg_header.move_to(matrix_center + RIGHT * (start_x + 5.2 * cell_size) + UP * 0.8)
-        self.play(Write(avg_header), run_time=0.8)
-
-        avg_values = ["0.63", "0.61", "0.36", "0.61", "0.33"]
-        avg_texts = VGroup()
-
-        for r in range(5):
-            cell_x = start_x + 5.2 * cell_size
-            cell_y = start_y - r * cell_size
-            pos = matrix_center + RIGHT * cell_x + UP * cell_y
-
-            box = RoundedRectangle(width=0.8, height=0.4, color=BLUE_B, fill_color=BLACK, fill_opacity=0.5, corner_radius=0.03, stroke_width=1)
-            box.move_to(pos)
-            
-            txt_color = GREEN if r == 0 else WHITE
-            txt = create_text(avg_values[r], font_size=8, color=txt_color).move_to(pos)
-            
-            avg_texts.add(VGroup(box, txt))
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        for r in range(5):
-            self.play(FadeIn(avg_texts[r]), run_time=0.5)
-        self.wait(22.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        winner_row_rect = RoundedRectangle(width=4.3, height=0.62, color=GREEN, stroke_width=2.5, fill_opacity=0, corner_radius=0.08).move_to(
-            matrix_center + RIGHT * 0.23 + UP * start_y
-        )
-        winner_tag = create_text("SELECT Y(1)", font_size=10, color=GREEN).next_to(row_labels[0], LEFT, buff=0.25)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        winner_node_glow = Circle(radius=0.38, color=GREEN, stroke_width=3, fill_opacity=0.15).move_to(node_coords[1])
-        winner_node_glow.set_z_index(2)
-
-        self.play(
-            Create(winner_row_rect),
-            Write(winner_tag),
-            Create(winner_node_glow),
-            run_time=1.0
-        )
-        self.wait(24.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        self.play(
-            FadeOut(mbr_intro), FadeOut(mbr_formula_box), FadeOut(mbr_formula_txt),
-            FadeOut(cluster_title), FadeOut(nodes), FadeOut(connections), FadeOut(weight_labels), FadeOut(winner_node_glow),
-            FadeOut(row_labels), FadeOut(col_labels), FadeOut(matrix_cells), FadeOut(legend_bar),
-            FadeOut(matrix_texts), FadeOut(avg_header), FadeOut(avg_texts),
-            FadeOut(winner_row_rect), FadeOut(winner_tag),
-            FadeOut(part3_title),
-            run_time=1.2
-        )
-        self.wait(2.0)
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
         recap_title = create_text("Summary: Pros and cons of parallel generation techniques", font_size=13, color=YELLOW)
         recap_title.next_to(sub_title, DOWN, buff=0.3)
         self.play(Write(recap_title), run_time=0.8)
-        self.wait(3.0)
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        
         comparison_table = VGroup()
         headers = ["Technique", "Core principle", "Traps / limits"]
         header_colors = [BLUE_A, WHITE, RED]
         
-        # Note: visual/narration alignment comment translated from Vietnamese.
         header_group = VGroup()
         for idx, h_text in enumerate(headers):
             cell = RoundedRectangle(width=3.2, height=0.6, color=GRAY_D, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
@@ -1023,7 +848,6 @@ class Scene3_2(Scene):
             header_group.add(VGroup(cell, lbl))
         comparison_table.add(header_group)
 
-        # Note: visual/narration alignment comment translated from Vietnamese.
         table_rows = [
             ("1. Best-of-N", "Choose the highest-RM-scored answer", "Reward Hacking"),
             ("2. Majority Voting", "Majority vote over CoT chains", "Not applicable to free-form text"),
@@ -1037,22 +861,22 @@ class Scene3_2(Scene):
                 cell = RoundedRectangle(width=3.2, height=0.6, color=GRAY_E, fill_color="#121315", fill_opacity=0.8, corner_radius=0.04)
                 cell.move_to(LEFT * (3.4 * (1 - c_idx)) + UP * row_y_coords[r_idx])
                 
-                # Note: visual/narration alignment comment translated from Vietnamese.
                 t_color = RED if c_idx == 2 else (GREEN if c_idx == 1 else WHITE)
                 lbl = create_text(cell_text, font_size=9, color=t_color).move_to(cell.get_center())
                 
                 row_group.add(VGroup(cell, lbl))
             comparison_table.add(row_group)
 
-        self.play(FadeIn(comparison_table), run_time=1.8)
-        self.wait(35.0)  # Note: visual/narration alignment comment translated from Vietnamese.
-
-        # Note: visual/narration alignment comment translated from Vietnamese.
+        self.play(FadeIn(comparison_table), run_time=1.0)
+        
+        self.wait(15.0)
+        
         self.play(
             FadeOut(comparison_table),
             FadeOut(recap_title),
             FadeOut(sub_title),
-            run_time=1.2
+            run_time=0.8
         )
-        self.wait(2.0)
-        finish_voiceovers(self, voiceover_end)
+        self.wait(1.5)
+        
+        assert_all_scene_voiceovers_played(self)

@@ -8,20 +8,76 @@ config.text_dir = os.path.join(tempfile.gettempdir(), "manim_text")
 config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
 config.max_files_cached = 10000
 
-VOICEOVER_DIR = Path(__file__).resolve().parents[2] / "voiceover" / "generated_unsorted"
+VOICEOVER_DIR = Path(__file__).resolve().parents[3] / "voiceover" / "generated_sentence_level"
+
+SCENE_5_1_DURATIONS = {
+    "sc51_001.mp3": 6.316,
+    "sc51_002.mp3": 3.065,
+    "sc51_003.mp3": 12.957,
+    "sc51_004.mp3": 2.647,
+    "sc51_005.mp3": 12.817,
+    "sc51_006.mp3": 9.985,
+    "sc51_007.mp3": 6.269,
+    "sc51_008.mp3": 11.703,
+    "sc51_009.mp3": 7.245,
+    "sc51_010.mp3": 4.69,
+    "sc51_011.mp3": 6.223,
+    "sc51_012.mp3": 11.053,
+    "sc51_013.mp3": 5.805,
+    "sc51_014.mp3": 7.105,
+    "sc51_015.mp3": 7.198,
+    "sc51_016.mp3": 7.291,
+    "sc51_017.mp3": 4.18,
+    "sc51_018.mp3": 7.105,
+    "sc51_019.mp3": 6.13,
+    "sc51_020.mp3": 11.564,
+    "sc51_021.mp3": 3.065,
+    "sc51_022.mp3": 5.062,
+    "sc51_023.mp3": 7.663,
+    "sc51_024.mp3": 9.009,
+    "sc51_025.mp3": 10.263,
+}
+SCENE_5_1_VOICEOVERS = tuple(SCENE_5_1_DURATIONS)
+
+
+def validate_scene_voiceover_files():
+    available = sorted(path.name for path in VOICEOVER_DIR.glob("sc51_*.mp3"))
+    expected = sorted(SCENE_5_1_VOICEOVERS)
+    if available != expected:
+        missing = sorted(set(expected) - set(available))
+        extra = sorted(set(available) - set(expected))
+        raise FileNotFoundError(
+            f"Scene 5.1 voiceover mismatch. Missing: {missing or 'none'}; extra: {extra or 'none'}"
+        )
 
 
 def add_voiceover(scene, filename, time_offset=0.0, duration=0.0):
+    if filename not in SCENE_5_1_DURATIONS:
+        raise KeyError(f"Unexpected Scene 5.1 voiceover: {filename}")
+    if not (VOICEOVER_DIR / filename).exists():
+        raise FileNotFoundError(f"Missing Scene 5.1 voiceover file: {filename}")
     scene.add_sound(str(VOICEOVER_DIR / filename), time_offset=time_offset)
+    scene.played_voiceovers.append(filename)
     return time_offset + duration
 
 
-def finish_voiceovers(scene, voiceover_end, padding=0.25):
-    current_time = getattr(scene.renderer, "time", 0.0)
-    remaining = voiceover_end + padding - current_time
-    if remaining > 0:
-        scene.wait(remaining)
+def schedule_scene_voiceovers(scene):
+    validate_scene_voiceover_files()
+    scene.played_voiceovers = []
+    voiceover_end = 0.0
+    for filename, duration in SCENE_5_1_DURATIONS.items():
+        voiceover_end = add_voiceover(scene, filename, voiceover_end, duration)
+    return voiceover_end
 
+
+def assert_all_scene_voiceovers_played(scene):
+    played = tuple(scene.played_voiceovers)
+    expected = tuple(SCENE_5_1_VOICEOVERS)
+    if played != expected:
+        missing = [filename for filename in expected if filename not in played]
+        raise RuntimeError(
+            f"Scene 5.1 did not schedule every voiceover. Played: {played}; missing: {missing or 'none'}"
+        )
 
 
 def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
@@ -47,7 +103,13 @@ def fit_mobject(mob, max_width=None, max_height=None):
         mob.scale_to_fit_height(max_height)
     return mob
 
+
 class Scene5_1(Scene):
+    def wait_until(self, target_time):
+        current_time = getattr(self.renderer, "time", 0.0)
+        if target_time > current_time:
+            self.wait(target_time - current_time)
+
     def make_search_tree(self):
         root = Circle(radius=0.12, color=YELLOW, fill_opacity=0.85).move_to(UP * 0.45)
         root_label = create_text("Search tree", font_size=5.5, color=YELLOW).next_to(root, UP, buff=0.05)
@@ -124,40 +186,30 @@ class Scene5_1(Scene):
         return VGroup(box, block).move_to(UP * y)
 
     def construct(self):
-        # Note: visual/narration alignment comment translated from Vietnamese.
-
         self.camera.background_color = "#111111"
 
         # Voiceover audio is scheduled from actual MP3 durations.
-        voiceover_end = 0.0
-        voiceover_end = add_voiceover(self, "sc51_1.mp3", voiceover_end, 23.824)
-        voiceover_end = add_voiceover(self, "sc51_2.mp3", voiceover_end, 26.610)
-        voiceover_end = add_voiceover(self, "sc51_3.mp3", voiceover_end, 19.551)
-        voiceover_end = add_voiceover(self, "sc51_4.mp3", voiceover_end, 33.019)
-        voiceover_end = add_voiceover(self, "sc51_5.mp3", voiceover_end, 23.499)
-        voiceover_end = add_voiceover(self, "sc51_6.mp3", voiceover_end, 28.282)
-        voiceover_end = add_voiceover(self, "sc51_7.mp3", voiceover_end, 15.511)
-        voiceover_end = add_voiceover(self, "sc51_8.mp3", voiceover_end, 34.551)
+        voiceover_end = schedule_scene_voiceovers(self)
 
+        cue_start = {}
+        current = 0.0
+        for idx, (filename, duration) in enumerate(SCENE_5_1_DURATIONS.items(), start=1):
+            cue_start[idx] = current
+            current += duration
 
+        # --- Section 1: Intro Title & Journey Recap (Cue 1-3) ---
         title = create_markup_text("<b>Conclusion &amp; Panel Discussion</b>", font_size=21, color=YELLOW)
         subtitle = create_text("Conclusion and panel discussion", font_size=10, color=GRAY_A)
         intro = VGroup(title, subtitle).arrange(DOWN, buff=0.16).move_to(ORIGIN)
         top_line = Line(LEFT * 4.5, RIGHT * 4.5, color=YELLOW, stroke_width=1.3).next_to(intro, UP, buff=0.32)
         bot_line = Line(LEFT * 4.5, RIGHT * 4.5, color=YELLOW, stroke_width=1.3).next_to(intro, DOWN, buff=0.32)
         self.play(Create(top_line), Create(bot_line), FadeIn(intro, shift=UP * 0.2), run_time=1.4)
-        self.wait(4)
-
+        
+        self.wait_until(cue_start[2] - 1.0)
         header = create_text("Conclusion & Panel Session", font_size=12, color=YELLOW).to_edge(UP, buff=0.28)
         self.play(FadeOut(top_line), FadeOut(bot_line), ReplacementTransform(intro, header), run_time=1.0)
-        self.wait(0.6)
-
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Visual recap from the full video script: previous components assemble around the axis.
+        
+        self.wait_until(cue_start[2])
         axes = VGroup(
             Arrow(LEFT * 2.1, RIGHT * 2.1, color=GRAY_B, stroke_width=1.8),
             Arrow(DOWN * 1.35, UP * 1.35, color=GRAY_B, stroke_width=1.8),
@@ -190,14 +242,12 @@ class Scene5_1(Scene):
             FadeIn(journey),
             run_time=2.0,
         )
-        self.wait(13)
+        
+        self.wait_until(cue_start[4] - 1.0)
         self.play(FadeOut(recap_title), FadeOut(axes), FadeOut(z_label), FadeOut(components), FadeOut(journey), run_time=1.0)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        # Panel participants.
+        # --- Section 2: Panel Participants (Cue 4-6) ---
+        self.wait_until(cue_start[4])
         panel_title = create_markup_text("<b>Panel Discussion</b>", font_size=14, color=YELLOW).move_to(UP * 2.3)
         experts = VGroup(
             self.make_expert_card("Noam Brown", "OpenAI", "@polynoamial", "#FF6B6B"),
@@ -209,13 +259,12 @@ class Scene5_1(Scene):
         ).arrange_in_grid(rows=2, cols=3, buff=0.26).move_to(UP * 0.25)
         self.play(FadeIn(panel_title), run_time=0.8)
         self.play(LaggedStart(*[FadeIn(card, shift=UP * 0.12) for card in experts], lag_ratio=0.14), run_time=2.0)
-        self.wait(11)
+        
+        self.wait_until(cue_start[7] - 1.0)
         self.play(FadeOut(panel_title), FadeOut(experts), run_time=1.0)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # --- Section 3: Big Question (Cue 7-8) ---
+        self.wait_until(cue_start[7])
         question = create_markup_text(
             "<b>Big question:</b>\nWill training larger models remove the need\nfor Meta-Generation search algorithms?",
             font_size=13,
@@ -223,15 +272,54 @@ class Scene5_1(Scene):
             line_spacing=1.2,
         ).move_to(ORIGIN)
         self.play(Write(question), run_time=1.5)
-        self.wait(8)
+        
+        self.wait_until(cue_start[9] - 0.8)
         self.play(FadeOut(question), run_time=0.8)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # --- Section 4: Beidi Chen quote (Cue 9-11) ---
+        self.wait_until(cue_start[9])
+        beidi = self.quote_box(
+            "Beidi Chen (CMU)",
+            "Most current GPU hardware was designed for heavy training\n"
+            "and cheap inference. When inference cost becomes dominant,\n"
+            "co-designing search algorithms and GPU hardware creates major optimization opportunities.",
+            "#FFD93D",
+            height=1.65,
+            y=0.6,
+        )
+        cod = self.quote_box(
+            "Algorithm-hardware co-design",
+            "The goal is to reduce inference cost and run Meta-Generation systems more efficiently.",
+            "#FFD93D",
+            height=0.95,
+            y=-1.2,
+        )
+        self.play(FadeIn(beidi, shift=RIGHT * 0.15), run_time=1.0)
+        self.play(FadeIn(cod, shift=RIGHT * 0.15), run_time=0.8)
+        
+        self.wait_until(cue_start[12] - 0.9)
+        self.play(FadeOut(beidi), FadeOut(cod), run_time=0.9)
+
+        # --- Section 5: Key Panel Takeaways (Cue 12) ---
+        self.wait_until(cue_start[12])
+        cue12_box = RoundedRectangle(width=9.6, height=2.2, corner_radius=0.08, color=YELLOW, fill_color="#201c14", fill_opacity=0.95)
+        cue12_text = create_markup_text(
+            "<b>Key Panel Takeaways</b>\n\n"
+            "• <b>Hybrid systems</b>: use code/tools where appropriate\n"
+            "• <b>Generative verifiers</b>: LLM-based verification layers\n"
+            "• <b>Open source tools</b>: democratizing inference scaling",
+            font_size=11, color=WHITE, line_spacing=1.3
+        )
+        cue12_text.move_to(cue12_box.get_center())
+        cue12_group = VGroup(cue12_box, cue12_text).move_to(ORIGIN)
+        
+        self.play(FadeIn(cue12_group, shift=UP * 0.15), run_time=1.0)
+        
+        self.wait_until(cue_start[13] - 1.0)
+        self.play(FadeOut(cue12_group), run_time=1.0)
+
+        # --- Section 6: Nouha Dziri quote (Cue 13-15) ---
+        self.wait_until(cue_start[13])
         nouha = self.quote_box(
             "Nouha Dziri (AI2)",
             "No. Larger models still face two core limits:\n"
@@ -250,15 +338,12 @@ class Scene5_1(Scene):
         )
         self.play(FadeIn(nouha, shift=RIGHT * 0.15), run_time=1.0)
         self.play(FadeIn(structure, shift=RIGHT * 0.15), run_time=1.0)
-        self.wait(20)
+        
+        self.wait_until(cue_start[16] - 0.9)
         self.play(FadeOut(nouha), FadeOut(structure), run_time=0.9)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # --- Section 7: Noam Brown quote (Cue 16-19) ---
+        self.wait_until(cue_start[16])
         noam = self.quote_box(
             "Noam Brown (OpenAI)",
             "\"Inference Compute is an infinite frontier.\"\n"
@@ -278,41 +363,31 @@ class Scene5_1(Scene):
         )
         self.play(FadeIn(noam, shift=RIGHT * 0.15), run_time=1.0)
         self.play(FadeIn(scale, shift=RIGHT * 0.15), run_time=0.8)
-        self.wait(22)
+        
+        self.wait_until(cue_start[20] - 0.9)
         self.play(FadeOut(noam), FadeOut(scale), run_time=0.9)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
-        beidi = self.quote_box(
-            "Beidi Chen (CMU)",
-            "Most current GPU hardware was designed for heavy training\n"
-            "and cheap inference. When inference cost becomes dominant,\n"
-            "co-designing search algorithms and GPU hardware creates major optimization opportunities.",
-            "#FFD93D",
-            height=1.65,
-            y=0.6,
+        # --- Section 8: Open Research Questions (Cue 20-21) ---
+        self.wait_until(cue_start[20])
+        open_questions_box = RoundedRectangle(width=10.0, height=2.4, corner_radius=0.08, color=YELLOW, fill_color="#201c14", fill_opacity=0.95)
+        open_questions_text = create_markup_text(
+            "<b>Open Research Directions</b>\n\n"
+            "• <b>Learning search</b> during pretraining / RL\n"
+            "• <b>Self-improvement</b> for chain-of-thought trajectories\n"
+            "• <b>Downstream generalization</b> of search methods\n"
+            "• <b>Reasoning length scaling</b> to longer context windows",
+            font_size=11, color=WHITE, line_spacing=1.3
         )
-        cod = self.quote_box(
-            "Algorithm-hardware co-design",
-            "The goal is to reduce inference cost and run Meta-Generation systems more efficiently.",
-            "#FFD93D",
-            height=0.95,
-            y=-1.2,
-        )
-        self.play(FadeIn(beidi, shift=RIGHT * 0.15), run_time=1.0)
-        self.play(FadeIn(cod, shift=RIGHT * 0.15), run_time=0.8)
-        self.wait(18)
-        self.play(FadeOut(beidi), FadeOut(cod), run_time=0.9)
+        open_questions_text.move_to(open_questions_box.get_center())
+        open_questions_group = VGroup(open_questions_box, open_questions_text).move_to(ORIGIN)
+        
+        self.play(FadeIn(open_questions_group, shift=UP * 0.15), run_time=1.0)
+        
+        self.wait_until(cue_start[22] - 1.0)
+        self.play(FadeOut(open_questions_group), run_time=1.0)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # --- Section 9: Future of AI / Systems Perspective (Cue 22-25) ---
+        self.wait_until(cue_start[22])
         final_box = RoundedRectangle(width=10.4, height=2.35, corner_radius=0.08, color=YELLOW, fill_color="#201c14", fill_opacity=0.95)
         final_text = create_markup_text(
             "<b>The future of AI</b>\n\n"
@@ -326,17 +401,13 @@ class Scene5_1(Scene):
         final_text.move_to(final_box.get_center())
         final_group = VGroup(final_box, final_text).move_to(ORIGIN)
         
-        self.play(
-            FadeIn(final_group, shift=UP * 0.15),
-            run_time=1.2
-        )
-        self.wait(10.0)
+        self.play(FadeIn(final_group, shift=UP * 0.15), run_time=1.2)
+        
+        self.wait_until(voiceover_end - 1.0)
         self.play(FadeOut(final_group), run_time=1.0)
-        self.wait(1.5)
 
-        # =====================================================================
-        # Note: visual/narration alignment comment translated from Vietnamese.
-        # =====================================================================
+        # --- Outro ---
+        self.wait_until(voiceover_end)
         final_outro_box = RoundedRectangle(width=8.5, height=2.2, corner_radius=0.08, color=YELLOW, fill_color="#201c14", fill_opacity=0.95)
         final_outro_txt = create_markup_text(
             "<b>Thank you for watching!</b>\n\n"
@@ -354,4 +425,5 @@ class Scene5_1(Scene):
         self.wait(5.0)
         self.play(FadeOut(final_outro), FadeOut(header), run_time=1.0)
         self.wait(1.5)
-        finish_voiceovers(self, voiceover_end)
+
+        assert_all_scene_voiceovers_played(self)
