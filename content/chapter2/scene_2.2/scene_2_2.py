@@ -160,7 +160,7 @@ class Scene2_2(MovingCameraScene):
         prompt = labeled_box("Taylor Swift is", 2.6, color=GRAY_B, font_size=18)
         an = labeled_box('"an"', 1.0, color=RED_B, fill="#281719", font_size=18)
         american = labeled_box('"American"', 1.7, color=RED_B, fill="#281719", font_size=16)
-        an_score = create_text("0.80 -> 0.016 cumulative", font_size=18, color=RED_A)
+        an_score = create_text("0.80 -> 0.016 Cumulative", font_size=18, color=RED_A)
         greedy_path = VGroup(an, american).arrange(DOWN, buff=0.45)
         greedy_path.next_to(prompt, DOWN, buff=0.55)
         an_score.next_to(greedy_path, RIGHT, buff=0.55)
@@ -175,7 +175,7 @@ class Scene2_2(MovingCameraScene):
         singer = labeled_box('"singer"', 1.5, color=GREEN_B, fill="#102418", font_size=16)
         songwriter = labeled_box('"songwriter"', 2.0, color=GREEN_B, fill="#102418", font_size=15)
         non_greedy_path = VGroup(a, singer, songwriter).arrange(DOWN, buff=0.35)
-        non_greedy_score = create_text("0.13 -> 0.117 / 0.104 cumulative", font_size=18, color=GREEN_A)
+        non_greedy_score = create_text("0.13 -> 0.117 / 0.104 Cumulative", font_size=18, color=GREEN_A)
         non_greedy_label = create_text("A lower first token can lead to a better sequence", font_size=22, color=GREEN_A)
         comparison = VGroup(
             VGroup(greedy_path.copy(), an_score.copy()).arrange(RIGHT, buff=0.4),

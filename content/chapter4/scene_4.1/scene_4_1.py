@@ -1,9 +1,8 @@
 import os
 import tempfile
 from pathlib import Path
-import random
+
 from manim import *
-import numpy as np
 
 config.text_dir = os.path.join(tempfile.gettempdir(), "manim_text")
 config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
@@ -12,26 +11,26 @@ config.max_files_cached = 10000
 VOICEOVER_DIR = Path(__file__).resolve().parents[3] / "voiceover" / "generated_sentence_level"
 
 SCENE_4_1_DURATIONS = {
-    "sc41_001.mp3": 3.158,
-    "sc41_002.mp3": 8.173,
-    "sc41_003.mp3": 3.065,
-    "sc41_004.mp3": 6.362,
-    "sc41_005.mp3": 6.177,
-    "sc41_006.mp3": 12.028,
-    "sc41_007.mp3": 7.105,
-    "sc41_008.mp3": 5.944,
-    "sc41_009.mp3": 13.746,
-    "sc41_010.mp3": 9.195,
-    "sc41_011.mp3": 20.759,
-    "sc41_012.mp3": 5.016,
-    "sc41_013.mp3": 5.944,
-    "sc41_014.mp3": 4.458,
-    "sc41_015.mp3": 4.319,
-    "sc41_016.mp3": 5.062,
-    "sc41_017.mp3": 4.365,
-    "sc41_018.mp3": 8.266,
-    "sc41_019.mp3": 5.294,
-    "sc41_020.mp3": 9.427,
+    "sc41_001.mp3": 3.157914,
+    "sc41_002.mp3": 8.173424,
+    "sc41_003.mp3": 3.065034,
+    "sc41_004.mp3": 6.362268,
+    "sc41_005.mp3": 6.176508,
+    "sc41_006.mp3": 12.027937,
+    "sc41_007.mp3": 7.105306,
+    "sc41_008.mp3": 5.944308,
+    "sc41_009.mp3": 13.746213,
+    "sc41_010.mp3": 9.195102,
+    "sc41_011.mp3": 20.758639,
+    "sc41_012.mp3": 5.015510,
+    "sc41_013.mp3": 5.944308,
+    "sc41_014.mp3": 4.458231,
+    "sc41_015.mp3": 4.318912,
+    "sc41_016.mp3": 5.061950,
+    "sc41_017.mp3": 4.365351,
+    "sc41_018.mp3": 8.266304,
+    "sc41_019.mp3": 5.294150,
+    "sc41_020.mp3": 9.427302,
 }
 SCENE_4_1_VOICEOVERS = tuple(SCENE_4_1_DURATIONS)
 
@@ -76,38 +75,98 @@ def assert_all_scene_voiceovers_played(scene):
         )
 
 
-def create_text(text, font_size=24, font="Segoe UI", color=WHITE, **kwargs):
-    base_size = 48
-    scale_factor = font_size / base_size
-    t = Text(text, font_size=base_size, font=font, color=color, **kwargs)
-    t.scale(scale_factor)
-    return t
+def create_text(text, font_size=24, font="Noto Sans", color=WHITE, **kwargs):
+    if font_size < 20:
+        t = Text(text, font_size=36, font=font, color=color, **kwargs)
+        t.scale(font_size / 36)
+        return t
+    return Text(text, font_size=font_size, font=font, color=color, **kwargs)
 
 
-def create_markup_text(text, font_size=24, font="Segoe UI", **kwargs):
-    base_size = 48
-    scale_factor = font_size / base_size
-    t = MarkupText(text, font_size=base_size, font=font, **kwargs)
-    t.scale(scale_factor)
-    return t
+def create_markup_text(text, font_size=24, font="Noto Sans", **kwargs):
+    if font_size < 20:
+        t = MarkupText(text, font_size=36, font=font, **kwargs)
+        t.scale(font_size / 36)
+        return t
+    return MarkupText(text, font_size=font_size, font=font, **kwargs)
 
 
-def get_checkmark(color=GREEN, stroke_width=2.5):
-    checkmark = VMobject(color=color, stroke_width=stroke_width)
-    checkmark.set_points_as_corners([
-        LEFT * 0.12 + DOWN * 0.05,
-        ORIGIN + DOWN * 0.15,
-        RIGHT * 0.2 + UP * 0.15
-    ])
-    return checkmark
+def labeled_box(title, body="", width=2.2, height=0.9, color=BLUE_A, fill="#15181d"):
+    box = RoundedRectangle(
+        width=width,
+        height=height,
+        corner_radius=0.07,
+        color=color,
+        fill_color=fill,
+        fill_opacity=0.94,
+        stroke_width=1.5,
+    )
+    title_obj = create_text(title, font_size=9.5, color=color)
+    title_obj.move_to(box.get_center() + UP * height * (0.17 if body else 0.0))
+    group = VGroup(box, title_obj)
+    if body:
+        body_obj = create_text(body, font_size=7.4, color=GRAY_A, line_spacing=1.0)
+        body_obj.move_to(box.get_center() + DOWN * height * 0.2)
+        group.add(body_obj)
+    return group
 
 
-def get_crossmark(color=RED, stroke_width=2.5):
-    cross = VGroup()
-    line1 = Line(LEFT * 0.12 + UP * 0.12, RIGHT * 0.12 + DOWN * 0.12, color=color, stroke_width=stroke_width)
-    line2 = Line(LEFT * 0.12 + DOWN * 0.12, RIGHT * 0.12 + UP * 0.12, color=color, stroke_width=stroke_width)
-    cross.add(line1, line2)
-    return cross
+def token_box(text, color=GRAY_C, width=0.72, height=0.42):
+    box = RoundedRectangle(
+        width=width,
+        height=height,
+        corner_radius=0.04,
+        color=color,
+        fill_color="#17191d",
+        fill_opacity=0.96,
+        stroke_width=1.2,
+    )
+    lbl = create_text(text, font_size=7.5, color=color if color != GRAY_C else WHITE).move_to(box.get_center())
+    return VGroup(box, lbl)
+
+
+def progress_bar(label, value, color, width=2.8):
+    track = RoundedRectangle(width=width, height=0.24, color=GRAY_D, fill_color="#202124", fill_opacity=1, corner_radius=0.04)
+    fill = Rectangle(width=width * value, height=0.19, color=color, fill_color=color, fill_opacity=0.9, stroke_width=0)
+    fill.move_to(track.get_left() + RIGHT * width * value / 2)
+    text = create_text(label, font_size=8, color=color).next_to(track, UP, buff=0.1)
+    return VGroup(track, fill, text)
+
+
+def lane(label, color, width=3.0):
+    line = Line(LEFT * width / 2, RIGHT * width / 2, color=GRAY_D, stroke_width=4)
+    dot = Dot(line.get_left(), radius=0.075, color=color)
+    text = create_text(label, font_size=8.5, color=color).next_to(line, UP, buff=0.14)
+    return VGroup(line, dot, text)
+
+
+def gpu_vram_pipeline():
+    vram = labeled_box("VRAM", "weights\nactivations\nKV cache", width=2.25, height=1.65, color=BLUE_A, fill="#101826")
+    gpu = labeled_box("Processor", "FLOP/s", width=2.2, height=1.4, color=ORANGE, fill="#21170f")
+    vram.move_to(LEFT * 3.35 + DOWN * 0.05)
+    gpu.move_to(RIGHT * 2.95 + DOWN * 0.05)
+    wire = Arrow(vram.get_right(), gpu.get_left(), color=BLUE_A, stroke_width=2.2, buff=0.16)
+    wire_label = create_text("Memory bandwidth", font_size=9, color=BLUE_A).next_to(wire, UP, buff=0.15)
+    cores = VGroup()
+    for row in range(3):
+        for col in range(4):
+            sq = Square(side_length=0.18, color=ORANGE, fill_color=ORANGE, fill_opacity=0.25, stroke_width=0.8)
+            sq.move_to(gpu[0].get_center() + RIGHT * (col - 1.5) * 0.32 + UP * (row - 1) * 0.24 + DOWN * 0.08)
+            cores.add(sq)
+    packets = VGroup()
+    for idx in range(5):
+        p = Square(side_length=0.17, color=BLUE_A, fill_color=BLUE_A, fill_opacity=0.9, stroke_width=0.6)
+        p.move_to(vram[0].get_right() + LEFT * 0.25 + UP * (idx - 2) * 0.16)
+        packets.add(p)
+    return VGroup(vram, gpu, wire, wire_label, cores, packets)
+
+
+def kv_rows(n, color=GREEN):
+    rows = VGroup()
+    for _ in range(n):
+        rows.add(Rectangle(width=1.85, height=0.2, color=color, fill_color=color, fill_opacity=0.34, stroke_width=0.8))
+    rows.arrange(DOWN, buff=0.08)
+    return rows
 
 
 class Scene4_1(Scene):
@@ -122,685 +181,277 @@ class Scene4_1(Scene):
 
         cue_start = {}
         current = 0.0
-        for idx, (filename, duration) in enumerate(SCENE_4_1_DURATIONS.items(), start=1):
+        for idx, (_, duration) in enumerate(SCENE_4_1_DURATIONS.items(), start=1):
             cue_start[idx] = current
             current += duration
 
-        # Cue 1 (sc41_001): Title screen.
         chapter_title = create_text("Chapter 4: Systems Efficiency", font_size=24, color=YELLOW)
-        chapter_sub = create_text("Part 4.1: Hardware Bottlenecks & The Nature of KV Cache", font_size=18, color=GRAY_A)
-        chapter_sub.next_to(chapter_title, DOWN, buff=0.15)
-        chapter_header = VGroup(chapter_title, chapter_sub)
-        chapter_header.move_to(ORIGIN)
-
-        self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.2)
+        chapter_sub = create_text("Part 4.1: Efficient Generation Basics", font_size=17, color=GRAY_A)
+        chapter_header = VGroup(chapter_title, chapter_sub.next_to(chapter_title, DOWN, buff=0.15)).move_to(ORIGIN)
+        self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.0)
         self.wait_until(cue_start[2])
 
-        # Cue 2 (sc41_002): Transition to sub_title.
-        sub_title = create_text("Hardware Bottlenecks & Nature of KV Cache", font_size=15, color=YELLOW)
-        sub_title.to_edge(UP, buff=0.4)
-        
-        self.play(
-            ReplacementTransform(chapter_header, sub_title),
-            run_time=1.2
+        sub_title = create_text("Efficient generation: from algorithm to hardware", font_size=15, color=YELLOW).to_edge(UP, buff=0.4)
+        scope = VGroup(
+            labeled_box("Basics", "what limits one decode", width=2.2, color=BLUE_A),
+            labeled_box("Faster", "reuse + parallelize", width=2.2, color=GREEN),
+            labeled_box("Compare", "efficient meta-generators", width=2.35, color=PURPLE_A),
+        ).arrange(RIGHT, buff=0.55).move_to(DOWN * 0.15)
+        scope_path = VGroup(
+            Arrow(scope[0].get_right(), scope[1].get_left(), color=GRAY_B, stroke_width=1.4, buff=0.06),
+            Arrow(scope[1].get_right(), scope[2].get_left(), color=GRAY_B, stroke_width=1.4, buff=0.06),
         )
+        self.play(ReplacementTransform(chapter_header, sub_title), run_time=0.8)
+        self.play(FadeIn(scope, lag_ratio=0.1), Create(scope_path), run_time=1.0)
+
         self.wait_until(cue_start[3])
+        self.play(FadeOut(VGroup(scope, scope_path)), run_time=0.45)
 
-        # Cue 3 (sc41_003): Latency vs Throughput introduction (perf_title).
-        perf_title = create_markup_text("<b>Latency (Latency) vs. Throughput (Throughput)</b>", font_size=14, color=YELLOW).move_to(UP * 2.0)
-        
-        card_latency = RoundedRectangle(width=4.5, height=2.4, color=BLUE_B, fill_color="#121824", fill_opacity=0.9, corner_radius=0.06)
-        card_latency.move_to(LEFT * 2.8 + DOWN * 0.2)
-        lbl_latency = create_markup_text(
-            "<b>Latency (Latency)</b>\n\n"
-            "• Response time for one request\n"
-            "• Unit: milliseconds (ms)\n"
-            "• Best for: single-user experience",
-            font_size=8.5, color=WHITE, line_spacing=1.3
-        ).move_to(card_latency.get_center())
+        latency_title = create_text("Latency: one request's waiting time", font_size=11, color=RED_B)
+        latency_title.move_to(LEFT * 3.1 + UP * 1.7)
+        latency_track = Line(LEFT * 4.6, LEFT * 1.4, color=GRAY_D, stroke_width=5).shift(DOWN * 0.05)
+        request = token_box("req", color=RED_B, width=0.62).move_to(latency_track.get_left())
+        response = token_box("done", color=GREEN, width=0.78).move_to(latency_track.get_right())
+        clock = Circle(radius=0.42, color=RED_B).next_to(latency_track, DOWN, buff=0.45)
+        hand = Line(clock.get_center(), clock.get_center() + UP * 0.34, color=RED_B, stroke_width=2.2)
+        latency_group = VGroup(latency_title, latency_track, request, response, clock, hand)
 
-        card_throughput = RoundedRectangle(width=4.5, height=2.4, color=GREEN_B, fill_color="#122418", fill_opacity=0.9, corner_radius=0.06)
-        card_throughput.move_to(RIGHT * 2.8 + DOWN * 0.2)
-        lbl_throughput = create_markup_text(
-            "<b>Throughput (Throughput)</b>\n\n"
-            "• Completed requests per second\n"
-            "• Unit: requests/second (RPS)\n"
-            "• Best for: serving many users at scale",
-            font_size=8.5, color=WHITE, line_spacing=1.3
-        ).move_to(card_throughput.get_center())
+        throughput_title = create_text("Throughput: completed requests per second", font_size=11, color=GREEN)
+        throughput_title.move_to(RIGHT * 3.0 + UP * 1.7)
+        lanes = VGroup()
+        done_marks = VGroup()
+        for idx in range(4):
+            line = Line(LEFT * 0.95, RIGHT * 0.95, color=GRAY_D, stroke_width=3)
+            line.move_to(RIGHT * 3.0 + UP * (0.65 - idx * 0.45))
+            dot = Dot(line.get_left(), color=GREEN, radius=0.055)
+            mark = token_box("ok", color=GREEN, width=0.48, height=0.32).move_to(line.get_right() + RIGHT * 0.45)
+            lanes.add(VGroup(line, dot))
+            done_marks.add(mark)
+        throughput_group = VGroup(throughput_title, lanes, done_marks)
+        self.play(FadeIn(latency_group), FadeIn(throughput_group), run_time=0.9)
 
-        self.play(FadeIn(perf_title), run_time=1.0)
         self.wait_until(cue_start[4])
-
-        # Cue 4 (sc41_004): Card latency and card throughput appear.
         self.play(
-            FadeIn(card_latency), Write(lbl_latency),
-            FadeIn(card_throughput), Write(lbl_throughput),
-            run_time=1.5
+            request.animate.move_to(latency_track.get_right()),
+            Rotate(hand, angle=-TAU * 0.8, about_point=clock.get_center()),
+            *[lane_group[1].animate.move_to(lane_group[0].get_right()) for lane_group in lanes],
+            run_time=1.3,
         )
+        self.play(FadeIn(done_marks, lag_ratio=0.08), response[0].animate.set_fill("#12331c", opacity=1), run_time=0.7)
+
         self.wait_until(cue_start[5])
-
-        # Cue 5 (sc41_005): Latency vs Throughput discussion, then fade out.
-        self.wait_until(cue_start[5] + 2.0)
-        self.play(
-            FadeOut(perf_title),
-            FadeOut(card_latency), FadeOut(lbl_latency),
-            FadeOut(card_throughput), FadeOut(lbl_throughput),
-            run_time=1.0
+        triangle = Polygon(UP * 1.2, LEFT * 1.55 + DOWN * 1.05, RIGHT * 1.55 + DOWN * 1.05, color=YELLOW, fill_opacity=0.04)
+        tri_labels = VGroup(
+            create_text("Quality", font_size=10, color=YELLOW).next_to(triangle.get_top(), UP, buff=0.1),
+            create_text("Latency", font_size=10, color=RED_B).next_to(triangle.get_left(), LEFT, buff=0.12),
+            create_text("Throughput", font_size=10, color=GREEN).next_to(triangle.get_right(), RIGHT, buff=0.12),
         )
+        budget_dot = Dot(triangle.get_center(), color=YELLOW, radius=0.085)
+        trade = VGroup(triangle, tri_labels, budget_dot).move_to(ORIGIN)
+        self.play(FadeOut(VGroup(latency_group, throughput_group)), FadeIn(trade), run_time=0.75)
+        self.play(budget_dot.animate.move_to(triangle.get_left() + RIGHT * 0.35 + UP * 0.25), run_time=0.55)
+        self.play(budget_dot.animate.move_to(triangle.get_right() + LEFT * 0.45 + UP * 0.2), run_time=0.55)
+
         self.wait_until(cue_start[6])
+        self.play(FadeOut(trade), run_time=0.45)
 
-        # Cue 6 (sc41_006): Hardware block diagram intro (intro_text).
-        intro_text = create_markup_text(
-            "<b>Hardware block diagram &amp; memory bandwidth</b>",
-            font_size=14, color=YELLOW
-        ).move_to(UP * 2.0)
-        self.play(Write(intro_text), run_time=1.5)
+        hardware_title = create_text("Generation speed is a hardware pipeline", font_size=12, color=YELLOW).next_to(
+            sub_title, DOWN, buff=0.35
+        )
+        pipeline = gpu_vram_pipeline()
+        factor_labels = VGroup(
+            labeled_box("Capacity", "how much fits in VRAM", width=2.05, height=0.78, color=BLUE_A),
+            labeled_box("Compute", "FLOP/s", width=1.65, height=0.78, color=ORANGE),
+            labeled_box("Transfer", "GB/s", width=1.65, height=0.78, color=GREEN),
+        ).arrange(RIGHT, buff=0.35).move_to(DOWN * 2.2)
+        self.play(FadeIn(hardware_title), FadeIn(pipeline[:-1]), FadeIn(factor_labels, lag_ratio=0.1), run_time=1.0)
+        self.play(FadeIn(pipeline[-1], lag_ratio=0.05), run_time=0.4)
+        self.play(
+            *[packet.animate.move_to(pipeline[1][0].get_left() + RIGHT * 0.28 + UP * (idx - 2) * 0.12) for idx, packet in enumerate(pipeline[-1])],
+            pipeline[4].animate.set_fill(ORANGE, opacity=0.85),
+            run_time=1.25,
+        )
+
         self.wait_until(cue_start[7])
+        bottlenecks = VGroup(
+            labeled_box("Activations", "load input", width=1.55, height=0.75, color=BLUE_A),
+            labeled_box("Weights", "load model", width=1.55, height=0.75, color=BLUE_A),
+            labeled_box("Compute", "matmul", width=1.55, height=0.75, color=ORANGE),
+            labeled_box("Devices", "communicate", width=1.7, height=0.75, color=PURPLE_A),
+        ).arrange(RIGHT, buff=0.22).move_to(DOWN * 2.2)
+        bottleneck_arrow = Arrow(bottlenecks[1].get_top(), pipeline[2].get_center(), color=RED_B, stroke_width=1.6, buff=0.08)
+        slow_label = create_text("Slowest stage limits the whole pipeline", font_size=9.5, color=RED_B).next_to(bottlenecks, DOWN, buff=0.2)
+        self.play(ReplacementTransform(factor_labels, bottlenecks), FadeIn(slow_label), Create(bottleneck_arrow), run_time=0.9)
 
-        # Cue 7 (sc41_007): GPU Core vs VRAM blocks and memory bandwidth bridge.
-        gpu_box = RoundedRectangle(width=2.8, height=2.2, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        gpu_box.move_to(LEFT * 4.0 + DOWN * 0.5)
-        gpu_lbl = create_text("GPU COMPUTE CORE\n(GPU Core)", font_size=11, color=ORANGE).next_to(gpu_box, UP, buff=0.15)
-        
-        gpu_cores = VGroup()
-        for r in range(4):
-            for c in range(4):
-                core = Square(side_length=0.25, color=ORANGE, fill_color=ORANGE, fill_opacity=0.2, stroke_width=1)
-                core.move_to(gpu_box.get_center() + RIGHT * (c - 1.5) * 0.45 + UP * (r - 1.5) * 0.4)
-                gpu_cores.add(core)
-
-        vram_box = RoundedRectangle(width=2.8, height=2.2, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        vram_box.move_to(RIGHT * 4.0 + DOWN * 0.5)
-        vram_lbl = create_text("VRAM MEMORY\n(Model weights & KV Cache)", font_size=11, color=BLUE_A).next_to(vram_box, UP, buff=0.15)
-
-        vram_grids = VGroup()
-        for r in range(4):
-            for c in range(3):
-                grid = Rectangle(width=0.6, height=0.35, color=BLUE, fill_color=BLUE_E, fill_opacity=0.15, stroke_width=1)
-                grid.move_to(vram_box.get_center() + RIGHT * (c - 1.0) * 0.75 + UP * (r - 1.5) * 0.42)
-                vram_grids.add(grid)
-
-        bridge_upper = Line(start=gpu_box.get_right() + UP * 0.3, end=vram_box.get_left() + UP * 0.3, color=GRAY, stroke_width=2.5)
-        bridge_lower = Line(start=gpu_box.get_right() + DOWN * 0.3, end=vram_box.get_left() + DOWN * 0.3, color=GRAY, stroke_width=2.5)
-        bridge_lbl = create_markup_text(
-            "Memory bandwidth\n"
-            "<span foreground=\"#888888\"><b>Memory Bandwidth (GB/s)</b></span>",
-            font_size=9, color=WHITE, line_spacing=1.1
-        ).move_to(DOWN * 0.5)
-
-        self.play(
-            FadeIn(gpu_box), FadeIn(gpu_lbl), FadeIn(gpu_cores),
-            FadeIn(vram_box), FadeIn(vram_lbl), FadeIn(vram_grids),
-            Create(bridge_upper), Create(bridge_lower), Write(bridge_lbl),
-            run_time=2.0
-        )
         self.wait_until(cue_start[8])
+        self.play(FadeOut(VGroup(hardware_title, pipeline, bottlenecks, slow_label, bottleneck_arrow)), run_time=0.55)
+        time_title = create_text("Operation time is a race between two limits", font_size=12, color=YELLOW).next_to(
+            sub_title, DOWN, buff=0.35
+        )
+        compute_lane = lane("compute time = operation FLOP / FLOP/s", ORANGE, width=4.0).move_to(UP * 0.55)
+        memory_lane = lane("memory time = transferred bytes / bandwidth", BLUE_A, width=4.0).move_to(DOWN * 0.55)
+        finish_line = DashedLine(UP * 1.1, DOWN * 1.1, color=GRAY_B).move_to(RIGHT * 2.0)
+        max_formula = create_text("Time = max(compute, memory)", font_size=11, color=YELLOW).move_to(
+            RIGHT * 2.7 + DOWN * 2.15
+        )
+        self.play(FadeIn(time_title), FadeIn(compute_lane), FadeIn(memory_lane), Create(finish_line), FadeIn(max_formula), run_time=0.9)
+        self.play(compute_lane[1].animate.move_to(compute_lane[0].point_from_proportion(0.48)), run_time=0.65)
+        self.play(memory_lane[1].animate.move_to(memory_lane[0].point_from_proportion(0.88)), run_time=1.1)
+        memory_wins = SurroundingRectangle(memory_lane, color=RED_B, buff=0.14, stroke_width=2.2)
+        self.play(Create(memory_wins), run_time=0.45)
 
-        # Cue 8 (sc41_008): NVIDIA H100 GPU specs card appears.
-        specs_box = RoundedRectangle(width=8.0, height=1.6, color=GOLD_A, fill_color="#181812", fill_opacity=0.95, corner_radius=0.08)
-        specs_box.move_to(DOWN * 2.7)
-        specs_title = create_text("NVIDIA H100 SXM GPU specs", font_size=10, color=GOLD_B).next_to(specs_box.get_top(), DOWN, buff=0.12)
-        
-        specs_text = create_markup_text(
-            "• BF16 dense tensor core max FLOP/s:  <b>≈ 1 × 10<sup>15</sup> FLOP/s</b> (1 PFLOPS)\n"
-            "• Memory bandwidth (Memory Bandwidth):  <b>≈ 3.35 × 10<sup>12</sup> bytes/s</b> (3.35 TB/s)\n"
-            "• Ratio >> 100 FLOP/byte -> compute is almost \"free\" compared with memory loading!",
-            font_size=7.5, line_spacing=1.2
-        ).next_to(specs_title, DOWN, buff=0.1)
-        specs_group = VGroup(specs_box, specs_title, specs_text)
-
-        self.play(FadeIn(specs_group, shift=UP * 0.15), run_time=1.0)
         self.wait_until(cue_start[9])
+        h100 = labeled_box(
+            "NVIDIA H100 SXM",
+            "compute: ~1e15 FLOP/s\nbandwidth: ~3.35e12 B/s",
+            width=3.65,
+            height=1.08,
+            color=YELLOW,
+        ).move_to(UP * 1.75)
+        byte_bucket = labeled_box("1 Byte", "loaded once", width=1.25, height=0.75, color=BLUE_A).move_to(
+            LEFT * 4.05 + DOWN * 1.55
+        )
+        flop_stack = VGroup(*[Dot(radius=0.028, color=ORANGE) for _ in range(48)]).arrange_in_grid(6, 8, buff=0.05)
+        flop_stack.next_to(byte_bucket, RIGHT, buff=0.45)
+        self.play(FadeIn(h100), FadeIn(byte_bucket), FadeIn(flop_stack, lag_ratio=0.01), run_time=0.9)
 
-        # Cue 9 (sc41_009): NVIDIA H100 GPU specs detail, H100 specs group.
-        packets = VGroup()
-        for i in range(5):
-            packet = RoundedRectangle(width=0.4, height=0.3, color=BLUE_A, fill_color=BLUE, fill_opacity=0.8, corner_radius=0.03)
-            packet.move_to(vram_box.get_center())
-            packets.add(packet)
-
-        self.play(
-            LaggedStart(
-                *[p.animate(run_time=1.5, rate_func=linear).move_to(gpu_box.get_center()) for p in packets],
-                lag_ratio=0.3
-            )
-        )
-        self.play(
-            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.8) for c in gpu_cores]
-        )
-        self.play(
-            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores],
-            FadeOut(packets)
-        )
-        self.wait_until(cue_start[10] - 0.8)
-        self.play(FadeOut(intro_text), FadeOut(specs_group), run_time=0.8)
         self.wait_until(cue_start[10])
+        threshold = create_text(">100 FLOP/byte: compute is almost free vs transfer", font_size=9, color=GREEN)
+        threshold.next_to(VGroup(byte_bucket, flop_stack), DOWN, buff=0.25)
+        green_ring = SurroundingRectangle(VGroup(byte_bucket, flop_stack), color=GREEN, buff=0.16, stroke_width=2.0)
+        self.play(FadeIn(threshold), Create(green_ring), run_time=0.75)
 
-        # Cue 10 (sc41_010): FLOP/byte ratio.
-        formula_title = create_text("Arithmetic Intensity (Arithmetic Intensity)", font_size=13, color=GOLD_B).move_to(UP * 2.3)
-        formula_box = RoundedRectangle(width=8.2, height=0.55, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
-        formula_box.move_to(UP * 1.4)
-        
-        formula_txt = create_markup_text(
-            "Arithmetic intensity = <span foreground=\"#00FF7F\">Number of operations (FLOPs)</span> / <span foreground=\"#33AAFF\">Loaded memory volume (Bytes)</span>",
-            font_size=9.5, color=WHITE
-        ).move_to(formula_box.get_center())
-
-        self.play(
-            Write(formula_title),
-            FadeIn(formula_box),
-            Write(formula_txt),
-            run_time=1.5
-        )
-        self.wait_until(cue_start[11] - 0.8)
-        self.play(
-            FadeOut(formula_title),
-            FadeOut(formula_box),
-            FadeOut(formula_txt),
-            run_time=0.8
-        )
         self.wait_until(cue_start[11])
+        self.play(FadeOut(VGroup(time_title, compute_lane, memory_lane, finish_line, max_formula, memory_wins, h100, byte_bucket, flop_stack, threshold, green_ring)), run_time=0.55)
 
-        # Cue 11 (sc41_011): Single decoding step optimization directions.
-        opt_title = create_text("Single-token decoding optimization (Single-token optimization)", font_size=13, color=YELLOW).move_to(UP * 2.2)
-
-        # Card 1: Memory Bandwidth ↓
-        card_mem = RoundedRectangle(width=3.8, height=2.2, color=BLUE_B, fill_color="#121824", fill_opacity=0.9, corner_radius=0.06)
-        card_mem.move_to(LEFT * 4.2 + DOWN * 0.2)
-        lbl_mem = create_markup_text(
-            "<b>Memory Bandwidth ↓</b>\n"
-            "<span foreground=\"#888888\">(Reduce loaded data)</span>\n\n"
-            "• Quantization (Quantization)\n"
-            "• Model Compression (Compression)",
-            font_size=8, color=WHITE, line_spacing=1.3
-        ).move_to(card_mem.get_center())
-
-        # Card 2: FLOP/s ↑
-        card_flop_rate = RoundedRectangle(width=3.8, height=2.2, color=ORANGE, fill_color="#241a12", fill_opacity=0.9, corner_radius=0.06)
-        card_flop_rate.move_to(LEFT * 0.0 + DOWN * 0.2)
-        lbl_flop_rate = create_markup_text(
-            "<b>FLOP/s ↑</b>\n"
-            "<span foreground=\"#888888\">(Increase compute efficiency)</span>\n\n"
-            "• FlashAttention\n"
-            "• Hardware &amp; I/O optimization",
-            font_size=8, color=WHITE, line_spacing=1.3
-        ).move_to(card_flop_rate.get_center())
-
-        # Card 3: FLOP ↓
-        card_flop_total = RoundedRectangle(width=3.8, height=2.2, color=GREEN_B, fill_color="#122418", fill_opacity=0.9, corner_radius=0.06)
-        card_flop_total.move_to(RIGHT * 4.2 + DOWN * 0.2)
-        lbl_flop_total = create_markup_text(
-            "<b>FLOP ↓</b>\n"
-            "<span foreground=\"#888888\">(Reduce FLOPs)</span>\n\n"
-            "• Mixture of Experts (MoE)\n"
-            "• Reduce active parameters",
-            font_size=8, color=WHITE, line_spacing=1.3
-        ).move_to(card_flop_total.get_center())
-
-        self.play(
-            FadeIn(opt_title),
-            FadeIn(card_mem), Write(lbl_mem),
-            FadeIn(card_flop_rate), Write(lbl_flop_rate),
-            FadeIn(card_flop_total), Write(lbl_flop_total),
-            run_time=1.8
+        opt_title = create_text("Single decoding step: reduce the slow work", font_size=12, color=YELLOW).next_to(
+            sub_title, DOWN, buff=0.35
         )
-        self.wait_until(cue_start[12] - 1.0)
-        self.play(
-            FadeOut(opt_title),
-            FadeOut(card_mem), FadeOut(lbl_mem),
-            FadeOut(card_flop_rate), FadeOut(lbl_flop_rate),
-            FadeOut(card_flop_total), FadeOut(lbl_flop_total),
-            run_time=1.0
-        )
+        bytes_before = progress_bar("loaded bytes", 0.9, BLUE_A, width=2.1)
+        bytes_after = progress_bar("after quantization/distillation", 0.38, GREEN, width=2.1)
+        bandwidth_demo = VGroup(labeled_box("Bandwidth", "move fewer bytes", width=2.15, color=BLUE_A), bytes_before, bytes_after)
+        bandwidth_demo.arrange(DOWN, buff=0.22).move_to(LEFT * 3.8 + DOWN * 0.25)
+
+        util_grid = VGroup(*[Square(side_length=0.2, color=ORANGE, fill_color=ORANGE, fill_opacity=0.18) for _ in range(16)])
+        util_grid.arrange_in_grid(4, 4, buff=0.06)
+        flash_demo = VGroup(
+            labeled_box("FLOP/s", "FlashAttention\n[Dao et al., 2022]", width=2.15, color=ORANGE),
+            util_grid,
+            create_text("Same ops, higher utilization", font_size=7.7, color=ORANGE),
+        ).arrange(DOWN, buff=0.16).move_to(DOWN * 0.25)
+
+        experts = VGroup(*[Circle(radius=0.16, color=GRAY_C, fill_color="#191b1e", fill_opacity=0.95) for _ in range(6)])
+        experts.arrange(RIGHT, buff=0.1)
+        route = Arrow(LEFT * 0.55, RIGHT * 0.55, color=GREEN, stroke_width=1.3)
+        moe_demo = VGroup(
+            labeled_box("FLOP", "Mixture-of-Experts\n[Fedus et al., 2022]", width=2.35, color=GREEN),
+            VGroup(route, experts),
+            create_text("Activate only selected experts", font_size=7.7, color=GREEN),
+        ).arrange(DOWN, buff=0.16).move_to(RIGHT * 3.8 + DOWN * 0.25)
+
+        self.play(FadeIn(opt_title), FadeIn(bandwidth_demo), run_time=0.8)
+        self.play(Transform(bytes_before[1], bytes_after[1].copy()), FadeIn(bytes_after[2]), run_time=0.75)
+        self.play(FadeIn(flash_demo), util_grid.animate.set_fill(ORANGE, opacity=0.8), run_time=0.85)
+        self.play(FadeIn(moe_demo), experts[1].animate.set_color(GREEN), experts[4].animate.set_color(GREEN), run_time=0.85)
+
         self.wait_until(cue_start[12])
+        self.play(FadeOut(VGroup(opt_title, bandwidth_demo, flash_demo, moe_demo)), run_time=0.5)
 
-        # Cue 12 (sc41_012): Compute-bound concept.
-        prefill_title = create_text(
-            "Prefill phase (Prompt processing) - Compute-bound",
-            font_size=13, color="#00FFFF", weight=BOLD
-        ).move_to(UP * 2.2)
+        bound_title = create_text("Compute-bound vs memory-bound", font_size=12, color=YELLOW).next_to(sub_title, DOWN, buff=0.35)
+        compute_bound = VGroup(
+            labeled_box("Compute-bound", "many FLOPs", width=2.25, color=ORANGE),
+            progress_bar("compute branch", 0.86, ORANGE, width=2.45),
+            progress_bar("memory branch", 0.34, BLUE_A, width=2.45),
+        ).arrange(DOWN, buff=0.2).move_to(LEFT * 3.0 + DOWN * 0.3)
+        compute_ring = SurroundingRectangle(compute_bound[1], color=ORANGE, buff=0.12, stroke_width=2.0)
+        self.play(FadeIn(bound_title), FadeIn(compute_bound), Create(compute_ring), run_time=0.9)
 
-        prefill_math = create_markup_text(
-            "- Operation: matrix-matrix multiplication (GEMM) : Q × K<sup>T</sup>\n"
-            "- Large prompt length T ⇒ Number of operations O(T · d<sup>2</sup>) much larger than weights O(d<sup>2</sup>)\n"
-            "- <b>extremely high arithmetic intensity</b> ⇒ Limited by GPU compute speed.",
-            font_size=10, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 1.3)
-
-        self.play(
-            Write(prefill_title),
-            Write(prefill_math),
-            run_time=1.5
-        )
-
-        prefill_packets = VGroup()
-        for i in range(12):
-            p = RoundedRectangle(width=0.35, height=0.25, color=BLUE_A, fill_color=BLUE_B, fill_opacity=0.9, corner_radius=0.03)
-            p.move_to(vram_box.get_center() + np.array([random.uniform(-0.3, 0.3), random.uniform(-0.3, 0.3), 0]))
-            prefill_packets.add(p)
-
-        prefill_anims = []
-        for idx, p in enumerate(prefill_packets):
-            dest_pos = gpu_box.get_center() + np.array([random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), 0])
-            prefill_anims.append(p.animate(run_time=random.uniform(1.0, 1.6), rate_func=linear).move_to(dest_pos))
-
-        gpu_status_lbl = create_text("GPU utilization: 100%\n(Compute bottleneck - Compute-bound)", font_size=10, color=GREEN).next_to(gpu_box, DOWN, buff=0.2)
-
-        self.play(
-            FadeIn(prefill_packets),
-            run_time=0.5
-        )
-        self.play(
-            *[c.animate(run_time=0.3).set_fill(ORANGE, opacity=0.9) for c in gpu_cores]
-        )
-        self.play(
-            *prefill_anims,
-            FadeIn(gpu_status_lbl),
-            run_time=1.8
-        )
-        self.play(
-            FadeOut(prefill_packets),
-            run_time=0.5
-        )
-        self.wait_until(cue_start[13] - 0.8)
-        self.play(
-            FadeOut(prefill_title),
-            FadeOut(prefill_math),
-            FadeOut(gpu_status_lbl),
-            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores],
-            run_time=0.8
-        )
         self.wait_until(cue_start[13])
+        memory_bound = VGroup(
+            labeled_box("Memory-bound", "processor waits", width=2.25, color=BLUE_A),
+            progress_bar("compute branch", 0.32, ORANGE, width=2.45),
+            progress_bar("memory branch", 0.9, BLUE_A, width=2.45),
+        ).arrange(DOWN, buff=0.2).move_to(RIGHT * 3.0 + DOWN * 0.3)
+        idle = create_text("Wait", font_size=10, color=RED_B).next_to(memory_bound[0], LEFT, buff=0.22)
+        memory_ring = SurroundingRectangle(memory_bound[2], color=RED_B, buff=0.12, stroke_width=2.0)
+        self.play(FadeIn(memory_bound), FadeIn(idle), Create(memory_ring), run_time=0.9)
 
-        # Cue 13 (sc41_013): Memory-bound concept.
-        decode_title = create_text(
-            "Decode phase (Sequential token generation) - Memory-bound",
-            font_size=13, color="#FF3333", weight=BOLD
-        ).move_to(UP * 2.2)
-
-        decode_math = create_markup_text(
-            "- Operation: matrix-vector multiplication (GEMV) : W × x\n"
-            "- Generate one token at a time (T = 1) ⇒ Compute O(d<sup>2</sup>), memory loading O(d<sup>2</sup>)\n"
-            "- <b>extremely low arithmetic intensity (~1 FLOP/Byte)</b> ⇒ GPU idles while waiting for weights from VRAM.",
-            font_size=10, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 1.3)
-
-        self.play(
-            Write(decode_title),
-            Write(decode_math),
-            run_time=1.5
-        )
-
-        large_weight_box = RoundedRectangle(width=1.6, height=1.3, color=BLUE_D, fill_color=BLUE_E, fill_opacity=0.9, corner_radius=0.05)
-        large_weight_box.move_to(vram_box.get_center())
-        large_weight_lbl = create_text("Model Weights\n(Tens of GB)", font_size=8, color=WHITE).move_to(large_weight_box.get_center())
-        large_weight = VGroup(large_weight_box, large_weight_lbl)
-
-        token_dot = Dot(color=YELLOW, radius=0.08).move_to(gpu_box.get_center())
-        token_lbl = create_text("1 new token", font_size=8, color=YELLOW).next_to(token_dot, UP, buff=0.1)
-
-        gpu_idle_lbl = create_markup_text(
-            "<span foreground=\"#FF5555\"><b>GPU Idle (95% Idle)</b></span>\n"
-            "Waiting for weights from VRAM...",
-            font_size=9, color=WHITE, line_spacing=1.1
-        ).next_to(gpu_box, DOWN, buff=0.2)
-
-        self.play(
-            FadeIn(large_weight),
-            FadeIn(token_dot), FadeIn(token_lbl),
-            run_time=1.0
-        )
-        self.wait(1.0)
-        self.play(
-            FadeOut(token_dot),
-            FadeOut(token_lbl),
-            run_time=0.6
-        )
-        self.play(
-            large_weight.animate(run_time=2.0, rate_func=linear).move_to(gpu_box.get_center()),
-            FadeIn(gpu_idle_lbl),
-            *[c.animate(run_time=0.8).set_fill(ORANGE, opacity=0.35) for c in gpu_cores],
-        )
-        self.play(
-            *[c.animate(run_time=0.4).set_fill(ORANGE, opacity=0.2) for c in gpu_cores]
-        )
-        self.wait_until(cue_start[14] - 1.0)
-        self.play(
-            FadeOut(large_weight),
-            FadeOut(gpu_idle_lbl),
-            FadeOut(decode_title),
-            FadeOut(decode_math),
-            FadeOut(gpu_box), FadeOut(gpu_lbl), FadeOut(gpu_cores),
-            FadeOut(vram_box), FadeOut(vram_lbl), FadeOut(vram_grids),
-            FadeOut(bridge_upper), FadeOut(bridge_lower), FadeOut(bridge_lbl),
-            run_time=1.0
-        )
         self.wait_until(cue_start[14])
+        rule = create_text("The longer branch controls the operation", font_size=10, color=YELLOW).move_to(DOWN * 2.35)
+        self.play(FadeIn(rule), run_time=0.7)
 
-        # Cue 14 (sc41_014): Operation time model (max of compute and memory).
-        time_title = create_text("Execution time of one operation", font_size=13, color=GOLD_B).move_to(UP * 2.3)
-        time_box = RoundedRectangle(width=8.6, height=0.6, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
-        time_box.move_to(UP * 1.4)
-
-        time_txt = create_markup_text(
-            "Time = max ( <span foreground=\"#00FF7F\">GEMM/GEMV FLOPs</span> / <span foreground=\"#00FF7F\">GPU FLOP/s</span> , <span foreground=\"#33AAFF\">Load weights (GB)</span> / <span foreground=\"#33AAFF\">VRAM bandwidth (GB/s)</span> )",
-            font_size=8.5, color=WHITE
-        ).move_to(time_box.get_center())
-
-        self.play(
-            Write(time_title),
-            FadeIn(time_box),
-            Write(time_txt),
-            run_time=1.5
-        )
-        self.wait_until(cue_start[15] - 0.8)
-        self.play(
-            FadeOut(time_title),
-            FadeOut(time_box),
-            FadeOut(time_txt),
-            run_time=0.8
-        )
         self.wait_until(cue_start[15])
+        self.play(FadeOut(VGroup(bound_title, compute_bound, compute_ring, memory_bound, memory_ring, idle, rule)), run_time=0.5)
 
-        # Cue 15 (sc41_015): Batching importance.
-        batch_title = create_text("Batching mechanism (Batching) in decoding", font_size=13, color=YELLOW).move_to(UP * 2.5)
-        batch_intro = create_markup_text(
-            "Batching $B$ inputs in parallel allows <b>loading model weights only once</b>,\n"
-            "sharing VRAM weight-loading cost to utilize GPU resources.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(UP * 1.9)
+        batch_title = create_text("Batching amortizes weight loading", font_size=12, color=YELLOW).next_to(sub_title, DOWN, buff=0.35)
+        no_batch_title = create_text("Without batching", font_size=9.5, color=RED_B).move_to(LEFT * 3.1 + UP * 1.15)
+        with_batch_title = create_text("With batching", font_size=9.5, color=GREEN).move_to(RIGHT * 3.1 + UP * 1.15)
+        repeated_loads = VGroup(*[labeled_box("Weights", "", width=1.25, height=0.45, color=BLUE_A) for _ in range(4)]).arrange(DOWN, buff=0.16)
+        repeated_reqs = VGroup(*[token_box(f"r{i+1}", color=RED_B, width=0.55, height=0.36) for i in range(4)]).arrange(DOWN, buff=0.25)
+        left_batch = VGroup(repeated_loads, repeated_reqs.arrange(DOWN, buff=0.25).next_to(repeated_loads, RIGHT, buff=0.35)).move_to(LEFT * 3.1 + DOWN * 0.35)
+        shared_load = labeled_box("Weights", "load once", width=1.45, height=0.75, color=BLUE_A).move_to(RIGHT * 2.0 + DOWN * 0.35)
+        batch_reqs = VGroup(*[token_box(f"r{i+1}", color=GREEN, width=0.55, height=0.36) for i in range(4)]).arrange(DOWN, buff=0.16)
+        batch_reqs.next_to(shared_load, RIGHT, buff=0.65)
+        fanout = VGroup(*[Arrow(shared_load.get_right(), row.get_left(), color=GREEN, stroke_width=1.2, buff=0.06) for row in batch_reqs])
+        self.play(FadeIn(batch_title), FadeIn(no_batch_title), FadeIn(left_batch, lag_ratio=0.08), run_time=0.9)
 
-        self.play(
-            Write(batch_title),
-            Write(batch_intro),
-            run_time=1.5
-        )
         self.wait_until(cue_start[16])
+        self.play(FadeIn(with_batch_title), FadeIn(shared_load), FadeIn(batch_reqs, lag_ratio=0.08), Create(fanout), run_time=0.9)
+        saved = create_text("Same weight load feeds many inputs", font_size=9.5, color=GREEN).move_to(DOWN * 2.1)
+        self.play(FadeIn(saved), run_time=0.5)
 
-        # Cue 16 (sc41_016): Why load weights once for many inputs.
-        batch_rects = VGroup()
-        batch_lbls = VGroup()
-        for idx in range(4):
-            rect = RoundedRectangle(width=1.8, height=0.5, color=GREEN, fill_color="#122418", fill_opacity=0.9, corner_radius=0.04)
-            rect.move_to(LEFT * 3.3 + DOWN * (0.8 * (1.5 - idx) + 0.4))
-            lbl = create_text(f"Request {idx+1}", font_size=8, color=WHITE).move_to(rect.get_center())
-            batch_rects.add(rect)
-            batch_lbls.add(lbl)
-
-        shared_weight = RoundedRectangle(width=2.5, height=1.6, color=BLUE_B, fill_color="#121824", fill_opacity=0.9, corner_radius=0.06)
-        shared_weight.move_to(RIGHT * 3.0 + DOWN * 0.4)
-        shared_lbl = create_text("Model Weights\n(Load once)", font_size=8, color=BLUE_A).move_to(shared_weight.get_center())
-
-        arrow_group = VGroup()
-        for idx in range(4):
-            arr = Arrow(start=shared_weight.get_left(), end=batch_rects[idx].get_right(), color=GOLD, stroke_width=1.5)
-            arrow_group.add(arr)
-
-        self.play(
-            FadeIn(batch_rects), Write(batch_lbls),
-            FadeIn(shared_weight), Write(shared_lbl),
-            run_time=1.5
-        )
-        self.play(Create(arrow_group), run_time=1.0)
         self.wait_until(cue_start[17])
+        x_marks = VGroup()
+        for idx in [1, 2, 3]:
+            x_marks.add(Cross(repeated_loads[idx], stroke_color=RED_B, stroke_width=3))
+        free_note = create_text("Extra memory-transfer cost stays small", font_size=9.5, color=GREEN).move_to(DOWN * 2.45)
+        self.play(Create(x_marks), Transform(saved, free_note), run_time=0.8)
 
-        # Cue 17 (sc41_017): Cost-free batching explanation.
-        self.wait_until(cue_start[17] + 2.0)
-        self.play(
-            FadeOut(batch_title), FadeOut(batch_intro),
-            FadeOut(batch_rects), FadeOut(batch_lbls),
-            FadeOut(shared_weight), FadeOut(shared_lbl),
-            FadeOut(arrow_group),
-            run_time=1.0
-        )
         self.wait_until(cue_start[18])
+        self.play(FadeOut(VGroup(batch_title, no_batch_title, left_batch, with_batch_title, shared_load, batch_reqs, fanout, x_marks, saved)), run_time=0.5)
 
-        # Cue 18 (sc41_018): KV cache introduction.
-        kv_title = create_text("How the Key-Value Cache Works (KV Cache)", font_size=13, color=GOLD_B)
-        kv_title.move_to(UP * 2.2)
-        self.play(Write(kv_title), run_time=0.8)
+        kv_title = create_text("KV cache removes repeated prefix work", font_size=12, color=YELLOW).next_to(sub_title, DOWN, buff=0.35)
+        prefix = VGroup(*[token_box(f"t{i+1}", color=GRAY_C) for i in range(4)]).arrange(RIGHT, buff=0.12)
+        prefix.move_to(LEFT * 2.8 + DOWN * 0.35)
+        no_cache = labeled_box("Without cache", "recompute K,V\nfor old prefix", width=2.25, height=1.0, color=RED_B)
+        no_cache.next_to(prefix, UP, buff=0.4)
+        recompute = VGroup(*[Arrow(tok.get_top(), no_cache.get_bottom(), color=RED_B, stroke_width=1.2, buff=0.07) for tok in prefix])
+        cache_label = labeled_box("KV cache", "store old K,V", width=2.1, height=0.8, color=GREEN).move_to(RIGHT * 3.0 + UP * 0.7)
+        cache = kv_rows(4, GREEN).next_to(cache_label, DOWN, buff=0.25)
+        self.play(FadeIn(kv_title), FadeIn(prefix), FadeIn(no_cache), Create(recompute), run_time=0.9)
+        self.play(FadeIn(cache_label), FadeIn(cache, lag_ratio=0.08), run_time=0.75)
 
-        no_kv_lbl = create_markup_text(
-            "<span foreground=\"#FF5555\"><b>Case 1: Without KV Cache</b></span>\n"
-            "The model must recompute the Key and Value\n"
-            "for all previous tokens at every new decoding step.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(UP * 1.2)
-        self.play(Write(no_kv_lbl), run_time=1.2)
-
-        tok1 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
-        tok1.move_to(LEFT * 2.2 + DOWN * 0.2)
-        tok1_lbl = create_text("Token 1", font_size=8, color=WHITE).move_to(tok1.get_center())
-
-        tok2 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
-        tok2.move_to(LEFT * 1.1 + DOWN * 0.2)
-        tok2_lbl = create_text("Token 2", font_size=8, color=WHITE).move_to(tok2.get_center())
-
-        tok3 = RoundedRectangle(width=0.9, height=0.5, color=GRAY_C, fill_color="#181a1e", fill_opacity=0.95, corner_radius=0.04)
-        tok3.move_to(RIGHT * 0.0 + DOWN * 0.2)
-        tok3_lbl = create_text("Token 3", font_size=8, color=WHITE).move_to(tok3.get_center())
-
-        old_tokens = VGroup(tok1, tok1_lbl, tok2, tok2_lbl, tok3, tok3_lbl)
-        self.play(FadeIn(old_tokens), run_time=1.0)
-
-        tok4 = RoundedRectangle(width=0.9, height=0.5, color=YELLOW, fill_color="#2b2614", fill_opacity=0.95, corner_radius=0.04)
-        tok4.move_to(RIGHT * 1.1 + DOWN * 0.2)
-        tok4_lbl = create_text("Token 4", font_size=8, color=YELLOW).move_to(tok4.get_center())
-
-        recompute_arrows = VGroup(
-            Arrow(start=tok1.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.35),
-            Arrow(start=tok2.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.25),
-            Arrow(start=tok3.get_top() + UP * 0.1, end=tok4.get_top() + UP * 0.1, color=RED, stroke_width=1.5, path_arc=-0.15)
-        )
-        recompute_lbl = create_text("Repeatedly recompute Key-Value from scratch!", font_size=8, color=RED).next_to(recompute_arrows[1], UP, buff=0.1)
-
-        self.play(
-            FadeIn(tok4), Write(tok4_lbl),
-            Create(recompute_arrows), Write(recompute_lbl),
-            run_time=1.5
-        )
-        self.wait_until(cue_start[19] - 1.0)
-        self.play(
-            FadeOut(no_kv_lbl),
-            FadeOut(old_tokens),
-            FadeOut(tok4), FadeOut(tok4_lbl),
-            FadeOut(recompute_arrows), FadeOut(recompute_lbl),
-            run_time=1.0
-        )
         self.wait_until(cue_start[19])
+        prefill = labeled_box("Prefill", "prompt -> cache", width=1.8, height=0.78, color=BLUE_A).move_to(LEFT * 3.7 + DOWN * 2.0)
+        decode = labeled_box("Decode", "append only new K,V", width=2.25, height=0.78, color=YELLOW).move_to(LEFT * 0.5 + DOWN * 2.0)
+        new_row = Rectangle(width=1.85, height=0.2, color=YELLOW, fill_color=YELLOW, fill_opacity=0.38, stroke_width=1.1)
+        new_row.move_to(decode.get_right() + RIGHT * 0.7)
+        append = Arrow(new_row.get_right(), cache.get_bottom() + DOWN * 0.28, color=YELLOW, stroke_width=1.4, buff=0.06)
+        old_fade = VGroup(no_cache, recompute)
+        self.play(FadeOut(old_fade), FadeIn(prefill), FadeIn(decode), FadeIn(new_row), run_time=0.8)
+        self.play(Create(append), new_row.animate.move_to(cache.get_bottom() + DOWN * 0.28), run_time=1.0)
 
-        # Cue 19 (sc41_019): Prefill vs Decode stages in KV cache.
-        with_kv_lbl = create_markup_text(
-            "<span foreground=\"#00FF7F\"><b>Case 2: With KV Cache (optimized)</b></span>\n"
-            "Key and Value vectors for old tokens are stored in VRAM.\n"
-            "When a new token arrives, only compute it and append it to the cache.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(UP * 1.3)
-
-        gpu_box = RoundedRectangle(width=2.8, height=2.2, color=ORANGE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        gpu_box.move_to(LEFT * 4.0 + DOWN * 0.5)
-        gpu_lbl = create_text("GPU COMPUTE CORE\n(GPU Core)", font_size=11, color=ORANGE).next_to(gpu_box, UP, buff=0.15)
-
-        gpu_cores = VGroup()
-        for r in range(4):
-            for c in range(4):
-                core = Square(side_length=0.25, color=ORANGE, fill_color=ORANGE, fill_opacity=0.2, stroke_width=1)
-                core.move_to(gpu_box.get_center() + RIGHT * (c - 1.5) * 0.45 + UP * (r - 1.5) * 0.4)
-                gpu_cores.add(core)
-
-        vram_box = RoundedRectangle(width=2.8, height=2.2, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        vram_box.move_to(RIGHT * 4.0 + DOWN * 0.5)
-        vram_lbl = create_text("VRAM MEMORY\n(Model weights & KV Cache)", font_size=11, color=BLUE_A).next_to(vram_box, UP, buff=0.15)
-
-        bridge_upper = Line(start=gpu_box.get_right() + UP * 0.3, end=vram_box.get_left() + UP * 0.3, color=GRAY, stroke_width=2.5)
-        bridge_lower = Line(start=gpu_box.get_right() + DOWN * 0.3, end=vram_box.get_left() + DOWN * 0.3, color=GRAY, stroke_width=2.5)
-        bridge_lbl = create_markup_text(
-            "Memory bandwidth\n"
-            "<span foreground=\"#888888\"><b>Memory Bandwidth (GB/s)</b></span>",
-            font_size=9, color=WHITE, line_spacing=1.1
-        ).move_to(DOWN * 0.5)
-
-        self.play(
-            Write(with_kv_lbl),
-            FadeIn(gpu_box), FadeIn(gpu_lbl), FadeIn(gpu_cores),
-            FadeIn(vram_box), FadeIn(vram_lbl),
-            Create(bridge_upper), Create(bridge_lower), FadeIn(bridge_lbl),
-            run_time=1.5
-        )
-
-        kv_cache_subbox = RoundedRectangle(width=2.5, height=1.4, color=GREEN_C, fill_color="#142b1a", fill_opacity=0.4, corner_radius=0.05)
-        kv_cache_subbox.move_to(RIGHT * 4.0 + DOWN * 0.72)
-        cache_lbl = create_text("KV Cache (VRAM)", font_size=9, color=GREEN, weight=BOLD).next_to(kv_cache_subbox, UP, buff=0.1)
-
-        cache_rows = VGroup()
-        for idx in range(3):
-            row_rect = Rectangle(width=2.2, height=0.22, color=GREEN_E, fill_color=GREEN_E, fill_opacity=0.2, stroke_width=1)
-            row_rect.move_to(RIGHT * 4.0 + DOWN * (0.3 + idx * 0.28))
-            row_lbl = create_text(f"Key-Value Token {idx+1}", font_size=7, color=WHITE).move_to(row_rect.get_center())
-            cache_rows.add(VGroup(row_rect, row_lbl))
-
-        self.play(
-            FadeIn(kv_cache_subbox), Write(cache_lbl),
-            FadeIn(cache_rows),
-            run_time=1.5
-        )
-
-        tok4_new = RoundedRectangle(width=1.0, height=0.5, color=YELLOW, fill_color="#2b2614", fill_opacity=0.95, corner_radius=0.04)
-        tok4_new.move_to(LEFT * 4.0 + UP * 0.2)
-        tok4_new_lbl = create_text("Token 4", font_size=8, color=YELLOW).move_to(tok4_new.get_center())
-
-        self.play(
-            FadeIn(tok4_new), Write(tok4_new_lbl),
-            *[c.animate(run_time=0.5).set_fill(ORANGE, opacity=0.9) for c in gpu_cores],
-            run_time=1.0
-        )
-        self.play(
-            *[c.animate(run_time=0.5).set_fill(ORANGE, opacity=0.2) for c in gpu_cores]
-        )
-
-        new_kv_rect = Rectangle(width=2.2, height=0.22, color=YELLOW, fill_color=YELLOW, fill_opacity=0.4, stroke_width=1.5)
-        new_kv_rect.move_to(LEFT * 4.0 + DOWN * 0.3)
-        new_kv_lbl = create_text("Key-Value Token 4", font_size=7, color=YELLOW).move_to(new_kv_rect.get_center())
-        new_kv_group = VGroup(new_kv_rect, new_kv_lbl)
-
-        success_lbl = create_text("Store directly in the cache grid. No need to recompute old tokens.", font_size=8, color=GREEN_B).move_to(DOWN * 1.7)
-
-        self.play(
-            FadeIn(new_kv_group),
-            run_time=0.8
-        )
-        self.play(
-            new_kv_group.animate(run_time=1.8).move_to(RIGHT * 4.0 + DOWN * 1.14).set_color(GREEN_C),
-            FadeIn(success_lbl),
-        )
-
-        self.wait_until(cue_start[20] - 1.2)
-        self.play(
-            FadeOut(kv_title),
-            FadeOut(with_kv_lbl),
-            FadeOut(kv_cache_subbox), FadeOut(cache_lbl),
-            FadeOut(cache_rows),
-            FadeOut(tok4_new), FadeOut(tok4_new_lbl),
-            FadeOut(new_kv_group), FadeOut(success_lbl),
-            FadeOut(gpu_box), FadeOut(gpu_lbl), FadeOut(gpu_cores),
-            FadeOut(vram_box), FadeOut(vram_lbl),
-            FadeOut(bridge_upper), FadeOut(bridge_lower), FadeOut(bridge_lbl),
-            run_time=1.2
-        )
         self.wait_until(cue_start[20])
-
-        # Cue 20 (sc41_020): KV cache memory footprint bottleneck.
-        size_title = create_text("KV Cache memory size", font_size=13, color=YELLOW).move_to(UP * 2.2)
-        size_box = RoundedRectangle(width=8.6, height=0.6, color=GOLD_A, fill_color="#1a1814", fill_opacity=0.9, corner_radius=0.06)
-        size_box.move_to(UP * 1.4)
-
-        size_txt = create_markup_text(
-            "Size = ( <span foreground=\"#FFC66D\">batch</span> · <span foreground=\"#FFC66D\">n<sub>ctx</sub></span> ) · ( 2 · <span foreground=\"#FF5555\">n<sub>layer</sub></span> · <span foreground=\"#FF5555\">n<sub>heads</sub></span> · <span foreground=\"#FF5555\">head<sub>dim</sub></span> ) · <span foreground=\"#33AAFF\">n<sub>bytes</sub></span>",
-            font_size=8.5, color=WHITE
-        ).move_to(size_box.get_center())
-
-        size_desc = create_markup_text(
-            "• <span foreground=\"#FFC66D\">batch · n<sub>ctx</sub></span> : Scales linearly with batch and context length.\n"
-            "• The remaining factors are fixed by each model architecture.\n"
-            "⇒ The longer the context, the larger the KV Cache, making it the main VRAM bottleneck.",
-            font_size=9.5, color=WHITE, line_spacing=1.3
-        ).move_to(DOWN * 0.4)
-
-        self.play(
-            Write(size_title),
-            FadeIn(size_box),
-            Write(size_txt),
-            Write(size_desc),
-            run_time=1.5
+        self.play(FadeOut(VGroup(kv_title, prefix, cache_label, cache, prefill, decode, new_row, append)), run_time=0.45)
+        size_title = create_text("KV cache helps speed, but consumes VRAM", font_size=12, color=YELLOW).next_to(
+            sub_title, DOWN, buff=0.35
         )
-        self.wait(5.0)
+        formula = create_text("Size = (batch x n_ctx) x model factors x bytes", font_size=11, color=YELLOW).move_to(UP * 1.35)
+        tank = RoundedRectangle(width=5.9, height=1.0, color=BLUE_A, fill_color="#101826", fill_opacity=0.85, corner_radius=0.07)
+        tank.move_to(DOWN * 0.1)
+        chunks = VGroup()
+        for idx, color in enumerate([GREEN, GREEN, YELLOW, RED_B]):
+            chunk = Rectangle(width=1.18, height=0.78, color=color, fill_color=color, fill_opacity=0.55, stroke_width=0.8)
+            chunk.move_to(tank.get_left() + RIGHT * (0.72 + idx * 1.32))
+            chunks.add(chunk)
+        batch_slider = progress_bar("batch", 0.62, YELLOW, width=2.1).move_to(LEFT * 1.45 + DOWN * 1.55)
+        ctx_slider = progress_bar("context length", 0.82, YELLOW, width=2.1).move_to(RIGHT * 1.45 + DOWN * 1.55)
+        bottleneck = create_text("Larger batch/context -> cache fills VRAM", font_size=10, color=RED_B).move_to(DOWN * 2.35)
+        self.play(FadeIn(size_title), FadeIn(formula), FadeIn(tank), run_time=0.75)
+        self.play(FadeIn(chunks, lag_ratio=0.1), FadeIn(batch_slider), FadeIn(ctx_slider), FadeIn(bottleneck), run_time=1.0)
+        self.play(chunks[-1].animate.set_fill(RED_B, opacity=0.85), tank.animate.set_color(RED_B), run_time=0.65)
 
-        self.play(
-            FadeOut(size_title),
-            FadeOut(size_box),
-            FadeOut(size_txt),
-            FadeOut(size_desc),
-            run_time=0.8
-        )
+        self.wait_until(voiceover_end + 0.2)
+        self.play(FadeOut(VGroup(size_title, formula, tank, chunks, batch_slider, ctx_slider, bottleneck, sub_title)), run_time=0.8)
 
-        recap_title = create_text("Summary: Comparing Prefill and Decode Phases", font_size=13, color=YELLOW)
-        recap_title.to_edge(UP, buff=0.4)
-        self.play(
-            FadeOut(sub_title),
-            FadeIn(recap_title),
-            run_time=1.0
-        )
-
-        comparison_table = VGroup()
-        headers = ["Phase", "Operation type", "Arithmetic intensity", "Bottleneck type"]
-        header_colors = [BLUE_A, WHITE, WHITE, RED]
-        
-        header_group = VGroup()
-        for idx, h_text in enumerate(headers):
-            cell = RoundedRectangle(width=2.5, height=0.6, color=GRAY_D, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-            cell.move_to(LEFT * (2.7 * (1.5 - idx)) + UP * 1.0)
-            lbl = create_text(h_text, font_size=10, color=header_colors[idx]).move_to(cell.get_center())
-            header_group.add(VGroup(cell, lbl))
-        comparison_table.add(header_group)
-
-        table_rows = [
-            ("Prefill Stage", "Matrix-Matrix multiply\n(GEMM)", "very high (proportional to T)", "Compute-bound\n(compute bottleneck)"),
-            ("Decode Stage", "Matrix-Vector multiply\n(GEMV)", "Extremely low (~1 FLOP/B)", "Memory-bound\n(memory bottleneck)")
-        ]
-
-        row_y_coords = [0.1, -0.9]
-        row_colors = [GREEN_B, RED_B]
-        for r_idx, row_data in enumerate(table_rows):
-            row_group = VGroup()
-            for c_idx, cell_text in enumerate(row_data):
-                cell = RoundedRectangle(width=2.5, height=0.8, color=GRAY_E, fill_color="#121315", fill_opacity=0.8, corner_radius=0.04)
-                cell.move_to(LEFT * (2.7 * (1.5 - c_idx)) + UP * row_y_coords[r_idx])
-                
-                t_color = row_colors[r_idx] if c_idx == 3 else (BLUE_A if c_idx == 0 else WHITE)
-                lbl = create_text(cell_text, font_size=9, color=t_color).move_to(cell.get_center())
-                
-                row_group.add(VGroup(cell, lbl))
-            comparison_table.add(row_group)
-
-        solution_note = create_markup_text(
-            "<b>Note:</b> Using <span foreground=\"#00FF7F\"><b>KV Cache</b></span> avoids recomputing old tokens,\n"
-            "turns computation into incremental work, and speeds up processing many times.",
-            font_size=10, color=WHITE, line_spacing=1.2
-        ).move_to(DOWN * 2.1)
-
-        self.play(
-            FadeIn(comparison_table),
-            Write(solution_note),
-            run_time=1.8
-        )
-        self.wait_until(voiceover_end)
-
-        self.play(
-            FadeOut(comparison_table),
-            FadeOut(solution_note),
-            FadeOut(recap_title),
-            run_time=1.2
-        )
-        self.wait(2.0)
         assert_all_scene_voiceovers_played(self)

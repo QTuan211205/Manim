@@ -41,3 +41,8 @@ fontconfig/
 
 # System files
 .DS_Store
+
+# Agent / Workspace Meta
+AGENTS.md
+IMPORTANT.md
+plan.md

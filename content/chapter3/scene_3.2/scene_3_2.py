@@ -272,7 +272,7 @@ class Scene3_2(Scene):
             score_lbl = create_text(score, font_size=8, color=color).move_to(card.get_center() + DOWN * 0.12)
             candidate_cards.add(VGroup(card, name_lbl, score_lbl))
         winner_ring = SurroundingRectangle(candidate_cards[1], color=GREEN, stroke_width=2.5, buff=0.06)
-        winner_lbl = create_text("select max v(y)", font_size=9, color=GREEN).next_to(winner_ring, DOWN, buff=0.10)
+        winner_lbl = create_text("Select max v(y)", font_size=9, color=GREEN).next_to(winner_ring, DOWN, buff=0.10)
 
         part1_group = VGroup(part1_title)
         content = self.replace_content(content, Group(bon_panel, candidate_cards))
@@ -292,8 +292,8 @@ class Scene3_2(Scene):
             color=GRAY_B,
             include_numbers=False,
         ).move_to(DOWN * 1.35)
-        low_lbl = create_text("low score", font_size=7, color=GRAY_B).next_to(quality_axis, LEFT, buff=0.12)
-        high_lbl = create_text("high score", font_size=7, color=GREEN).next_to(quality_axis, RIGHT, buff=0.12)
+        low_lbl = create_text("Low score", font_size=7, color=GRAY_B).next_to(quality_axis, LEFT, buff=0.12)
+        high_lbl = create_text("High score", font_size=7, color=GREEN).next_to(quality_axis, RIGHT, buff=0.12)
         score_dots = VGroup(
             Dot(quality_axis.n2p(0.1), radius=0.05, color=RED),
             Dot(quality_axis.n2p(0.7), radius=0.05, color=YELLOW),
@@ -349,10 +349,10 @@ class Scene3_2(Scene):
         trap_box = RoundedRectangle(width=4.0, height=2.55, color=RED, fill_color="#261313", fill_opacity=0.78, corner_radius=0.08)
         trap_box.move_to(LEFT * 2.7 + DOWN * 0.1)
         trap_title = create_text("Best-looking to v(y)", font_size=11, color=RED).move_to(trap_box.get_top() + DOWN * 0.35)
-        true_quality = create_text("true quality", font_size=9, color=GREEN).move_to(trap_box.get_center() + LEFT * 0.95 + UP * 0.25)
-        rm_score = create_text("reward score", font_size=9, color=BLUE_A).move_to(trap_box.get_center() + RIGHT * 0.95 + UP * 0.25)
+        true_quality = create_text("True quality", font_size=9, color=GREEN).move_to(trap_box.get_center() + LEFT * 0.95 + UP * 0.25)
+        rm_score = create_text("Reward score", font_size=9, color=BLUE_A).move_to(trap_box.get_center() + RIGHT * 0.95 + UP * 0.25)
         mismatch_arrow = Arrow(true_quality.get_right(), rm_score.get_left(), color=RED, stroke_width=2.0, buff=0.12)
-        blind_spot = create_text("blind spot", font_size=10, color=RED).move_to(trap_box.get_center() + DOWN * 0.65)
+        blind_spot = create_text("Blind spot", font_size=10, color=RED).move_to(trap_box.get_center() + DOWN * 0.65)
         overopt_group = Group(overopt_panel, trap_box, trap_title, true_quality, rm_score, mismatch_arrow, blind_spot)
         content = self.replace_content(content, overopt_group)
         self.play(Indicate(blind_spot, color=RED), run_time=0.8)
@@ -431,7 +431,7 @@ class Scene3_2(Scene):
         ladder_arrow = Arrow(easy_ladder[0].get_right(), easy_ladder[-1].get_left(), color=ORANGE, stroke_width=2, buff=0.06)
         verifier_badge = RoundedRectangle(width=2.2, height=0.62, color=ORANGE, fill_color="#2b1a14", fill_opacity=0.9, corner_radius=0.06)
         verifier_badge.move_to(LEFT * 3.15 + UP * 1.0)
-        verifier_lbl = create_text("trained verifier transfers", font_size=8, color=ORANGE).move_to(verifier_badge.get_center())
+        verifier_lbl = create_text("Trained verifier transfers", font_size=8, color=ORANGE).move_to(verifier_badge.get_center())
         easy_hard_group = Group(easy_graph, easy_ladder, ladder_arrow, verifier_badge, verifier_lbl)
         content = self.replace_content(content, easy_hard_group)
         self.play(LaggedStart(*[FadeIn(step, shift=UP * 0.12) for step in easy_ladder], lag_ratio=0.15), Create(ladder_arrow), run_time=0.9)
@@ -447,9 +447,9 @@ class Scene3_2(Scene):
         ).move_to(LEFT * 1.2)
         conv_curve = conv_axes.plot(lambda x: 0.84 * (1 - np.exp(-0.48 * x)), x_range=[0, 9.5], color=GREEN, stroke_width=3)
         ceiling = DashedLine(conv_axes.c2p(0, 0.84), conv_axes.c2p(9.5, 0.84), color=YELLOW, stroke_width=1.5)
-        ceiling_lbl = create_text("limit as N grows", font_size=8, color=YELLOW).move_to(conv_axes.c2p(7.0, 0.93))
-        samples_lbl = create_text("number of candidates N", font_size=8, color=GRAY_A).next_to(conv_axes.x_axis, DOWN, buff=0.18)
-        acc_lbl = create_text("voting accuracy", font_size=8, color=GRAY_A).next_to(conv_axes.y_axis, LEFT, buff=0.15).rotate(90 * DEGREES)
+        ceiling_lbl = create_text("Limit as N grows", font_size=8, color=YELLOW).move_to(conv_axes.c2p(7.0, 0.93))
+        samples_lbl = create_text("Number of candidates N", font_size=8, color=GRAY_A).next_to(conv_axes.x_axis, DOWN, buff=0.18)
+        acc_lbl = create_text("Voting accuracy", font_size=8, color=GRAY_A).next_to(conv_axes.y_axis, LEFT, buff=0.15).rotate(90 * DEGREES)
         marginalize_card = RoundedRectangle(width=3.15, height=1.2, color=BLUE_A, fill_color="#141c2b", fill_opacity=0.92, corner_radius=0.08)
         marginalize_card.move_to(RIGHT * 3.35 + UP * 0.25)
         marginalize_txt = create_markup_text(
@@ -477,13 +477,13 @@ class Scene3_2(Scene):
         self.wait_until(cue_start[12] + 0.15)
         weighted_mass = RoundedRectangle(width=2.8, height=0.42, color=GREEN, fill_color=GREEN_E, fill_opacity=0.22, corner_radius=0.06)
         weighted_mass.next_to(marginalize_card, DOWN, buff=0.24)
-        weighted_mass_lbl = create_text("correct answers get more v · g mass", font_size=7.5, color=GREEN).move_to(weighted_mass.get_center())
+        weighted_mass_lbl = create_text("Correct answers get more v · g mass", font_size=7.5, color=GREEN).move_to(weighted_mass.get_center())
         self.play(FadeIn(weighted_mass), Write(weighted_mass_lbl), run_time=0.45)
 
         # --- Cue 13: Takeaway 3 ---
         self.wait_until(cue_start[13] + 0.15)
-        improve_v = create_text("improve v", font_size=8, color=BLUE_A).move_to(RIGHT * 2.75 + DOWN * 1.45)
-        improve_g = create_text("improve g", font_size=8, color=GREEN).move_to(RIGHT * 3.95 + DOWN * 1.45)
+        improve_v = create_text("Improve v", font_size=8, color=BLUE_A).move_to(RIGHT * 2.75 + DOWN * 1.45)
+        improve_g = create_text("Improve g", font_size=8, color=GREEN).move_to(RIGHT * 3.95 + DOWN * 1.45)
         improve_arrows = VGroup(
             Arrow(improve_v.get_top(), marginalize_card.get_bottom() + LEFT * 0.35, color=BLUE_A, stroke_width=1.6, buff=0.05),
             Arrow(improve_g.get_top(), marginalize_card.get_bottom() + RIGHT * 0.35, color=GREEN, stroke_width=1.6, buff=0.05),
@@ -794,8 +794,8 @@ class Scene3_2(Scene):
             card_lbl = create_text("+1", font_size=8, color=WHITE).move_to(card.get_center())
             ballots.add(VGroup(card, card_lbl))
 
-        count_42_lbl = create_text("0 votes", font_size=12, color=GREEN).next_to(bin_42, DOWN, buff=0.2)
-        count_32_lbl = create_text("0 votes", font_size=12, color=RED).next_to(bin_32, DOWN, buff=0.2)
+        count_42_lbl = create_text("0 Votes", font_size=12, color=GREEN).next_to(bin_42, DOWN, buff=0.2)
+        count_32_lbl = create_text("0 Votes", font_size=12, color=RED).next_to(bin_32, DOWN, buff=0.2)
         self.play(FadeIn(count_42_lbl), FadeIn(count_32_lbl), run_time=0.5)
 
         for idx in range(4):
@@ -808,7 +808,7 @@ class Scene3_2(Scene):
                 new_cnt_lbl = create_text(f"{idx+1} votes", font_size=12, color=GREEN).next_to(bin_42, DOWN, buff=0.2)
                 self.play(Transform(count_42_lbl, new_cnt_lbl), run_time=0.15)
             else:
-                new_cnt_lbl = create_text("1 votes", font_size=12, color=RED).next_to(bin_32, DOWN, buff=0.2)
+                new_cnt_lbl = create_text("1 Votes", font_size=12, color=RED).next_to(bin_32, DOWN, buff=0.2)
                 self.play(Transform(count_32_lbl, new_cnt_lbl), run_time=0.15)
             self.wait(0.1)
 

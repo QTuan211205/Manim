@@ -470,7 +470,7 @@ class Scene4_2(Scene):
 
         corrected_box = RoundedRectangle(width=0.9, height=0.55, color=BLUE, fill_color="#14202b", fill_opacity=0.9, corner_radius=0.04)
         corrected_box.move_to(RIGHT * 2.67 + DOWN * 0.8)
-        corrected_lbl = create_text("moon", font_size=10, color=BLUE_A).move_to(corrected_box.get_center())
+        corrected_lbl = create_text("Moon", font_size=10, color=BLUE_A).move_to(corrected_box.get_center())
 
         success_arrow = Arrow(start=RIGHT * 2.67 + UP * 0.5, end=RIGHT * 2.67 + DOWN * 0.4, color=BLUE_A, stroke_width=2.5)
         success_lbl = create_text("Revision successful!", font_size=8, color=BLUE_B).next_to(success_arrow, UP, buff=0.1)

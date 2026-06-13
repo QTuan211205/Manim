@@ -104,6 +104,38 @@ def get_crossmark(color=RED, stroke_width=2.5):
     return cross
 
 
+def create_state_node(label, position, color=BLUE_B, radius=0.32, fill="#181a1e"):
+    circle = Circle(radius=radius, color=color, fill_color=fill, fill_opacity=0.9, stroke_width=2)
+    circle.move_to(position)
+    text = create_text(label, font_size=11, color=WHITE).move_to(position)
+    return VGroup(circle, text)
+
+
+def create_score_badge(text, color=GREEN, width=0.82):
+    box = RoundedRectangle(width=width, height=0.28, corner_radius=0.05, color=color, fill_color="#151819", fill_opacity=0.95, stroke_width=1.2)
+    label = create_text(text, font_size=7.5, color=color).move_to(box.get_center())
+    return VGroup(box, label)
+
+
+def create_step_card(label, score=None, color=BLUE_B, width=1.35):
+    card = RoundedRectangle(width=width, height=0.48, corner_radius=0.06, color=color, fill_color="#17191d", fill_opacity=0.95, stroke_width=1.4)
+    text = create_text(label, font_size=9, color=WHITE).move_to(card.get_center())
+    group = VGroup(card, text)
+    if score is not None:
+        badge = create_score_badge(score, color=GREEN if float(score) >= 0.7 else RED)
+        badge.next_to(card, DOWN, buff=0.1)
+        group.add(badge)
+    return group
+
+
+def create_compute_tokens(count, color=GREEN):
+    tokens = VGroup()
+    for _ in range(count):
+        tokens.add(Circle(radius=0.055, color=color, fill_color=color, fill_opacity=0.9, stroke_width=0.8))
+    tokens.arrange(RIGHT, buff=0.055)
+    return tokens
+
+
 class Scene3_3(Scene):
     def wait_until(self, target_time):
         current_time = getattr(self.renderer, "time", 0.0)
@@ -148,19 +180,38 @@ class Scene3_3(Scene):
         part1_title = create_text("1. Waste in Parallel Decoding & the Tree Search Mechanism", font_size=13, color=BLUE_A)
         part1_title.next_to(sub_title, DOWN, buff=0.3)
         
-        design_title = create_text("4 basic Tree Search design elements:", font_size=14, color=YELLOW).move_to(UP * 1.5)
-        design_items = VGroup(
-            create_markup_text("• <b>States <i>s</i>:</b> Generated reasoning prefix.", font_size=12),
-            create_markup_text("• <b>Transitions <i>s -> s'</i>:</b> Explore the next step.", font_size=12),
-            create_markup_text("• <b>Scores <i>v(s)</i>:</b> Estimate the potential of the current step.", font_size=12),
-            create_markup_text("• <b>Traversal strategy:</b> Depth-first search (DFS), breadth-first search (BFS), ...", font_size=12)
-        ).arrange(DOWN, aligned_edge=LEFT, buff=0.35).move_to(DOWN * 0.4)
+        root = create_state_node("s0", UP * 1.1, color=YELLOW)
+        s1 = create_state_node("s1", LEFT * 2.6 + DOWN * 0.25, color=BLUE_B)
+        s2 = create_state_node("s2", RIGHT * 2.6 + DOWN * 0.25, color=BLUE_B)
+        s3 = create_state_node("s3", LEFT * 3.6 + DOWN * 1.7, color=GRAY_C)
+        s4 = create_state_node("s4", LEFT * 1.6 + DOWN * 1.7, color=GRAY_C)
+        s5 = create_state_node("s5", RIGHT * 2.6 + DOWN * 1.7, color=GRAY_C)
+        edges = VGroup(
+            Arrow(root.get_bottom(), s1.get_top(), color=GRAY_C, stroke_width=1.5, buff=0.08),
+            Arrow(root.get_bottom(), s2.get_top(), color=GRAY_C, stroke_width=1.5, buff=0.08),
+            Arrow(s1.get_bottom(), s3.get_top(), color=GRAY_D, stroke_width=1.2, buff=0.08),
+            Arrow(s1.get_bottom(), s4.get_top(), color=GRAY_D, stroke_width=1.2, buff=0.08),
+            Arrow(s2.get_bottom(), s5.get_top(), color=GRAY_D, stroke_width=1.2, buff=0.08),
+        )
+        prefix_label = create_text("State = reasoning prefix", font_size=9, color=YELLOW).next_to(root, UP, buff=0.2)
+        transition_label = create_text("Transition = next step", font_size=8, color=GRAY_A).move_to(LEFT * 0.05 + DOWN * 0.1)
+        score_s1 = create_score_badge("v=0.82", GREEN).next_to(s1, LEFT, buff=0.12)
+        score_s2 = create_score_badge("v=0.24", RED).next_to(s2, RIGHT, buff=0.12)
+        score_label = create_text("Score ranks partial paths", font_size=9, color=GREEN).move_to(RIGHT * 3.0 + UP * 1.05)
+        traversal = Dot(root.get_center(), radius=0.08, color=YELLOW)
+        traversal_path = VMobject(color=YELLOW, stroke_width=3)
+        traversal_path.set_points_smoothly([root.get_center(), s1.get_center(), s4.get_center()])
+        strategy_label = create_text("Strategy chooses visit order", font_size=9, color=BLUE_A).move_to(LEFT * 3.0 + UP * 1.05)
         
-        part1_group = VGroup(part1_title, design_title, design_items)
-        self.play(FadeIn(part1_title), Write(design_title), run_time=1.0)
-        for item in design_items:
-            self.play(FadeIn(item, shift=RIGHT * 0.15), run_time=0.6)
-            self.wait(1.4)
+        part1_group = VGroup(
+            part1_title, root, s1, s2, s3, s4, s5, edges, prefix_label, transition_label,
+            score_s1, score_s2, score_label, traversal, traversal_path, strategy_label
+        )
+        self.play(FadeIn(part1_title), FadeIn(edges), FadeIn(root), FadeIn(prefix_label), run_time=1.0)
+        self.play(FadeIn(s1), FadeIn(s2), FadeIn(transition_label), run_time=0.8)
+        self.play(FadeIn(score_s1), FadeIn(score_s2), FadeIn(score_label), run_time=0.8)
+        self.play(FadeIn(s3), FadeIn(s4), FadeIn(s5), run_time=0.7)
+        self.play(MoveAlongPath(traversal, traversal_path), FadeIn(strategy_label), run_time=2.3)
             
         content = part1_group
 
@@ -171,45 +222,47 @@ class Scene3_3(Scene):
         part2_title = create_text("2. Process-based Reward Model (PRM)", font_size=13, color=BLUE_A)
         part2_title.next_to(sub_title, DOWN, buff=0.3)
         
-        box_width, box_height = 3.6, 2.0
+        orm_label = create_text("ORM", font_size=12, color=BLUE_A).move_to(LEFT * 4.4 + UP * 1.55)
+        prm_label = create_text("PRM", font_size=12, color=GOLD_A).move_to(LEFT * 4.4 + DOWN * 0.75)
+        orm_steps = VGroup(
+            create_step_card("s1"),
+            create_step_card("s2"),
+            create_step_card("s3"),
+            create_step_card("answer", color=GREEN_B),
+        ).arrange(RIGHT, buff=0.18).move_to(UP * 1.05 + RIGHT * 0.25)
+        prm_steps = VGroup(
+            create_step_card("s1", "0.79", color=GOLD_B),
+            create_step_card("s2", "0.18", color=GOLD_B),
+            create_step_card("s3", "0.86", color=GOLD_B),
+            create_step_card("answer", "0.90", color=GREEN_B),
+        ).arrange(RIGHT, buff=0.18).move_to(DOWN * 1.25 + RIGHT * 0.25)
+        orm_arrows = VGroup(*[
+            Arrow(orm_steps[i].get_right(), orm_steps[i + 1].get_left(), color=GRAY_C, stroke_width=1.3, buff=0.05)
+            for i in range(3)
+        ])
+        prm_arrows = VGroup(*[
+            Arrow(prm_steps[i].get_right(), prm_steps[i + 1].get_left(), color=GRAY_C, stroke_width=1.3, buff=0.05)
+            for i in range(3)
+        ])
+        final_meter = create_score_badge("final score", GREEN, width=1.25).next_to(orm_steps[-1], RIGHT, buff=0.35)
+        final_arrow = Arrow(orm_steps[-1].get_right(), final_meter.get_left(), color=GREEN, stroke_width=1.6, buff=0.08)
+        prm_probe = Triangle(color=GOLD, fill_color=GOLD, fill_opacity=0.9).scale(0.16).rotate(PI)
+        prm_probe.next_to(prm_steps[0], UP, buff=0.22)
+        prm_formula = create_markup_text(
+            "<span color='#FFD700'><i>v</i>(<i>x</i>, <i>s</i><sub>1:t</sub>) → [0, 1]</span>",
+            font_size=12
+        ).move_to(DOWN * 2.5)
         
-        orm_box = RoundedRectangle(width=box_width, height=box_height, color=BLUE_D, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
-        orm_box.move_to(LEFT * 3.6 + DOWN * 0.6)
-        orm_lbl = create_text("Outcome-based RM\n(ORM)", font_size=13, color=BLUE_A).move_to(orm_box.get_center() + UP * 0.5)
-        orm_desc = create_text("Score the complete answer y\nv(y) belongs to [0, 1] at the end", font_size=10, color=GRAY_B).move_to(orm_box.get_center() + DOWN * 0.4)
-        orm_group = VGroup(orm_box, orm_lbl, orm_desc)
-
-        orm_input = create_text("Chained y", font_size=11, color=WHITE).next_to(orm_box, LEFT, buff=0.6)
-        orm_in_arrow = Arrow(start=orm_input.get_right(), end=orm_box.get_left(), color=BLUE_B, stroke_width=1.5, buff=0.08)
-        orm_output = create_text("Score: 0.88", font_size=11, color=GREEN).next_to(orm_box, RIGHT, buff=0.6)
-        orm_out_arrow = Arrow(start=orm_box.get_right(), end=orm_output.get_left(), color=GREEN, stroke_width=1.5, buff=0.08)
-        orm_full = VGroup(orm_group, orm_input, orm_in_arrow, orm_output, orm_out_arrow)
-
-        prm_box = RoundedRectangle(width=box_width, height=box_height, color=GOLD_D, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
-        prm_box.move_to(RIGHT * 3.6 + DOWN * 0.6)
-        prm_lbl = create_text("Process-based RM\n(PRM)", font_size=13, color=GOLD_A).move_to(prm_box.get_center() + UP * 0.5)
-        prm_desc = create_text("Score each reasoning step s(t)\nv(x, s1, ..., st) belongs to [0, 1]", font_size=10, color=GRAY_B).move_to(prm_box.get_center() + DOWN * 0.4)
-        prm_group = VGroup(prm_box, prm_lbl, prm_desc)
-
-        prm_input = create_text("Step s(t)", font_size=11, color=WHITE).next_to(prm_box, LEFT, buff=0.6)
-        prm_in_arrow = Arrow(start=prm_input.get_right(), end=prm_box.get_left(), color=GOLD_B, stroke_width=1.5, buff=0.08)
-        prm_output = create_text("Score: 0.95", font_size=11, color=GREEN).next_to(prm_box, RIGHT, buff=0.6)
-        prm_out_arrow = Arrow(start=prm_box.get_right(), end=prm_output.get_left(), color=GREEN, stroke_width=1.5, buff=0.08)
-        prm_full = VGroup(prm_group, prm_input, prm_in_arrow, prm_output, prm_out_arrow)
-
-        prm_formula_box = RoundedRectangle(width=5.8, height=0.8, color=GOLD, fill_color="#16171a", fill_opacity=0.9, corner_radius=0.08)
-        prm_formula_box.move_to(UP * 1.8)
-        prm_formula_txt = create_markup_text(
-            "Formula PRM:  <span color='#FFD700'><i>v</i>(<i>x</i>, <i>s</i><sub>1</sub>, <i>s</i><sub>2</sub>, ..., <i>s</i><sub><i>t</i></sub>) → [0, 1]</span>",
-            font_size=13
-        ).move_to(prm_formula_box.get_center())
-        prm_formula_group = VGroup(prm_formula_box, prm_formula_txt)
-
-        self.play(FadeIn(part2_title), FadeIn(orm_full), run_time=1.0)
-        self.wait(2.5)
-        self.play(FadeIn(prm_full), FadeIn(prm_formula_group), run_time=1.2)
+        orm_full = VGroup(orm_label, orm_steps, orm_arrows, final_meter, final_arrow)
+        prm_full = VGroup(prm_label, prm_steps, prm_arrows, prm_probe, prm_formula)
+        self.play(FadeIn(part2_title), FadeIn(orm_label), FadeIn(orm_steps), FadeIn(orm_arrows), run_time=1.0)
+        self.play(FadeIn(final_meter), Create(final_arrow), run_time=0.8)
+        self.wait(0.8)
+        self.play(FadeIn(prm_label), FadeIn(prm_steps), FadeIn(prm_arrows), FadeIn(prm_formula), run_time=1.0)
+        for target in prm_steps[1:]:
+            self.play(prm_probe.animate.next_to(target, UP, buff=0.22), run_time=0.55)
         
-        content = VGroup(part2_title, orm_full, prm_full, prm_formula_group)
+        content = VGroup(part2_title, orm_full, prm_full)
 
         # --- Cue 4: Rebase Algorithm ---
         self.wait_until(cue_start[4] + 0.25)
@@ -234,19 +287,29 @@ class Scene3_3(Scene):
         # --- Cue 5: Rebase annotations ---
         self.wait_until(cue_start[5] + 0.25)
         
-        annotations = VGroup(
-            create_markup_text("<span color='#87CEFA'>• <b>explore<sub><i>i</i></sub>:</b></span> Number of compute streams allocated to branch <i>s<sub>i</sub></i>.", font_size=11),
-            create_markup_text("<span color='#FFFFFF'>• <b>Budget:</b></span> Total compute-stream budget at inference time.", font_size=11),
-            create_markup_text("<span color='#00FF7F'>• <b><i>v</i>(<i>s</i><sub><i>i</i></sub>):</b></span> PRM score reflecting how promising state <i>s<sub>i</sub></i>.", font_size=11),
-            create_markup_text("<span color='#FFA500'>• <b>τ (Temperature):</b></span> Control parameter: small τ -> focused; large τ -> diverse.", font_size=11)
-        ).arrange(DOWN, aligned_edge=LEFT, buff=0.25).move_to(DOWN * 0.8)
+        budget_pool = create_compute_tokens(10, color=BLUE_A).move_to(DOWN * 0.35)
+        budget_label = create_text("Budget", font_size=9, color=BLUE_A).next_to(budget_pool, UP, buff=0.18)
+        branch_a = create_state_node("sA", LEFT * 3.25 + DOWN * 1.35, color=GREEN, radius=0.28)
+        branch_b = create_state_node("sB", RIGHT * 3.25 + DOWN * 1.35, color=RED, radius=0.28)
+        score_a_bar = Rectangle(width=1.55, height=0.14, color=GREEN, fill_color=GREEN, fill_opacity=0.85).next_to(branch_a, RIGHT, buff=0.2)
+        score_b_bar = Rectangle(width=0.52, height=0.14, color=RED, fill_color=RED, fill_opacity=0.85).next_to(branch_b, LEFT, buff=0.2)
+        score_a = create_text("PRM 0.90", font_size=8, color=GREEN).next_to(score_a_bar, UP, buff=0.08)
+        score_b = create_text("PRM 0.30", font_size=8, color=RED).next_to(score_b_bar, UP, buff=0.08)
+        temp_slider = Line(LEFT * 0.9, RIGHT * 0.9, color=ORANGE, stroke_width=2)
+        temp_dot = Dot(RIGHT * 0.45, radius=0.07, color=ORANGE)
+        temp_label = create_text("tau controls focus", font_size=8, color=ORANGE).next_to(temp_slider, DOWN, buff=0.12)
+        temp_knob = VGroup(temp_slider, temp_dot, temp_label).move_to(DOWN * 2.1)
+        visual_terms = VGroup(
+            budget_pool, budget_label, branch_a, branch_b, score_a_bar, score_b_bar,
+            score_a, score_b, temp_knob
+        )
         
-        self.play(FadeIn(annotations, shift=UP * 0.15), run_time=1.0)
-        rebase_full_group = VGroup(content, annotations)
+        self.play(FadeIn(visual_terms, shift=UP * 0.15), run_time=1.0)
+        rebase_full_group = VGroup(content, visual_terms)
 
         # --- Cue 6: Rebase Node Allocation Example ---
         self.wait_until(cue_start[6] + 0.2)
-        self.play(FadeOut(annotations), run_time=0.4)
+        self.play(FadeOut(visual_terms), run_time=0.4)
         
         sim_title = create_text("Example: Budget = 10 streams | Temperature τ = 0.3", font_size=12, color=YELLOW).move_to(UP * 0.2)
         
@@ -262,13 +325,12 @@ class Scene3_3(Scene):
 
         self.play(Write(sim_title), FadeIn(node_a_group), FadeIn(node_b_group), run_time=1.0)
         
-        alloc_a = create_markup_text("Allocation: <span color='#00FF00'><b>9 streams</b></span> (90% compute)", font_size=11)
-        alloc_a.next_to(node_a, DOWN, buff=0.25)
-
-        alloc_b = create_markup_text("Allocation: <span color='#FF0000'><b>1 stream</b></span> (10% compute)", font_size=11)
-        alloc_b.next_to(node_b, DOWN, buff=0.25)
+        tokens_a = create_compute_tokens(9, color=GREEN).next_to(node_a, DOWN, buff=0.28)
+        tokens_b = create_compute_tokens(1, color=RED).next_to(node_b, DOWN, buff=0.28)
+        alloc_a = create_text("9 Streams", font_size=9, color=GREEN).next_to(tokens_a, DOWN, buff=0.1)
+        alloc_b = create_text("1 Stream", font_size=9, color=RED).next_to(tokens_b, DOWN, buff=0.1)
         
-        self.play(FadeIn(alloc_a, shift=UP * 0.1), FadeIn(alloc_b, shift=UP * 0.1), run_time=0.8)
+        self.play(FadeIn(tokens_a, shift=UP * 0.1), FadeIn(tokens_b, shift=UP * 0.1), FadeIn(alloc_a), FadeIn(alloc_b), run_time=0.8)
 
         arrows_a = VGroup()
         arrows_b = VGroup()
@@ -291,7 +353,7 @@ class Scene3_3(Scene):
         self.play(Create(arrows_a), Create(arrows_b), run_time=1.2)
         
         # Keep group
-        rebase_example_group = VGroup(sim_title, node_a_group, node_b_group, alloc_a, alloc_b, arrows_a, arrows_b)
+        rebase_example_group = VGroup(sim_title, node_a_group, node_b_group, tokens_a, tokens_b, alloc_a, alloc_b, arrows_a, arrows_b)
         content = VGroup(rebase_full_group, rebase_example_group)
 
         # --- Cue 7: Traversal & Applications ---
@@ -447,26 +509,57 @@ class Scene3_3(Scene):
         comp_title = create_text("Comparison: Evaluation Timing", font_size=13, color=YELLOW)
         comp_title.next_to(sub_title, DOWN, buff=0.3)
         
-        comp_box = RoundedRectangle(width=9.2, height=2.6, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.1)
-        comp_box.move_to(DOWN * 0.4)
+        parallel_label = create_text("Parallel", font_size=11, color=BLUE_A).move_to(LEFT * 4.65 + UP * 0.95)
+        tree_label = create_text("Tree search", font_size=11, color=GREEN_A).move_to(LEFT * 4.65 + DOWN * 1.05)
+        parallel_cards = VGroup(
+            create_step_card("y1", color=BLUE_B, width=0.95),
+            create_step_card("y2", color=BLUE_B, width=0.95),
+            create_step_card("y3", color=BLUE_B, width=0.95),
+        ).arrange(RIGHT, buff=0.45).move_to(LEFT * 0.6 + UP * 0.95)
+        verifier = RoundedRectangle(width=1.55, height=0.55, corner_radius=0.07, color=YELLOW, fill_color="#1c1a11", fill_opacity=0.95)
+        verifier.next_to(parallel_cards, RIGHT, buff=0.55)
+        verifier_text = create_text("Verify\nat end", font_size=8, color=YELLOW).move_to(verifier.get_center())
+        parallel_arrows = VGroup(*[
+            Arrow(card.get_right(), verifier.get_left(), color=YELLOW, stroke_width=1.1, buff=0.05)
+            for card in parallel_cards
+        ])
+        tree_root = create_state_node("s0", LEFT * 2.2 + DOWN * 0.8, color=YELLOW, radius=0.25)
+        tree_good = create_state_node("s1", LEFT * 0.65 + DOWN * 0.55, color=GREEN, radius=0.25)
+        tree_bad = create_state_node("s2", LEFT * 0.65 + DOWN * 1.55, color=RED, radius=0.25)
+        tree_next = create_state_node("s3", RIGHT * 1.0 + DOWN * 0.55, color=GREEN, radius=0.25)
+        tree_answer = create_step_card("answer", "0.91", color=GREEN_B, width=1.05).move_to(RIGHT * 2.85 + DOWN * 0.55)
+        tree_edges = VGroup(
+            Arrow(tree_root.get_right(), tree_good.get_left(), color=GREEN, stroke_width=1.4, buff=0.05),
+            Arrow(tree_root.get_right(), tree_bad.get_left(), color=RED, stroke_width=1.4, buff=0.05),
+            Arrow(tree_good.get_right(), tree_next.get_left(), color=GREEN, stroke_width=1.4, buff=0.05),
+            Arrow(tree_next.get_right(), tree_answer.get_left(), color=GREEN, stroke_width=1.4, buff=0.05),
+        )
+        checkpoint_1 = create_score_badge("0.84", GREEN).next_to(tree_good, UP, buff=0.08)
+        checkpoint_2 = create_score_badge("0.12", RED).next_to(tree_bad, DOWN, buff=0.08)
+        prune_cross = get_crossmark(color=RED, stroke_width=3).move_to(tree_bad.get_center() + RIGHT * 0.5)
+        backtrack_arrow = CurvedArrow(tree_bad.get_top(), tree_root.get_bottom(), angle=TAU / 4, color=RED, stroke_width=2)
+        compute_shift = create_compute_tokens(6, color=GREEN).next_to(tree_next, UP, buff=0.25)
+        compute_label = create_text("Reallocate compute", font_size=8, color=GREEN).next_to(compute_shift, UP, buff=0.08)
+        comp_group = VGroup(
+            comp_title, parallel_label, tree_label, parallel_cards, verifier, verifier_text,
+            parallel_arrows, tree_root, tree_good, tree_bad, tree_next, tree_answer, tree_edges,
+            checkpoint_1, checkpoint_2, prune_cross, backtrack_arrow, compute_shift, compute_label
+        )
         
-        comp_line1 = create_markup_text("• Parallel generation usually waits until a <b>full sequence</b> is complete.", font_size=10.5, color=GRAY_A)
-        comp_line2 = create_markup_text("• Tree search uses scores on <b>intermediate states</b> step-by-step.", font_size=10.5, color=GRAY_A)
-        comp_line3 = create_markup_text("• Allows stopping bad branches early, backtracking, and dynamic budget allocation.", font_size=10.5, color=GRAY_A)
-        
-        comp_list = VGroup(comp_line1, comp_line2, comp_line3).arrange(DOWN, buff=0.25, aligned_edge=LEFT).move_to(comp_box.get_center())
-        comp_group = VGroup(comp_title, comp_box, comp_list)
-        
-        self.play(FadeIn(comp_title), FadeIn(comp_box), FadeIn(comp_line1), run_time=0.8)
+        self.play(FadeIn(comp_title), FadeIn(parallel_label), FadeIn(parallel_cards), run_time=0.8)
         
         self.wait_until(cue_start[11] + 0.15)
-        self.play(comp_line1.animate.set_color(WHITE), run_time=0.4)
+        self.play(FadeIn(verifier), FadeIn(verifier_text), Create(parallel_arrows), run_time=0.7)
         
         self.wait_until(cue_start[12] + 0.15)
-        self.play(FadeIn(comp_line2), comp_line2.animate.set_color(WHITE), run_time=0.4)
+        self.play(
+            FadeIn(tree_label), FadeIn(tree_root), FadeIn(tree_good), FadeIn(tree_bad),
+            Create(tree_edges[:2]), FadeIn(checkpoint_1), FadeIn(checkpoint_2), run_time=0.8
+        )
         
         self.wait_until(cue_start[13] + 0.15)
-        self.play(FadeIn(comp_line3), comp_line3.animate.set_color(WHITE), run_time=0.4)
+        self.play(Create(prune_cross), Create(backtrack_arrow), run_time=0.55)
+        self.play(FadeIn(tree_next), FadeIn(tree_answer), Create(tree_edges[2:]), FadeIn(compute_shift), FadeIn(compute_label), run_time=0.8)
         
         content = comp_group
 
@@ -477,19 +570,23 @@ class Scene3_3(Scene):
         limit_title = create_text("Limitations of Tree Search & Expert Panel", font_size=13, color=YELLOW)
         limit_title.next_to(sub_title, DOWN, buff=0.3)
         
-        limit_box = RoundedRectangle(width=9.2, height=1.6, color=RED, fill_color="#2b1414", fill_opacity=0.8, corner_radius=0.08)
-        limit_box.move_to(UP * 0.4)
+        card_specs = [
+            ("no states", "cannot split\ninto steps", RED),
+            ("no feedback", "nothing to score\nmid-solution", ORANGE),
+            ("noisy PRM", "wrong branches\nlook promising", RED_B),
+        ]
+        limit_cards = VGroup()
+        for heading, body, color in card_specs:
+            box = RoundedRectangle(width=2.55, height=1.35, color=color, fill_color="#211719", fill_opacity=0.92, corner_radius=0.08)
+            icon = Triangle(color=color, fill_color=color, fill_opacity=0.85).scale(0.16).rotate(PI)
+            icon.move_to(box.get_center() + UP * 0.42)
+            head = create_text(heading, font_size=10, color=color).move_to(box.get_center() + UP * 0.08)
+            desc = create_text(body, font_size=7.5, color=GRAY_A, line_spacing=1.05).move_to(box.get_center() + DOWN * 0.37)
+            limit_cards.add(VGroup(box, icon, head, desc))
+        limit_cards.arrange(RIGHT, buff=0.35).move_to(UP * 0.35)
         
-        limit_desc = create_markup_text(
-            "Tree search fails or provides no benefit if:\n"
-            "  • Task is <b>non-decomposable</b> into sequential states\n"
-            "  • Environment does <b>not provide intermediate feedback</b>\n"
-            "  • Process Reward Model (PRM) signal is <b>weak or noisy</b>",
-            font_size=10.5, color=WHITE, line_spacing=1.3
-        ).move_to(limit_box.get_center())
-        
-        panel_box = RoundedRectangle(width=9.5, height=1.3, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.08)
-        panel_box.move_to(DOWN * 1.8)
+        panel_box = RoundedRectangle(width=8.6, height=1.25, color=GRAY_D, fill_color="#141517", fill_opacity=0.9, corner_radius=0.08)
+        panel_box.move_to(DOWN * 1.75)
         panel_title = create_text("Takeaway from the NeurIPS 2024 expert panel:", font_size=10, color=GOLD_B)
         panel_title.move_to(panel_box.get_center() + UP * 0.4)
         panel_desc = create_markup_text(
@@ -498,18 +595,17 @@ class Scene3_3(Scene):
             font_size=9, color=WHITE, line_spacing=1.3
         ).move_to(panel_box.get_center() + DOWN * 0.25)
         
-        limit_panel_group = VGroup(limit_title, limit_box, limit_desc, panel_box, panel_title, panel_desc)
-        self.play(FadeIn(limit_panel_group), run_time=1.2)
+        limit_panel_group = VGroup(limit_title, limit_cards, panel_box, panel_title, panel_desc)
+        self.play(FadeIn(limit_title), FadeIn(limit_cards, shift=UP * 0.12), run_time=0.9)
+        self.play(FadeIn(panel_box), FadeIn(panel_title), FadeIn(panel_desc), run_time=0.8)
         
-        # Hold at the end to allow reading
-        self.wait_until(voiceover_end + 0.2)
-        self.wait(15.0)
+        # End about two seconds after the final voiceover.
+        self.wait_until(voiceover_end + 1.2)
         
         self.play(
             FadeOut(limit_panel_group),
             FadeOut(sub_title),
             run_time=0.8
         )
-        self.wait(1.5)
         
         assert_all_scene_voiceovers_played(self)

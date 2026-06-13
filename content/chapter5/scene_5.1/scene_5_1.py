@@ -156,7 +156,7 @@ class Scene5_1(Scene):
     def make_kv_tree(self):
         title = create_text("KV Cache prefix tree", font_size=5.3, color=GREEN)
         trunk = Line(UP * 0.35, DOWN * 0.2, color=GREEN, stroke_width=3)
-        shared = create_text("shared prefix", font_size=4.5, color=GREEN_A).next_to(trunk, LEFT, buff=0.08)
+        shared = create_text("Shared prefix", font_size=4.5, color=GREEN_A).next_to(trunk, LEFT, buff=0.08)
         branches = VGroup()
         for y in [0.15, -0.1, -0.35]:
             branches.add(Line(DOWN * 0.1, RIGHT * 0.75 + UP * y, color=GREEN_A, stroke_width=1.5))

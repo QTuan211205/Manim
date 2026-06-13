@@ -290,10 +290,10 @@ class Scene1_1(Scene):
             y_length=2.0,
             axis_config={"color": GRAY_B, "stroke_width": 1.6, "include_ticks": False},
         ).shift(RIGHT * 2.35 + DOWN * 1.15)
-        x_label = create_text("test-time compute", font_size=10, color=GRAY_A).next_to(
+        x_label = create_text("Test-time compute", font_size=10, color=GRAY_A).next_to(
             axes.x_axis, DOWN, buff=0.12
         )
-        y_label = create_text("performance", font_size=10, color=GRAY_A).next_to(
+        y_label = create_text("Performance", font_size=10, color=GRAY_A).next_to(
             axes.y_axis, LEFT, buff=0.1
         ).rotate(PI / 2)
         curve = axes.plot(lambda x: 0.42 + 2.1 * (1 - np.exp(-0.58 * x)), x_range=[0, 3.75], color=BLUE_B)

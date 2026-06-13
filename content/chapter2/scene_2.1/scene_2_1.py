@@ -171,14 +171,14 @@ class Scene2_1(MovingCameraScene):
         sub_title.to_edge(UP, buff=0.4)
         self.play(ReplacementTransform(chapter_header, sub_title), run_time=rt(1.0))
 
-        prefix_label = create_text("prefix x_<t", font_size=13, color=BLUE_A)
+        prefix_label = create_text("Prefix x_<t", font_size=13, color=BLUE_A)
         prefix_box = RoundedRectangle(width=4.9, height=1.15, color=BLUE_C, fill_color="#0e1726", fill_opacity=0.85, corner_radius=0.06)
         prefix_text = create_text('"Taylor Alison Swift ... is"', font_size=15, color=WHITE)
         prefix_text.move_to(prefix_box.get_center())
         prefix_body = VGroup(prefix_box, prefix_text)
 
         lm_box = RoundedRectangle(width=2.35, height=1.35, color=GREEN_C, fill_color="#0d2417", fill_opacity=0.9, corner_radius=0.06)
-        lm_text = create_text("causal LM", font_size=18, color=GREEN_A)
+        lm_text = create_text("Causal LM", font_size=18, color=GREEN_A)
         lm_text.move_to(lm_box.get_center())
         lm_group = VGroup(lm_box, lm_text).move_to(ORIGIN + UP * 0.6)
 
@@ -204,7 +204,7 @@ class Scene2_1(MovingCameraScene):
         self.play(Create(arrow_out), FadeIn(formula_group, shift=LEFT * 0.2), run_time=rt(1.1))
         self.wait(rt(6.0))
 
-        dist_title = create_text("next-token distribution", font_size=13, color=GRAY_A)
+        dist_title = create_text("Next-token distribution", font_size=13, color=GRAY_A)
         dist_title.next_to(formula_group, DOWN, buff=0.45)
         distribution = build_bar_chart(
             [
@@ -221,7 +221,7 @@ class Scene2_1(MovingCameraScene):
         self.play(Write(dist_title), FadeIn(distribution, shift=UP * 0.15), run_time=rt(1.2))
         self.wait(rt(5.8))
 
-        rule_text = create_text("decoding rule: choose the next token", font_size=14, color=YELLOW)
+        rule_text = create_text("Decoding rule: choose the next token", font_size=14, color=YELLOW)
         rule_text.move_to(DOWN * 2.05)
         rule_group = VGroup(rule_text)
 
@@ -357,7 +357,7 @@ class Scene2_1(MovingCameraScene):
         lm_card.move_to(LEFT * 2.75 + DOWN * 0.15)
         lm_card_title = create_text("Language model", font_size=13, color=GREEN_A)
         lm_card_title.next_to(lm_card.get_top(), DOWN, buff=0.18)
-        lm_card_text = create_text("provides a next-token distribution", font_size=11, color=WHITE)
+        lm_card_text = create_text("Provides a next-token distribution", font_size=11, color=WHITE)
         lm_card_text.move_to(lm_card.get_center() + UP * 0.22)
         lm_card_items = VGroup(
             create_text('"an"  0.80', font_size=10, color=BLUE_A),
@@ -370,7 +370,7 @@ class Scene2_1(MovingCameraScene):
         decoder_card.move_to(RIGHT * 2.75 + DOWN * 0.15)
         decoder_card_title = create_text("Decoding algorithm", font_size=13, color=YELLOW)
         decoder_card_title.next_to(decoder_card.get_top(), DOWN, buff=0.18)
-        decoder_card_text = create_text("decides which token to take", font_size=11, color=WHITE)
+        decoder_card_text = create_text("Decides which token to take", font_size=11, color=WHITE)
         decoder_card_text.move_to(decoder_card.get_center() + UP * 0.2)
         decoder_choice = create_text('take "an"', font_size=15, color=YELLOW)
         decoder_choice.move_to(decoder_card.get_center() + DOWN * 0.55)
@@ -392,17 +392,17 @@ class Scene2_1(MovingCameraScene):
         same_model_title = create_text("Same model, different decoding rules", font_size=17, color=GREEN_A)
         same_model_title.move_to(UP * 2.35)
         method_items = VGroup(
-            create_text("greedy decoding", font_size=14, color=WHITE),
-            create_text("beam search", font_size=14, color=WHITE),
-            create_text("sampling", font_size=14, color=WHITE),
-            create_text("constrained decoding", font_size=14, color=WHITE),
+            create_text("Greedy decoding", font_size=14, color=WHITE),
+            create_text("Beam search", font_size=14, color=WHITE),
+            create_text("Sampling", font_size=14, color=WHITE),
+            create_text("Constrained decoding", font_size=14, color=WHITE),
         ).arrange(RIGHT, buff=0.55)
         method_items.next_to(same_model_title, DOWN, buff=0.55)
         same_model_group = VGroup(same_model_title, method_items)
         self.play(FadeOut(comparison_group, shift=DOWN * 0.2), FadeIn(same_model_group, shift=UP * 0.15), run_time=rt(1.0))
         wait_until(self, 61.49)
 
-        choice_tree_note = create_text("not just choosing one token and stopping", font_size=15, color=YELLOW)
+        choice_tree_note = create_text("Not just choosing one token and stopping", font_size=15, color=YELLOW)
         choice_tree_note.move_to(DOWN * 2.25)
         tree_recap_group = VGroup(search_title, search_subtitle, root_group, first_choices, first_arrows, middle_words, right_words, choice_links, choice_tree_note)
         self.play(FadeOut(same_model_group, shift=DOWN * 0.2), FadeIn(tree_recap_group, shift=UP * 0.15), run_time=rt(1.0))
@@ -410,10 +410,10 @@ class Scene2_1(MovingCameraScene):
 
         local_title = create_text("A local choice changes the prefix", font_size=17, color=BLUE_A)
         local_title.move_to(UP * 2.35)
-        local_prefix_1 = create_text("current prefix", font_size=12, color=BLUE_A)
+        local_prefix_1 = create_text("Current prefix", font_size=12, color=BLUE_A)
         local_choice = create_text('choose "an"', font_size=14, color=YELLOW)
-        local_prefix_2 = create_text("new prefix", font_size=12, color=BLUE_A)
-        local_dist = create_text("new next-token distribution", font_size=12, color=GREEN_A)
+        local_prefix_2 = create_text("New prefix", font_size=12, color=BLUE_A)
+        local_dist = create_text("New next-token distribution", font_size=12, color=GREEN_A)
         local_row = VGroup(local_prefix_1, local_choice, local_prefix_2, local_dist).arrange(RIGHT, buff=0.55)
         local_row.move_to(UP * 0.3)
         local_arrows = VGroup(
@@ -427,7 +427,7 @@ class Scene2_1(MovingCameraScene):
 
         final_line = create_text("Connect local choices into a final sequence.", font_size=17, color=YELLOW)
         final_line.move_to(UP * 0.45)
-        final_subline = create_text("according to the chosen objective", font_size=14, color=GRAY_A)
+        final_subline = create_text("According to the chosen objective", font_size=14, color=GRAY_A)
         final_subline.next_to(final_line, DOWN, buff=0.28)
         final_group = VGroup(final_line, final_subline)
         self.play(FadeOut(local_group, shift=DOWN * 0.2), FadeIn(final_group, shift=UP * 0.15), run_time=rt(1.0))

@@ -257,7 +257,7 @@ class Scene2_3(MovingCameraScene):
         self.wait_until(cue_start[11] + 0.25)
         exact = pill("Exact MAP", 2.5, RED_B, "#261116")
         narrow = pill("Narrow beam", 2.8, BLUE_B, "#111a25")
-        better = create_text("works better", font_size=22, color=GREEN_A)
+        better = create_text("Works better", font_size=22, color=GREEN_A)
         next_content = VGroup(exact, Arrow(LEFT, RIGHT, color=BLUE_A), VGroup(narrow, better).arrange(DOWN, buff=0.18)).arrange(RIGHT, buff=0.55).move_to(ORIGIN)
         content = self.replace_content(content, next_content)
 
@@ -276,7 +276,7 @@ class Scene2_3(MovingCameraScene):
             token("B", BLUE_B, "#111a25", width=0.8),
             token("C", BLUE_B, "#111a25", width=0.8),
         ).arrange(RIGHT, buff=0.3)
-        label = create_text("closed-ended", font_size=22, color=BLUE_A).next_to(box, UP, buff=0.18)
+        label = create_text("Closed-ended", font_size=22, color=BLUE_A).next_to(box, UP, buff=0.18)
         constrained.move_to(box)
         content = self.replace_content(content, VGroup(box, constrained, label))
 
@@ -288,7 +288,7 @@ class Scene2_3(MovingCameraScene):
         ).arrange(RIGHT, buff=0.35)
         funnel = Polygon(LEFT * 2.6 + UP * 1.0, RIGHT * 2.6 + UP * 1.0, RIGHT * 0.9 + DOWN * 0.6, LEFT * 0.9 + DOWN * 0.6, color=RED_A)
         funnel.set_fill("#261116", opacity=0.35)
-        open_label = create_text("open-ended", font_size=23, color=RED_A).next_to(funnel, UP, buff=0.2)
+        open_label = create_text("Open-ended", font_size=23, color=RED_A).next_to(funnel, UP, buff=0.2)
         open_tokens.move_to(funnel.get_center() + DOWN * 0.05)
         content = self.replace_content(content, VGroup(funnel, open_tokens, open_label))
 

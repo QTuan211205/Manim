@@ -1,8 +1,8 @@
 import os
 import tempfile
 from pathlib import Path
+
 from manim import *
-import numpy as np
 
 config.text_dir = os.path.join(tempfile.gettempdir(), "manim_text")
 config.tex_dir = os.path.join(tempfile.gettempdir(), "manim_tex")
@@ -90,22 +90,140 @@ def create_markup_text(text, font_size=24, font="Noto Sans", **kwargs):
     return MarkupText(text, font_size=font_size, font=font, **kwargs)
 
 
-def get_checkmark(color=GREEN, stroke_width=2.5):
-    checkmark = VMobject(color=color, stroke_width=stroke_width)
-    checkmark.set_points_as_corners([
-        LEFT * 0.12 + DOWN * 0.05,
-        ORIGIN + DOWN * 0.15,
-        RIGHT * 0.2 + UP * 0.15
-    ])
-    return checkmark
+def labeled_box(
+    title,
+    body=None,
+    width=2.4,
+    height=1.0,
+    color=BLUE_B,
+    fill="#15181d",
+    title_size=11,
+    body_size=8,
+):
+    box = RoundedRectangle(
+        width=width,
+        height=height,
+        corner_radius=0.07,
+        color=color,
+        fill_color=fill,
+        fill_opacity=0.92,
+        stroke_width=1.5,
+    )
+    title_obj = create_text(title, font_size=title_size, color=color)
+    if body:
+        body_obj = create_text(body, font_size=body_size, color=GRAY_A, line_spacing=1.05)
+        group = VGroup(box, title_obj, body_obj)
+        title_obj.move_to(box.get_center() + UP * height * 0.18)
+        body_obj.move_to(box.get_center() + DOWN * height * 0.18)
+    else:
+        group = VGroup(box, title_obj)
+        title_obj.move_to(box.get_center())
+    return group
 
 
-def get_crossmark(color=RED, stroke_width=2.5):
-    cross = VGroup()
-    line1 = Line(LEFT * 0.12 + UP * 0.12, RIGHT * 0.12 + DOWN * 0.12, color=color, stroke_width=stroke_width)
-    line2 = Line(LEFT * 0.12 + DOWN * 0.12, RIGHT * 0.12 + UP * 0.12, color=color, stroke_width=stroke_width)
-    cross.add(line1, line2)
-    return cross
+def feedback_loop(color=GREEN):
+    draft = labeled_box("Draft", width=1.6, height=0.72, color=BLUE_A)
+    feedback = labeled_box("Feedback", width=1.8, height=0.72, color=YELLOW)
+    improved = labeled_box("Improved", width=1.8, height=0.72, color=GREEN)
+    VGroup(draft, feedback, improved).arrange(RIGHT, buff=0.85).move_to(DOWN * 0.15)
+    arrows = VGroup(
+        Arrow(draft.get_right(), feedback.get_left(), color=color, stroke_width=1.5, buff=0.08),
+        Arrow(feedback.get_right(), improved.get_left(), color=color, stroke_width=1.5, buff=0.08),
+        CurvedArrow(improved.get_bottom(), draft.get_bottom(), angle=-TAU / 4, color=GRAY_C, stroke_width=1.2),
+    )
+    return VGroup(draft, feedback, improved, arrows)
+
+
+def method_card(title, status, color, width=3.35):
+    card = RoundedRectangle(
+        width=width,
+        height=1.15,
+        corner_radius=0.08,
+        color=color,
+        fill_color="#14171b",
+        fill_opacity=0.94,
+        stroke_width=1.5,
+    )
+    title_obj = create_text(title, font_size=10, color=color).move_to(card.get_center() + UP * 0.22)
+    status_obj = create_text(status, font_size=7.6, color=GRAY_A, line_spacing=1.05).move_to(
+        card.get_center() + DOWN * 0.22
+    )
+    return VGroup(card, title_obj, status_obj)
+
+
+def create_packet(label, color=GREEN):
+    packet = RoundedRectangle(
+        width=0.72,
+        height=0.32,
+        corner_radius=0.05,
+        color=color,
+        fill_color="#111a14",
+        fill_opacity=0.95,
+        stroke_width=1.2,
+    )
+    text = create_text(label, font_size=7, color=color).move_to(packet.get_center())
+    return VGroup(packet, text)
+
+
+def create_letter_row(chars, target=None):
+    row = VGroup()
+    for idx, char in enumerate(chars):
+        color = RED_B if target and char != target[idx] else BLUE_B
+        box = RoundedRectangle(
+            width=0.58,
+            height=0.62,
+            corner_radius=0.05,
+            color=color,
+            fill_color="#15181d",
+            fill_opacity=0.95,
+            stroke_width=1.5,
+        )
+        label = create_text(char, font_size=13, color=WHITE).move_to(box.get_center())
+        row.add(VGroup(box, label))
+    row.arrange(RIGHT, buff=0.08)
+    return row
+
+
+def create_signal_meter(label, value, color):
+    base = Line(LEFT * 1.3, RIGHT * 1.3, color=GRAY_D, stroke_width=7)
+    fill = Line(LEFT * 1.3, LEFT * 1.3 + RIGHT * 2.6 * value, color=color, stroke_width=7)
+    dot = Dot(fill.get_end(), radius=0.075, color=color)
+    text = create_text(label, font_size=8, color=color).next_to(base, UP, buff=0.12)
+    return VGroup(base, fill, dot, text)
+
+
+def create_probability_bars(items):
+    bars = VGroup()
+    for label, prob, color in items:
+        bar = Rectangle(width=0.34, height=1.6 * prob, color=color, fill_color=color, fill_opacity=0.82, stroke_width=1)
+        base = Line(LEFT * 0.2, RIGHT * 0.2, color=GRAY_D, stroke_width=1)
+        label_obj = create_text(label, font_size=9, color=WHITE).next_to(base, DOWN, buff=0.08)
+        pct = create_text(f"{int(prob * 100)}", font_size=7, color=color).next_to(bar, UP, buff=0.08)
+        group = VGroup(bar, base, label_obj, pct)
+        bar.next_to(base, UP, buff=0)
+        bars.add(group)
+    bars.arrange(RIGHT, buff=0.25)
+    return bars
+
+
+def create_correction_graph():
+    axes = Axes(
+        x_range=[0, 6, 1],
+        y_range=[0, 1, 0.25],
+        x_length=5.1,
+        y_length=2.15,
+        tips=False,
+        axis_config={"color": GRAY_C, "stroke_width": 1.4},
+    )
+    red_points = [axes.c2p(0, 0.35), axes.c2p(1.2, 0.52), axes.c2p(2.4, 0.35), axes.c2p(4.0, 0.12), axes.c2p(6, 0.06)]
+    green_points = [axes.c2p(0, 0.35), axes.c2p(1.2, 0.47), axes.c2p(2.4, 0.58), axes.c2p(4.0, 0.68), axes.c2p(6, 0.75)]
+    collapse_curve = VMobject(color=RED_B, stroke_width=3).set_points_smoothly(red_points)
+    score_curve = VMobject(color=GREEN, stroke_width=3).set_points_smoothly(green_points)
+    y_label = create_text("Correction quality", font_size=8, color=GRAY_A).next_to(axes.y_axis, LEFT, buff=0.12)
+    x_label = create_text("Training loop", font_size=8, color=GRAY_A).next_to(axes.x_axis, DOWN, buff=0.12)
+    red_label = create_text("Collapse", font_size=8, color=RED_B).move_to(axes.c2p(4.8, 0.18))
+    green_label = create_text("SCoRe", font_size=8, color=GREEN).move_to(axes.c2p(4.8, 0.85))
+    return VGroup(axes, collapse_curve, score_curve, y_label, x_label, red_label, green_label)
 
 
 class Scene3_4(Scene):
@@ -120,11 +238,10 @@ class Scene3_4(Scene):
 
         cue_start = {}
         current = 0.0
-        for idx, (filename, duration) in enumerate(SCENE_3_4_DURATIONS.items(), start=1):
+        for idx, (_, duration) in enumerate(SCENE_3_4_DURATIONS.items(), start=1):
             cue_start[idx] = current
             current += duration
 
-        # --- Chapter Title (Cue 1) ---
         chapter_title = create_text("Chapter 3: High-Level Orchestrators", font_size=24, color=YELLOW)
         chapter_sub = create_text("Part 3.4: Refinement & Self-Correction", font_size=18, color=GRAY_A)
         chapter_sub.next_to(chapter_title, DOWN, buff=0.15)
@@ -133,655 +250,374 @@ class Scene3_4(Scene):
         self.play(FadeIn(chapter_header, shift=UP * 0.3), run_time=1.0)
         self.wait_until(cue_start[2])
 
-        # --- Cue 2: Transform to sub_title ---
         sub_title = create_text("Refinement & Self-Correction", font_size=15, color=YELLOW)
         sub_title.to_edge(UP, buff=0.4)
-        
-        self.play(ReplacementTransform(chapter_header, sub_title), run_time=1.0)
+        self.play(ReplacementTransform(chapter_header, sub_title), run_time=0.8)
+
+        quality_bar = Line(LEFT * 2.4, RIGHT * 2.4, color=GRAY_D, stroke_width=6).move_to(UP * 1.15)
+        quality_fill = Line(LEFT * 2.4, LEFT * 0.45, color=RED_B, stroke_width=6).move_to(UP * 1.15)
+        quality_dot = Dot(LEFT * 0.45 + UP * 1.15, radius=0.09, color=RED_B)
+        quality_label = create_text("Quality depends on feedback", font_size=10, color=GRAY_A).next_to(
+            quality_bar, UP, buff=0.2
+        )
+        source_label = create_text("Source", font_size=9, color=YELLOW).move_to(LEFT * 1.65 + UP * 0.45)
+        quality_word = create_text("Quality", font_size=9, color=YELLOW).move_to(RIGHT * 1.65 + UP * 0.45)
+        overview_loop = feedback_loop()
+        self.play(FadeIn(overview_loop), FadeIn(quality_label), Create(quality_bar), Create(quality_fill), FadeIn(quality_dot), run_time=1.0)
+        self.wait_until(cue_start[3])
+        self.play(FadeIn(source_label), FadeIn(quality_word), run_time=0.5)
+
+        extrinsic_card = method_card("Extrinsic", "outside information\nat inference time", GREEN)
+        intrinsic_card = method_card("Intrinsic", "feedback from\nthe model itself", RED_B)
+        VGroup(extrinsic_card, intrinsic_card).arrange(RIGHT, buff=0.6).move_to(DOWN * 1.55)
+        self.play(FadeIn(extrinsic_card, shift=UP * 0.15), FadeIn(intrinsic_card, shift=UP * 0.15), run_time=0.8)
+
         self.wait_until(cue_start[4])
-
-        # --- Cue 4: Part 1 Title & Intro ---
-        part1_title = create_text("1. Extrinsic Feedback Loop", font_size=13, color=BLUE_A)
-        part1_title.next_to(sub_title, DOWN, buff=0.3)
-        
-        intro_text = create_markup_text(
-            "<b>Extrinsic Feedback:</b> The model receives objective feedback\n"
-            "from the external environment (such as a compiler or code runner)\n"
-            "and uses the error message to locate and fix the bug automatically.",
-            font_size=13, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 2.1)
-
         self.play(
-            Write(part1_title),
-            Write(intro_text),
-            run_time=1.2
+            FadeOut(overview_loop),
+            FadeOut(quality_label),
+            FadeOut(quality_bar),
+            FadeOut(quality_fill),
+            FadeOut(quality_dot),
+            FadeOut(source_label),
+            FadeOut(quality_word),
+            FadeOut(extrinsic_card),
+            FadeOut(intrinsic_card),
+            run_time=0.6,
         )
+
+        ext_title = create_text("1. Extrinsic Feedback", font_size=13, color=GREEN)
+        ext_title.next_to(sub_title, DOWN, buff=0.3)
+        draft_chars = create_letter_row(list("TAYLORSWIPT"), list("TAYLORSWIFT")).move_to(LEFT * 2.65 + UP * 0.35)
+        draft_label = create_text("Draft output", font_size=9, color=BLUE_A).next_to(draft_chars, UP, buff=0.2)
+        verifier = labeled_box("External\nverifier", "program / tool\nruns outside model", width=2.35, height=1.2, color=GREEN)
+        verifier.move_to(RIGHT * 2.2 + UP * 0.32)
+        draft_to_verifier = Arrow(draft_chars.get_right(), verifier.get_left(), color=GRAY_B, stroke_width=1.5, buff=0.12)
+        outside_badge = create_text("Outside information", font_size=10, color=GREEN).move_to(UP * 1.7)
+        self.play(
+            FadeIn(ext_title),
+            FadeIn(draft_label),
+            FadeIn(draft_chars, lag_ratio=0.04),
+            FadeIn(verifier),
+            Create(draft_to_verifier),
+            FadeIn(outside_badge),
+            run_time=1.0,
+        )
+
         self.wait_until(cue_start[5])
-
-        # --- Cue 5: LLM / Compiler boxes ---
-        llm_box = RoundedRectangle(width=2.5, height=1.3, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        llm_box.move_to(LEFT * 4.2 + DOWN * 0.5)
-        llm_lbl = create_text("LLM Generator", font_size=12, color=BLUE_A).move_to(llm_box.get_center())
-
-        compiler_box = RoundedRectangle(width=2.5, height=1.3, color=RED_C, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        compiler_box.move_to(RIGHT * 4.2 + DOWN * 0.5)
-        compiler_lbl = create_text("Rust Compiler", font_size=12, color=WHITE).move_to(compiler_box.get_center())
-
-        arrow_to_comp = Arrow(start=llm_box.get_right() + UP * 0.25, end=compiler_box.get_left() + UP * 0.25, color=BLUE_B, stroke_width=1.5, buff=0.05)
-        
-        arrow_back = CurvedArrow(
-            compiler_box.get_left() + DOWN * 0.25, 
-            llm_box.get_right() + DOWN * 0.25, 
-            angle=0.4, 
-            color=RED_B, 
-            stroke_width=1.5,
-            tip_length=0.08
-        )
-
+        tool_packets = VGroup(
+            create_packet("verify", GREEN),
+            create_packet("run", BLUE_A),
+            create_packet("retrieve", YELLOW),
+            create_packet("tool", PURPLE_A),
+        ).arrange(RIGHT, buff=0.18).move_to(DOWN * 1.7)
+        packet_sources = VGroup(
+            create_text("[Aggarwal]", font_size=7, color=GREEN),
+            create_text("[Chen]", font_size=7, color=BLUE_A),
+            create_text("[Asai]", font_size=7, color=YELLOW),
+            create_text("Agent env", font_size=7, color=PURPLE_A),
+        ).arrange(RIGHT, buff=0.42).next_to(tool_packets, DOWN, buff=0.12)
+        packet_copies = tool_packets.copy()
+        self.play(FadeIn(tool_packets, lag_ratio=0.1), FadeIn(packet_sources, lag_ratio=0.1), run_time=0.7)
+        self.add(packet_copies)
         self.play(
-            FadeIn(llm_box), Write(llm_lbl),
-            FadeIn(compiler_box), Write(compiler_lbl),
-            run_time=1.2
+            *[
+                packet.animate.move_to(verifier.get_bottom() + DOWN * 0.25 + RIGHT * (idx - 1.5) * 0.22).scale(0.72)
+                for idx, packet in enumerate(packet_copies)
+            ],
+            run_time=0.9,
         )
+
         self.wait_until(cue_start[6])
-
-        # --- Cue 6: Code compilation error & correction loop ---
-        # 1. Draft 1 (with error)
-        res_box = RoundedRectangle(width=2.2, height=0.7, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-        res_box.move_to(LEFT * 0.8 + UP * 0.7)
-        res_lbl = create_text("String memory region \"hello\"", font_size=8, color=WHITE).move_to(res_box.get_center())
-
-        s_var = RoundedRectangle(width=0.8, height=0.4, color=GRAY_A, fill_color="#141517", fill_opacity=0.95, corner_radius=0.04)
-        s_var.move_to(LEFT * 2.6 + UP * 1.2)
-        s_lbl = create_text("Variable s", font_size=8, color=WHITE).move_to(s_var.get_center())
-
-        s_ptr = Arrow(start=s_var.get_bottom(), end=res_box.get_left() + UP * 0.15, color=BLUE_A, stroke_width=2, max_tip_length_to_length_ratio=0.15, buff=0.05)
-
-        code_1_box = RoundedRectangle(width=3.8, height=1.6, color=GRAY_D, fill_color="#141517", fill_opacity=0.95, corner_radius=0.06)
-        code_1_box.move_to(RIGHT * 2.2 + UP * 0.7)
-        code_1_lbl = create_markup_text(
-            "<b>Draft 1 (error):</b>\n"
-            "<span foreground='#FF8888'>fn main() {\n"
-            "  let s = String::from(\"hello\");\n"
-            "  let y = s; // moved s here\n"
-            "  println!(\"{}\", s); // error: use of moved value s\n"
-            "}</span>",
-            font_size=9, line_spacing=1.1
-        ).move_to(code_1_box.get_center())
-
-        self.play(
-            FadeIn(code_1_box),
-            Write(code_1_lbl),
-            FadeIn(res_box), Write(res_lbl),
-            FadeIn(s_var), Write(s_lbl),
-            Create(s_ptr),
-            run_time=1.0
+        locator = SurroundingRectangle(draft_chars[9], color=RED_B, buff=0.04, stroke_width=3)
+        locator_text = create_text("Error localized", font_size=9, color=RED_B).next_to(locator, UP, buff=0.18)
+        signal_arrow = Arrow(verifier.get_left() + DOWN * 0.18, locator.get_right() + DOWN * 0.12, color=RED_B, stroke_width=1.6, buff=0.12)
+        fixed_chars = create_letter_row(list("TAYLORSWIFT")).move_to(LEFT * 2.65 + DOWN * 0.85)
+        fixed_label = create_text("Corrected output", font_size=9, color=GREEN).next_to(fixed_chars, UP, buff=0.2)
+        fix_arrow = Arrow(locator.get_bottom(), fixed_chars[9].get_top(), color=GREEN, stroke_width=1.6, buff=0.08)
+        self.play(Create(signal_arrow), Create(locator), FadeIn(locator_text), verifier[0].animate.set_stroke(width=3), run_time=0.7)
+        self.play(Create(fix_arrow), FadeIn(fixed_label), FadeIn(fixed_chars, lag_ratio=0.04), run_time=0.8)
+        ext_scene = VGroup(
+            ext_title,
+            draft_chars,
+            draft_label,
+            verifier,
+            draft_to_verifier,
+            outside_badge,
+            tool_packets,
+            packet_sources,
+            packet_copies,
+            signal_arrow,
+            locator,
+            locator_text,
+            fixed_chars,
+            fixed_label,
+            fix_arrow,
         )
-        self.wait(1.0)
 
-        # 2. Add y_var and move pointer
-        y_var = RoundedRectangle(width=0.8, height=0.4, color=GRAY_A, fill_color="#141517", fill_opacity=0.95, corner_radius=0.04)
-        y_var.move_to(LEFT * 2.6 + UP * 0.2)
-        y_lbl = create_text("Variable y", font_size=8, color=WHITE).move_to(y_var.get_center())
-
-        y_ptr = Arrow(start=y_var.get_right(), end=res_box.get_left() + DOWN * 0.15, color=GREEN_B, stroke_width=2, max_tip_length_to_length_ratio=0.15, buff=0.05)
-        s_cross = get_crossmark(color=RED, stroke_width=3).scale(1.5).move_to(s_ptr.get_center())
-
-        self.play(
-            FadeIn(y_var), Write(y_lbl),
-            Create(y_ptr),
-            Create(s_cross),
-            s_ptr.animate.set_color(RED),
-            run_time=0.8
-        )
-        self.wait(0.5)
-
-        # 3. Compiler detects error
-        error_box = RoundedRectangle(width=4.4, height=0.9, color=RED, fill_color="#3c1414", fill_opacity=0.9, corner_radius=0.05)
-        error_box.move_to(DOWN * 1.6)
-        error_lbl = create_markup_text(
-            "<b>Compiler Error (Rust Borrow Checker):</b>\n"
-            "<span foreground='#FF5555'>error[E0382]: borrow of moved value: 's'</span>",
-            font_size=8, line_spacing=1.1
-        ).move_to(error_box.get_center())
-
-        self.play(
-            Create(arrow_to_comp),
-            FadeOut(code_1_box, target_position=compiler_box.get_center()),
-            FadeOut(code_1_lbl, target_position=compiler_box.get_center()),
-            FadeOut(res_box), FadeOut(res_lbl),
-            FadeOut(s_var), FadeOut(s_lbl), FadeOut(s_ptr), FadeOut(s_cross),
-            FadeOut(y_var), FadeOut(y_lbl), FadeOut(y_ptr),
-            compiler_box.animate.set_stroke(color=RED).set_fill(color="#551a1a", opacity=0.9),
-            FadeIn(error_box), Write(error_lbl),
-            run_time=1.0
-        )
-        self.wait(0.8)
-
-        # 4. Loop back and fix
-        self.play(
-            Create(arrow_back),
-            FadeOut(error_box, target_position=llm_box.get_center()),
-            FadeOut(error_lbl, target_position=llm_box.get_center()),
-            run_time=0.8
-        )
-        self.wait(0.2)
-
-        code_2_box = RoundedRectangle(width=3.8, height=1.6, color=GREEN, fill_color="#141517", fill_opacity=0.95, corner_radius=0.06)
-        code_2_box.move_to(RIGHT * 2.2 + UP * 0.7)
-        code_2_lbl = create_markup_text(
-            "<b>Draft 2 (fixed):</b>\n"
-            "<span foreground='#88FF88'>fn main() {\n"
-            "  let s = String::from(\"hello\");\n"
-            "  let y = &amp;s; // borrow reference\n"
-            "  println!(\"{}\", s); // compiled successfully!\n"
-            "}</span>",
-            font_size=9, line_spacing=1.1
-        ).move_to(code_2_box.get_center())
-
-        res_box_2 = RoundedRectangle(width=2.2, height=0.7, color=BLUE_B, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-        res_box_2.move_to(LEFT * 0.8 + UP * 0.7)
-        res_lbl_2 = create_text("String memory region \"hello\"", font_size=8, color=WHITE).move_to(res_box_2.get_center())
-
-        s_var_2 = RoundedRectangle(width=0.8, height=0.4, color=GRAY_A, fill_color="#141517", fill_opacity=0.95, corner_radius=0.04)
-        s_var_2.move_to(LEFT * 2.6 + UP * 1.2)
-        s_lbl_2 = create_text("Variable s", font_size=8, color=WHITE).move_to(s_var_2.get_center())
-
-        s_ptr_2 = Arrow(start=s_var_2.get_bottom(), end=res_box_2.get_left() + UP * 0.15, color=BLUE_A, stroke_width=2, max_tip_length_to_length_ratio=0.15, buff=0.05)
-
-        y_var_2 = RoundedRectangle(width=0.8, height=0.4, color=GRAY_A, fill_color="#141517", fill_opacity=0.95, corner_radius=0.04)
-        y_var_2.move_to(LEFT * 2.6 + UP * 0.2)
-        y_lbl_2 = create_text("Variable y", font_size=8, color=WHITE).move_to(y_var_2.get_center())
-
-        y_borrow_ptr = Arrow(start=y_var_2.get_top(), end=s_var_2.get_bottom(), color=GREEN, stroke_width=2, max_tip_length_to_length_ratio=0.15, buff=0.05)
-        borrow_lbl = create_text("Borrow (&s)", font_size=7, color=GREEN).next_to(y_borrow_ptr, RIGHT, buff=0.1)
-
-        success_icon = get_checkmark(color=GREEN, stroke_width=3).next_to(compiler_lbl, RIGHT, buff=0.15)
-
-        self.play(
-            FadeIn(code_2_box), Write(code_2_lbl),
-            FadeIn(res_box_2), Write(res_lbl_2),
-            FadeIn(s_var_2), Write(s_lbl_2),
-            Create(s_ptr_2),
-            FadeIn(y_var_2), Write(y_lbl_2),
-            Create(y_borrow_ptr), Write(borrow_lbl),
-            run_time=0.8
-        )
-        self.wait(0.5)
-
-        self.play(
-            FadeOut(code_2_box, target_position=compiler_box.get_center()),
-            FadeOut(code_2_lbl, target_position=compiler_box.get_center()),
-            FadeOut(res_box_2), FadeOut(res_lbl_2),
-            FadeOut(s_var_2), FadeOut(s_lbl_2), FadeOut(s_ptr_2),
-            FadeOut(y_var_2), FadeOut(y_lbl_2), FadeOut(y_borrow_ptr), FadeOut(borrow_lbl),
-            compiler_box.animate.set_stroke(color=GREEN).set_fill(color="#143c14", opacity=0.9),
-            FadeIn(success_icon),
-            run_time=1.0
-        )
         self.wait_until(cue_start[7])
-
-        # --- Cue 7: Part 2 Title & Intro ---
         self.play(
-            FadeOut(intro_text),
-            FadeOut(llm_box), FadeOut(llm_lbl),
-            FadeOut(compiler_box), FadeOut(compiler_lbl), FadeOut(success_icon),
-            FadeOut(arrow_to_comp), FadeOut(arrow_back),
-            FadeOut(part1_title),
-            run_time=0.8
+            FadeOut(ext_scene),
+            run_time=0.6,
         )
-        
-        part2_title = create_text("2. Prompted Intrinsic Feedback & Noisy Feedback Traps", font_size=13, color=BLUE_A)
-        part2_title.next_to(sub_title, DOWN, buff=0.3)
 
-        intro_part2 = create_markup_text(
-            "<b>Intrinsic Feedback:</b> Ask the model to find and fix its own errors.\n"
-            "If prompting alone is used for logical reasoning, the model can suffer\n"
-            "<b>Feedback Hallucination:</b> turning a correct answer into a wrong one.",
-            font_size=13, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 2.1)
-
+        intr_title = create_text("2. Prompted Intrinsic Feedback", font_size=13, color=RED_B)
+        intr_title.next_to(sub_title, DOWN, buff=0.3)
+        same_model = labeled_box("Same LLM", "generator", width=1.85, height=0.9, color=RED_B)
+        same_model.move_to(LEFT * 2.75 + DOWN * 0.15)
+        judge_model = labeled_box("Same LLM", "judge", width=1.85, height=0.9, color=RED_B)
+        judge_model.move_to(RIGHT * 2.75 + DOWN * 0.15)
+        self_loop = CurvedArrow(
+            judge_model.get_bottom(),
+            same_model.get_bottom(),
+            angle=-TAU / 5,
+            color=RED_B,
+            stroke_width=2,
+        )
+        internal_arrow = Arrow(same_model.get_right(), judge_model.get_left(), color=RED_B, stroke_width=1.5, buff=0.1)
+        sealed_box = DashedVMobject(
+            RoundedRectangle(width=6.4, height=2.4, corner_radius=0.12, color=RED_B),
+            num_dashes=32,
+        ).move_to(DOWN * 0.2)
+        no_external = create_text("Closed loop: no outside signal enters", font_size=10, color=GRAY_A).move_to(UP * 1.5)
         self.play(
-            Write(part2_title),
-            Write(intro_part2),
-            run_time=1.2
+            FadeIn(intr_title),
+            Create(sealed_box),
+            FadeIn(same_model),
+            FadeIn(judge_model),
+            Create(internal_arrow),
+            Create(self_loop),
+            FadeIn(no_external),
+            run_time=1.0,
         )
+
         self.wait_until(cue_start[8])
+        reprompt = labeled_box("Self-Refine", "re-prompt\n[Madaan et al., 2023]", width=2.25, height=0.9, color=BLUE_A)
+        reprompt.move_to(DOWN * 1.6)
+        prompt_arrow = Arrow(judge_model.get_bottom(), reprompt.get_top(), color=BLUE_A, stroke_width=1.5, buff=0.08)
+        critique_packet = create_packet("critique", BLUE_A).move_to(judge_model.get_center())
+        self.play(FadeIn(critique_packet), run_time=0.25)
+        self.play(critique_packet.animate.move_to(reprompt.get_top() + UP * 0.18), Create(prompt_arrow), FadeIn(reprompt), run_time=0.75)
 
-        # --- Cue 8: Re-prompting example (Prompt & Draft) ---
-        sim_llm_box = RoundedRectangle(width=1.6, height=0.6, color=BLUE, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-        sim_llm_box.move_to(LEFT * 4.6 + UP * 0.9)
-        sim_llm_lbl = create_text("LLM Generator", font_size=10, color=BLUE_A).move_to(sim_llm_box.get_center())
-
-        prompt_box = RoundedRectangle(width=4.0, height=0.5, color=GRAY_E, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-        prompt_box.move_to(LEFT * 3.4 + UP * 0.1)
-        prompt_lbl = create_text("Prompt: Solve 17 + 25 = ?", font_size=9, color=YELLOW).move_to(prompt_box.get_center())
-
-        ans1_box = RoundedRectangle(width=4.0, height=0.5, color=GREEN, fill_color="#143c14", fill_opacity=0.8, corner_radius=0.05)
-        ans1_box.next_to(prompt_box, DOWN, buff=0.15)
-        ans1_lbl = create_markup_text("<b>LLM (Draft):</b> Answer is <span foreground='#88FF88'>42</span> (Correct)", font_size=9).move_to(ans1_box.get_center())
-
-        self.play(
-            FadeIn(sim_llm_box), Write(sim_llm_lbl),
-            FadeIn(prompt_box), Write(prompt_lbl),
-            FadeIn(ans1_box), Write(ans1_lbl),
-            run_time=1.0
-        )
         self.wait_until(cue_start[9])
+        self.play(FadeOut(reprompt), FadeOut(prompt_arrow), FadeOut(critique_packet), run_time=0.3)
+        easy_meter = create_signal_meter("easy tasks", 0.78, GREEN)
+        missing_meter = create_signal_meter("missing info", 0.55, YELLOW)
+        math_meter = create_signal_meter("math reasoning", 0.18, RED_B)
+        meters = VGroup(easy_meter, missing_meter, math_meter).arrange(RIGHT, buff=0.45).move_to(DOWN * 2.15)
+        meter_caption = create_text("Usable feedback signal", font_size=9, color=GRAY_A).next_to(meters, UP, buff=0.25)
+        self.play(FadeIn(meter_caption), FadeIn(meters, lag_ratio=0.12), run_time=1.0)
 
-        # --- Cue 9: Self-critique & revision (wrong correction) ---
-        critique_box = RoundedRectangle(width=4.0, height=0.5, color=BLUE_C, fill_color="#141c2b", fill_opacity=0.8, corner_radius=0.05)
-        critique_box.next_to(ans1_box, DOWN, buff=0.15)
-        critique_lbl = create_text("Self-evaluation prompt: Is the answer above correct?", font_size=9, color=WHITE).move_to(critique_box.get_center())
-
-        halluc_box = RoundedRectangle(width=4.0, height=0.5, color=RED, fill_color="#3c1414", fill_opacity=0.8, corner_radius=0.05)
-        halluc_box.next_to(critique_box, DOWN, buff=0.15)
-        halluc_lbl = create_markup_text("<b>LLM (Critique):</b> Incorrect, 17+25 should be <span foreground='#FF8888'>32</span>", font_size=8).move_to(halluc_box.get_center())
-
-        ans2_box = RoundedRectangle(width=4.0, height=0.5, color=RED, fill_color="#3c1414", fill_opacity=0.8, corner_radius=0.05)
-        ans2_box.next_to(halluc_box, DOWN, buff=0.15)
-        ans2_lbl = create_markup_text("<b>LLM (Final):</b> Revise it to <span foreground='#FF8888'>32</span> (Completely wrong!)", font_size=9).move_to(ans2_box.get_center())
-
-        self.play(FadeIn(critique_box), Write(critique_lbl), run_time=0.8)
-        self.wait(1.5)
-        self.play(FadeIn(halluc_box), Write(halluc_lbl), run_time=0.8)
-        self.wait(1.5)
-        self.play(FadeIn(ans2_box), Write(ans2_lbl), run_time=0.8)
         self.wait_until(cue_start[10])
-
-        # --- Cue 10: Confusion Matrix ---
-        matrix_center = RIGHT * 3.6 + DOWN * 0.4
-        
-        matrix_title = create_text("Self-correction Matrix (Confusion Matrix)", font_size=10, color=GOLD_B)
-        matrix_title.move_to(matrix_center + UP * 2.1)
-
-        lbl_init = create_text("Initial draft", font_size=9, color=BLUE_A)
-        lbl_init.move_to(matrix_center + LEFT * 1.9 + UP * 0.7)
-        
-        lbl_init_correct = create_text("Correct", font_size=9, color=WHITE)
-        lbl_init_correct.move_to(matrix_center + LEFT * 1.1 + UP * 0.45)
-        lbl_init_incorrect = create_text("Incorrect", font_size=9, color=WHITE)
-        lbl_init_incorrect.move_to(matrix_center + LEFT * 1.1 + DOWN * 0.45)
-
-        lbl_fin = create_text("After Self-Correction", font_size=9, color=BLUE_A)
-        lbl_fin.move_to(matrix_center + UP * 1.6)
-
-        lbl_fin_correct = create_text("Correct", font_size=9, color=WHITE)
-        lbl_fin_correct.move_to(matrix_center + LEFT * 0.45 + UP * 1.1)
-        lbl_fin_incorrect = create_text("Incorrect", font_size=9, color=WHITE)
-        lbl_fin_incorrect.move_to(matrix_center + RIGHT * 0.45 + UP * 1.1)
-
-        cell_size = 0.9
-        cells = VGroup()
-        cell_texts = VGroup()
-
-        cell_data = [
-            ("85%", GREEN_E, 0.6, LEFT * 0.45 + UP * 0.45),
-            ("15%", RED_E, 0.6, RIGHT * 0.45 + UP * 0.45),
-            ("35%", GREEN_E, 0.6, LEFT * 0.45 + DOWN * 0.45),
-            ("65%", RED_E, 0.6, RIGHT * 0.45 + DOWN * 0.45)
-        ]
-
-        for percent_str, color, opacity, pos_offset in cell_data:
-            cell = Square(side_length=cell_size, color=GRAY_D, stroke_width=1, fill_color=color, fill_opacity=opacity)
-            cell.move_to(matrix_center + pos_offset)
-            txt = create_text(percent_str, font_size=10, color=WHITE).move_to(cell.get_center())
-            cells.add(cell)
-            cell_texts.add(txt)
-
-        highlight_halluc = RoundedRectangle(width=0.92, height=0.92, color=RED, stroke_width=3, fill_opacity=0).move_to(cells[1].get_center())
-        halluc_note = create_markup_text(
-            "<span foreground='#FF5555'><b>Feedback Hallucination (15%)</b></span>\n"
-            "The LLM destroys a correct answer on its own.",
-            font_size=8, line_spacing=1.2
-        ).next_to(cells, DOWN, buff=0.4)
-
-
-        self.play(
-            Write(matrix_title),
-            Write(lbl_init), Write(lbl_init_correct), Write(lbl_init_incorrect),
-            Write(lbl_fin), Write(lbl_fin_correct), Write(lbl_fin_incorrect),
-            Create(cells),
-            run_time=1.0
-        )
-
-        # Quick Dot animation
-        import random
-        random.seed(42)
-        dots = VGroup()
-        dot_anims = []
-
-        for i in range(20):
-            dot = Dot(color=GREEN, radius=0.04)
-            dot.move_to(matrix_center + UP * 2.3 + LEFT * 0.45 + np.array([random.uniform(-0.15, 0.15), random.uniform(-0.1, 0.1), 0]))
-            dots.add(dot)
-            if i < 17:
-                target_pos = cells[0].get_center() + np.array([random.uniform(-0.25, 0.25), random.uniform(-0.25, 0.25), 0])
-                dot_anims.append(dot.animate(run_time=0.6).move_to(target_pos))
-            else:
-                target_pos = cells[1].get_center() + np.array([random.uniform(-0.25, 0.25), random.uniform(-0.25, 0.25), 0])
-                dot_anims.append(dot.animate(run_time=0.6).move_to(target_pos).set_color(RED))
-
-        for i in range(20):
-            dot = Dot(color=RED, radius=0.04)
-            dot.move_to(matrix_center + UP * 2.3 + RIGHT * 0.45 + np.array([random.uniform(-0.15, 0.15), random.uniform(-0.1, 0.1), 0]))
-            dots.add(dot)
-            if i < 7:
-                target_pos = cells[2].get_center() + np.array([random.uniform(-0.25, 0.25), random.uniform(-0.25, 0.25), 0])
-                dot_anims.append(dot.animate(run_time=0.6).move_to(target_pos).set_color(GREEN))
-            else:
-                target_pos = cells[3].get_center() + np.array([random.uniform(-0.25, 0.25), random.uniform(-0.25, 0.25), 0])
-                dot_anims.append(dot.animate(run_time=0.6).move_to(target_pos))
-
-        self.play(FadeIn(dots), run_time=0.3)
-        self.play(*dot_anims, run_time=0.8)
-        self.play(
-            Write(cell_texts),
-            Create(highlight_halluc),
-            Write(halluc_note),
-            run_time=0.8
-        )
-
-        warning_lbl = create_markup_text(
-            "<span foreground='#FF3333'><b>INTRINSIC FEEDBACK IS TOO NOISY</b></span>",
-            font_size=11
-        ).move_to(DOWN * 3.2)
-        self.play(FadeIn(warning_lbl, shift=UP * 0.2), run_time=0.5)
+        noisy_panel = RoundedRectangle(width=6.9, height=1.05, corner_radius=0.08, color=RED, fill_color="#241014", fill_opacity=0.95)
+        noisy_panel.move_to(UP * 1.45)
+        noisy_text = create_markup_text(
+            "Large Language Models Cannot Self-Correct Reasoning Yet\n"
+            "<span foreground='#FF7777'>Takeaway: feedback is too noisy</span>",
+            font_size=12,
+            color=WHITE,
+            line_spacing=1.15,
+        ).move_to(noisy_panel.get_center())
+        noise_dots = VGroup()
+        for idx in range(30):
+            x = -2.9 + (idx % 10) * 0.64
+            y = -0.75 + (idx // 10) * 0.22
+            color = RED_B if idx % 3 else YELLOW
+            noise_dots.add(Dot([x, y, 0], radius=0.035, color=color))
+        noise_label = create_text("Noisy self-feedback", font_size=9, color=RED_B).next_to(noise_dots, UP, buff=0.18)
+        self.play(FadeIn(noisy_panel), FadeIn(noisy_text), FadeIn(noise_dots, lag_ratio=0.03), FadeIn(noise_label), run_time=0.8)
 
         self.wait_until(cue_start[11])
-
-        # --- Cue 11: Part 3 Title & Intro ---
         self.play(
-            FadeOut(intro_part2),
-            FadeOut(sim_llm_box), FadeOut(sim_llm_lbl),
-            FadeOut(prompt_box), FadeOut(prompt_lbl),
-            FadeOut(ans1_box), FadeOut(ans1_lbl),
-            FadeOut(critique_box), FadeOut(critique_lbl),
-            FadeOut(halluc_box), FadeOut(halluc_lbl),
-            FadeOut(ans2_box), FadeOut(ans2_lbl),
-            FadeOut(matrix_title), FadeOut(lbl_init), FadeOut(lbl_init_correct), FadeOut(lbl_init_incorrect),
-            FadeOut(lbl_fin), FadeOut(lbl_fin_correct), FadeOut(lbl_fin_incorrect),
-            FadeOut(cells), FadeOut(cell_texts), FadeOut(dots),
-            FadeOut(highlight_halluc), FadeOut(halluc_note),
-            FadeOut(warning_lbl),
-            FadeOut(part2_title),
-            run_time=0.8
+            FadeOut(intr_title),
+            FadeOut(sealed_box),
+            FadeOut(same_model),
+            FadeOut(judge_model),
+            FadeOut(self_loop),
+            FadeOut(internal_arrow),
+            FadeOut(no_external),
+            FadeOut(meter_caption),
+            FadeOut(meters),
+            FadeOut(noisy_panel),
+            FadeOut(noisy_text),
+            FadeOut(noise_dots),
+            FadeOut(noise_label),
+            run_time=0.7,
         )
 
-        part3_title = create_text("3. Training a Corrector & the SCoRe Algorithm", font_size=13, color=BLUE_A)
-        part3_title.next_to(sub_title, DOWN, buff=0.3)
+        train_title = create_text("3. Intrinsic Trained Corrector", font_size=13, color=BLUE_A)
+        train_title.next_to(sub_title, DOWN, buff=0.3)
+        corrector = labeled_box("Corrector", "learn to fix", width=2.2, height=1.0, color=BLUE_A)
+        corrector.move_to(ORIGIN)
+        welleck = create_text("[Welleck et al., 2023]", font_size=9, color=GRAY_A).next_to(corrector, DOWN, buff=0.25)
+        self.play(FadeIn(train_title), FadeIn(corrector), FadeIn(welleck), run_time=0.9)
 
-        intro_part3 = create_markup_text(
-            "To handle noise, we can <b>fine-tune</b> the model to self-correct.\n"
-            "However, ordinary reinforcement learning (RL) can lead to behavior collapse.\n"
-            "The **SCoRe** algorithm (Google DeepMind) makes training stable and effective.",
-            font_size=13, color=WHITE, line_spacing=1.3
-        ).move_to(UP * 2.1)
-
-        self.play(
-            Write(part3_title),
-            Write(intro_part3),
-            run_time=1.2
-        )
         self.wait_until(cue_start[12])
-
-        # --- Cue 12: Corrector Formula ---
-        formula_box = RoundedRectangle(width=8.2, height=1.0, color=BLUE_A, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.08)
-        formula_box.move_to(UP * 0.9)
-        formula_txt = create_markup_text(
-            "Refinement correction policy:  <span foreground='#00FF7F'><i>p</i><sub>θ</sub>( <span foreground='#FFFF00'>better</span> | <span foreground='#FF7F7F'>bad</span> )</span>",
-            font_size=13
-        ).move_to(formula_box.get_center())
-
-        self.play(
-            FadeIn(formula_box),
-            Write(formula_txt),
-            run_time=1.2
+        bad = labeled_box("Bad", "generated sample", width=1.6, height=0.8, color=RED_B)
+        reward = labeled_box("Reward", "evaluate", width=1.7, height=0.8, color=YELLOW)
+        better = labeled_box("Better", "improved sample", width=1.8, height=0.8, color=GREEN)
+        update = labeled_box("Update", "pθ(better | bad)", width=2.1, height=0.8, color=BLUE_A)
+        train_flow = VGroup(bad, reward, better, update).arrange(RIGHT, buff=0.5).move_to(DOWN * 0.55)
+        train_arrows = VGroup(
+            Arrow(bad.get_right(), reward.get_left(), color=GRAY_B, stroke_width=1.3, buff=0.08),
+            Arrow(reward.get_right(), better.get_left(), color=GRAY_B, stroke_width=1.3, buff=0.08),
+            Arrow(better.get_right(), update.get_left(), color=GRAY_B, stroke_width=1.3, buff=0.08),
         )
+        repeat_arrow = CurvedArrow(update.get_bottom(), bad.get_bottom(), angle=-TAU / 4, color=GRAY_C, stroke_width=1.2)
+        formula = create_markup_text(
+            "<span foreground='#87CEFA'>pθ(better | bad)</span>",
+            font_size=20,
+            color=WHITE,
+        ).move_to(UP * 1.45)
+        self.play(FadeOut(corrector), FadeOut(welleck), FadeIn(formula), FadeIn(train_flow), Create(train_arrows), run_time=1.2)
+        self.play(Create(repeat_arrow), run_time=0.4)
+        pair_tokens = VGroup()
+        for idx in range(4):
+            pair = VGroup(create_packet("bad", RED_B), create_packet("better", GREEN)).arrange(RIGHT, buff=0.05)
+            pair.scale(0.82).move_to(LEFT * 3.8 + DOWN * (1.1 + idx * 0.24))
+            pair_tokens.add(pair)
+        self.play(FadeIn(pair_tokens, lag_ratio=0.08), run_time=0.45)
+        self.play(
+            pair_tokens.animate.arrange(DOWN, buff=0.05).next_to(update, DOWN, buff=0.25).scale(0.82),
+            run_time=0.8,
+        )
+
         self.wait_until(cue_start[13])
-
-        # --- Cue 13: SCoRe training curve ---
-        self.play(FadeOut(formula_box), FadeOut(formula_txt), run_time=0.5)
-
-        axes = Axes(
-            x_range=[0, 10, 2],
-            y_range=[0, 1.0, 0.2],
-            x_length=7.5,
-            y_length=2.5,
-            axis_config={"color": GRAY_C, "stroke_width": 2},
-            tips=False
-        ).move_to(DOWN * 1.3)
-
-        x_lbl = create_text("RL training step", font_size=9, color=GRAY_A).next_to(axes.x_axis, DOWN, buff=0.12)
-        y_lbl = create_text("Self-correction performance", font_size=9, color=GRAY_A).next_to(axes.y_axis.get_top(), LEFT, buff=0.15)
-
-        origin_pt = axes.c2p(0, 0)
-        top_right_pt = axes.c2p(10, 0.8)
-        
-        safe_zone = Rectangle(
-            width=top_right_pt[0] - origin_pt[0],
-            height=top_right_pt[1] - origin_pt[1],
-            stroke_width=0,
-            fill_color=GREEN_E,
-            fill_opacity=0.15
-        ).move_to(axes.c2p(5, 0.4))
-
-        kl_limit_line = DashedLine(
-            start=axes.c2p(0, 0.8),
-            end=axes.c2p(10, 0.8),
-            color=GREEN,
-            stroke_width=1.5
-        )
-        kl_limit_lbl = create_text("KL safe region (KL Regularization)", font_size=8, color=GREEN_B).move_to(axes.c2p(3.2, 0.85))
-
+        graph = create_correction_graph().move_to(DOWN * 1.15)
+        graph_title = create_text("Training stability", font_size=10, color=GRAY_A).next_to(graph, UP, buff=0.15)
+        collapse_note = labeled_box("Behavior\ncollapse", "same flawed output", width=2.0, height=0.9, color=RED)
+        score_note = labeled_box("SCoRe", "regularization + RL", width=2.0, height=0.9, color=GREEN)
+        VGroup(collapse_note, score_note).arrange(RIGHT, buff=3.1).move_to(UP * 0.75)
         self.play(
-            Create(axes), Write(x_lbl), Write(y_lbl),
-            FadeIn(safe_zone), Create(kl_limit_line), Write(kl_limit_lbl),
-            run_time=1.0
+            FadeOut(pair_tokens),
+            FadeOut(train_flow),
+            FadeOut(train_arrows),
+            FadeOut(repeat_arrow),
+            FadeIn(graph_title),
+            Create(graph[0]),
+            FadeIn(graph[3]),
+            FadeIn(graph[4]),
+            run_time=0.7,
         )
-
-        standard_rl_points = [
-            axes.c2p(0, 0.3),
-            axes.c2p(1.5, 0.52),
-            axes.c2p(3, 0.65),
-            axes.c2p(4.5, 0.45),
-            axes.c2p(6, 0.15),
-            axes.c2p(8, 0.05),
-            axes.c2p(10, 0.02)
-        ]
-        standard_rl_curve = VMobject(color=RED, stroke_width=3.5).set_points_smoothly(standard_rl_points)
-
-        std_rl_lbl = create_markup_text(
-            "<span foreground='#FF5555'><b>Standard RL</b></span>\n(Behavior Collapse)",
-            font_size=9
-        ).move_to(axes.c2p(5.2, 0.45))
-
-        std_rl_cross = get_crossmark(color=RED, stroke_width=3.0).scale(1.2).move_to(axes.c2p(6.5, 0.12))
-        collapse_warning = create_text("Behavior Collapse", font_size=8, color=RED).next_to(std_rl_cross, RIGHT, buff=0.1)
-
-        score_points = [
-            axes.c2p(0, 0.3),
-            axes.c2p(1.5, 0.46),
-            axes.c2p(3, 0.58),
-            axes.c2p(5.0, 0.68),
-            axes.c2p(7.0, 0.73),
-            axes.c2p(9.0, 0.75),
-            axes.c2p(10, 0.75)
-        ]
-        score_curve = VMobject(color=GREEN, stroke_width=3.5).set_points_smoothly(score_points)
-
-        score_lbl = create_markup_text(
-            "<span foreground='#00FF7F'><b>SCoRe solution</b></span>\n(Stable &amp; optimized)",
-            font_size=9
-        ).move_to(axes.c2p(6.5, 0.9))
-        score_check = get_checkmark(color=GREEN, stroke_width=3.0).scale(1.2).next_to(score_lbl, LEFT, buff=0.1)
-
-        self.play(
-            Create(standard_rl_curve), Write(std_rl_lbl), Create(std_rl_cross), Write(collapse_warning),
-            Create(score_curve), Write(score_lbl), Create(score_check),
-            run_time=1.8
-        )
+        self.play(Create(graph[1]), FadeIn(graph[5]), FadeIn(collapse_note), run_time=0.7)
+        self.play(Create(graph[2]), FadeIn(graph[6]), FadeIn(score_note), run_time=0.7)
 
         self.wait_until(cue_start[14])
-
-        # --- Cue 14: Summary Table ---
         self.play(
-            FadeOut(intro_part3),
-            FadeOut(axes), FadeOut(x_lbl), FadeOut(y_lbl),
-            FadeOut(safe_zone), FadeOut(kl_limit_line), FadeOut(kl_limit_lbl),
-            FadeOut(standard_rl_curve), FadeOut(std_rl_lbl), FadeOut(std_rl_cross), FadeOut(collapse_warning),
-            FadeOut(score_curve), FadeOut(score_lbl), FadeOut(score_check),
-            FadeOut(part3_title),
-            run_time=0.8
+            FadeOut(train_title),
+            FadeOut(formula),
+            FadeOut(graph),
+            FadeOut(graph_title),
+            FadeOut(collapse_note),
+            FadeOut(score_note),
+            run_time=0.7,
         )
 
-        recap_title = create_text("Summary: Refinement & Self-Correction Mechanisms", font_size=13, color=YELLOW)
-        recap_title.next_to(sub_title, DOWN, buff=0.3)
+        summary_title = create_text("Refinement Summary", font_size=13, color=YELLOW).next_to(sub_title, DOWN, buff=0.3)
+        summary_cards = VGroup(
+            method_card("Extrinsic", "works when environment\nlocalizes errors", GREEN),
+            method_card("Prompted intrinsic", "mixed results;\nfeedback can be noisy", RED_B),
+            method_card("Trained intrinsic", "promising, but needs\nspecific training strategy", BLUE_A),
+        ).arrange(RIGHT, buff=0.25).move_to(DOWN * 0.1)
+        self.play(FadeIn(summary_title), FadeIn(summary_cards, lag_ratio=0.1), run_time=1.0)
 
-        comparison_table = VGroup()
-        headers = ["Method", "Feedback mechanism", "Properties / traps"]
-        header_colors = [BLUE_A, WHITE, RED]
-        
-        header_group = VGroup()
-        for idx, h_text in enumerate(headers):
-            cell = RoundedRectangle(width=3.2, height=0.6, color=GRAY_D, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.04)
-            cell.move_to(LEFT * (3.4 * (1 - idx)) + UP * 1.0)
-            lbl = create_text(h_text, font_size=11, color=header_colors[idx]).move_to(cell.get_center())
-            header_group.add(VGroup(cell, lbl))
-        comparison_table.add(header_group)
-
-        table_rows = [
-            ("Extrinsic feedback", "From compiler / external environment", "High accuracy, very effective"),
-            ("Intrinsic - prompted", "Model re-prompts itself to self-correct", "Feedback hallucination, noisy"),
-            ("Intrinsic - trained", "Self-tuning RL (SCoRe)", "KL regularization helps prevent behavior collapse")
-        ]
-
-        row_y_coords = [0.2, -0.6, -1.4]
-        for r_idx, row_data in enumerate(table_rows):
-            row_group = VGroup()
-            for c_idx, cell_text in enumerate(row_data):
-                cell = RoundedRectangle(width=3.2, height=0.6, color=GRAY_E, fill_color="#121315", fill_opacity=0.8, corner_radius=0.04)
-                cell.move_to(LEFT * (3.4 * (1 - c_idx)) + UP * row_y_coords[r_idx])
-                t_color = RED if c_idx == 2 else (GREEN if c_idx == 1 else WHITE)
-                lbl = create_text(cell_text, font_size=9, color=t_color).move_to(cell.get_center())
-                row_group.add(VGroup(cell, lbl))
-            comparison_table.add(row_group)
-
-        self.play(
-            Write(recap_title),
-            FadeIn(comparison_table),
-            run_time=1.5
-        )
         self.wait_until(cue_start[15])
+        self.play(FadeOut(summary_title), FadeOut(summary_cards), run_time=0.5)
 
-        # --- Cue 15: Feedback Clarification Intro ---
-        self.play(
-            FadeOut(comparison_table),
-            FadeOut(recap_title),
-            run_time=0.8
-        )
+        feedback_title = create_text("What does feedback add?", font_size=13, color=YELLOW).next_to(sub_title, DOWN, buff=0.3)
+        gauge_base = Line(LEFT * 3.2, RIGHT * 3.2, color=GRAY_D, stroke_width=8).move_to(DOWN * 0.15)
+        gauge_left = create_text("Internal guess", font_size=9, color=RED_B).next_to(gauge_base, LEFT, buff=0.2)
+        gauge_right = create_text("New signal", font_size=9, color=GREEN).next_to(gauge_base, RIGHT, buff=0.2)
+        gauge_dot = Dot(gauge_base.get_start(), radius=0.09, color=RED_B)
+        self.play(FadeIn(feedback_title), Create(gauge_base), FadeIn(gauge_left), FadeIn(gauge_right), FadeIn(gauge_dot), run_time=0.9)
 
-        clarify_title = create_text("Feedback: Extrinsic vs. Intrinsic", font_size=15, color=YELLOW)
-        clarify_title.next_to(sub_title, DOWN, buff=0.3)
-
-        self.play(Write(clarify_title), run_time=0.8)
         self.wait_until(cue_start[16])
+        verifier_signal = labeled_box("Verifier", "detects an error", width=2.0, height=0.85, color=GREEN)
+        interpreter_signal = labeled_box("Code interpreter", "runs the output", width=2.2, height=0.85, color=GREEN)
+        VGroup(verifier_signal, interpreter_signal).arrange(RIGHT, buff=0.4).move_to(UP * 1.25)
+        self.play(FadeIn(verifier_signal), FadeIn(interpreter_signal), gauge_dot.animate.move_to(gauge_base.get_end()), run_time=1.0)
 
-        # --- Cue 16: Extrinsic Feedback Clarification ---
-        ext_clarify_box = RoundedRectangle(width=5.5, height=2.4, color=BLUE_B, fill_color="#0b1324", fill_opacity=0.9, corner_radius=0.08)
-        ext_clarify_box.move_to(LEFT * 3.1 + DOWN * 0.8)
-        ext_clarify_title = create_text("Extrinsic Feedback", font_size=12, color=BLUE_A).next_to(ext_clarify_box.get_top(), DOWN, buff=0.15)
-        ext_clarify_text = create_markup_text(
-            "• Provides new outside information\n"
-            "• Not already contained within model weights\n"
-            "• Verifier / compiler can localize errors\n"
-            "• Strongly anchors the generation",
-            font_size=10, line_spacing=1.3
-        ).next_to(ext_clarify_title, DOWN, buff=0.15).align_to(ext_clarify_box, LEFT).shift(RIGHT * 0.3)
-        ext_group = VGroup(ext_clarify_box, ext_clarify_title, ext_clarify_text)
-
-        self.play(FadeIn(ext_group, shift=UP * 0.15), run_time=1.0)
         self.wait_until(cue_start[17])
+        self_judge = labeled_box("Same model", "creates and judges", width=2.0, height=0.85, color=RED_B)
+        self_judge.move_to(DOWN * 1.45)
+        risk = create_text("Risk: fails to judge its own error", font_size=10, color=RED_B).next_to(self_judge, RIGHT, buff=0.3)
+        self.play(FadeIn(self_judge), FadeIn(risk), gauge_dot.animate.move_to(gauge_base.get_start() + RIGHT * 1.0), run_time=1.0)
 
-        # --- Cue 17: Intrinsic Feedback Clarification ---
-        int_clarify_box = RoundedRectangle(width=5.5, height=2.4, color=RED_C, fill_color="#1f0c0c", fill_opacity=0.9, corner_radius=0.08)
-        int_clarify_box.move_to(RIGHT * 3.1 + DOWN * 0.8)
-        int_clarify_title = create_text("Intrinsic Feedback", font_size=12, color=RED_B).next_to(int_clarify_box.get_top(), DOWN, buff=0.15)
-        int_clarify_text = create_markup_text(
-            "• Relies entirely on internal knowledge\n"
-            "• Risk of creator and judge being identical\n"
-            "• Often fails to identify subtle logical bugs\n"
-            "• Prone to feedback hallucination",
-            font_size=10, line_spacing=1.3
-        ).next_to(int_clarify_title, DOWN, buff=0.15).align_to(int_clarify_box, LEFT).shift(RIGHT * 0.3)
-        int_group = VGroup(int_clarify_box, int_clarify_title, int_clarify_text)
-
-        self.play(FadeIn(int_group, shift=UP * 0.15), run_time=1.0)
         self.wait_until(cue_start[18])
-
-        # --- Cue 18: Toy Example "TAYLORSWIFT" ---
         self.play(
-            FadeOut(ext_group), FadeOut(int_group), FadeOut(clarify_title),
-            run_time=0.8
+            FadeOut(feedback_title),
+            FadeOut(gauge_base),
+            FadeOut(gauge_left),
+            FadeOut(gauge_right),
+            FadeOut(gauge_dot),
+            FadeOut(verifier_signal),
+            FadeOut(interpreter_signal),
+            FadeOut(self_judge),
+            FadeOut(risk),
+            run_time=0.6,
         )
 
-        toy_title = create_text("Toy Example: Generate the string \"TAYLORSWIFT\"", font_size=14, color=YELLOW).to_edge(UP, buff=1.0)
-        self.play(FadeIn(toy_title), run_time=0.8)
-
-        draft_letters = ["T", "A", "Y", "L", "O", "R", "S", "W", "I", "P", "T"]
-        letter_boxes = VGroup()
-        for idx, char in enumerate(draft_letters):
-            color = RED if idx == 9 else BLUE
-            box = RoundedRectangle(width=0.6, height=0.6, color=color, fill_color="#181a1e", fill_opacity=0.9, corner_radius=0.05)
-            box.move_to(LEFT * 3.5 + idx * 0.7 * RIGHT + UP * 0.2)
-            lbl = create_text(char, font_size=12, color=WHITE).move_to(box.get_center())
-            letter_boxes.add(VGroup(box, lbl))
-
-        self.play(FadeIn(letter_boxes, lag_ratio=0.08), run_time=1.2)
-
-        feedback_box = RoundedRectangle(width=6.0, height=0.8, color=RED, fill_color="#2b1414", fill_opacity=0.9, corner_radius=0.06)
-        feedback_box.move_to(DOWN * 0.8)
-        feedback_lbl = create_markup_text(
-            "<b>Feedback:</b> The 10th character <span foreground='#FF5555'>'P'</span> is wrong. Fix it.",
-            font_size=10, color=WHITE
-        ).move_to(feedback_box.get_center())
-
-        arrow_feedback = Arrow(start=feedback_box.get_top(), end=letter_boxes[9].get_bottom(), color=RED, stroke_width=2)
-
-        self.play(
-            FadeIn(feedback_box), Write(feedback_lbl), Create(arrow_feedback),
-            run_time=1.0
+        toy_title = create_text('Toy Example: Generate "TAYLORSWIFT"', font_size=13, color=YELLOW).next_to(
+            sub_title, DOWN, buff=0.3
         )
+        target = list("TAYLORSWIFT")
+        draft = list("TAYLORSWIPT")
+        boxes = VGroup()
+        for idx, char in enumerate(draft):
+            color = RED_B if char != target[idx] else BLUE_B
+            box = RoundedRectangle(width=0.58, height=0.62, corner_radius=0.05, color=color, fill_color="#15181d", fill_opacity=0.95)
+            label = create_text(char, font_size=13, color=WHITE).move_to(box.get_center())
+            boxes.add(VGroup(box, label))
+        boxes.arrange(RIGHT, buff=0.08).move_to(UP * 0.65)
+        generator_label = create_text("Generator: p(character)", font_size=10, color=BLUE_A).next_to(boxes, UP, buff=0.35)
+        prob_bars = create_probability_bars(
+            [("I", 0.40, BLUE_A), ("P", 0.36, RED_B), ("F", 0.18, GREEN), ("T", 0.06, GRAY_B)]
+        ).scale(0.82)
+        prob_bars.next_to(boxes[9], DOWN, buff=0.45)
+        prob_label = create_text("Position 10 distribution", font_size=8, color=GRAY_A).next_to(prob_bars, DOWN, buff=0.12)
+        feedback_box = labeled_box("Feedback", "character 10 is incorrect", width=2.6, height=0.9, color=RED_B)
+        feedback_box.move_to(LEFT * 2.0 + DOWN * 1.75)
+        corrector_box = labeled_box("Corrector", "regenerate wrong part", width=2.6, height=0.9, color=GREEN)
+        corrector_box.next_to(feedback_box, RIGHT, buff=0.65)
+        target_arrow = Arrow(feedback_box.get_top(), boxes[9].get_bottom(), color=RED_B, stroke_width=1.8, buff=0.08)
+        fix_arrow = Arrow(feedback_box.get_right(), corrector_box.get_left(), color=GREEN, stroke_width=1.8, buff=0.08)
+        self.play(FadeIn(toy_title), FadeIn(generator_label), FadeIn(boxes, lag_ratio=0.04), FadeIn(prob_bars, lag_ratio=0.08), FadeIn(prob_label), run_time=1.2)
+        self.play(FadeIn(feedback_box), Create(target_arrow), FadeIn(corrector_box), Create(fix_arrow), run_time=0.9)
+
         self.wait_until(cue_start[19])
-
-        # --- Cue 19: Fix incorrect letter ---
-        new_lbl = create_text("F", font_size=12, color=WHITE).move_to(letter_boxes[9][0].get_center())
-
+        fixed_label = create_text("F", font_size=13, color=WHITE).move_to(boxes[9][1].get_center())
+        final = create_markup_text("Final: <b>TAYLORSWIFT</b>", font_size=13, color=GREEN).move_to(DOWN * 2.55)
+        localization = create_text("Localized error -> easier correction", font_size=10, color=YELLOW).move_to(DOWN * 2.95)
+        corrected_bars = create_probability_bars(
+            [("I", 0.08, BLUE_A), ("P", 0.04, RED_B), ("F", 0.82, GREEN), ("T", 0.06, GRAY_B)]
+        ).scale(0.82)
+        corrected_bars.move_to(prob_bars.get_center())
         self.play(
-            letter_boxes[9][0].animate.set_color(GREEN).set_fill(color="#143c14", opacity=0.9),
-            FadeOut(letter_boxes[9][1]),
-            FadeIn(new_lbl),
-            FadeOut(arrow_feedback),
-            FadeOut(feedback_box),
-            FadeOut(feedback_lbl),
-            run_time=1.0
+            boxes[9][0].animate.set_color(GREEN).set_fill("#143c14", opacity=0.95),
+            FadeOut(boxes[9][1]),
+            FadeIn(fixed_label),
+            FadeOut(target_arrow),
+            ReplacementTransform(prob_bars, corrected_bars),
+            run_time=0.8,
         )
-        letter_boxes[9].remove(letter_boxes[9][1])
-        letter_boxes[9].add(new_lbl)
+        boxes[9].remove(boxes[9][1])
+        boxes[9].add(fixed_label)
+        self.play(FadeIn(localization), FadeIn(final), run_time=0.7)
 
-        final_lbl = create_markup_text(
-            "Final result: <b>TAYLORSWIFT</b>", font_size=12, color=GREEN
-        ).move_to(DOWN * 0.8)
-        self.play(Write(final_lbl), run_time=0.8)
-
-        self.wait_until(voiceover_end + 0.25)
-        
+        self.wait_until(voiceover_end + 0.2)
         self.play(
-            FadeOut(letter_boxes),
-            FadeOut(final_lbl),
             FadeOut(toy_title),
+            FadeOut(generator_label),
+            FadeOut(boxes),
+            FadeOut(corrected_bars),
+            FadeOut(prob_label),
+            FadeOut(feedback_box),
+            FadeOut(corrector_box),
+            FadeOut(fix_arrow),
+            FadeOut(localization),
+            FadeOut(final),
             FadeOut(sub_title),
-            run_time=1.0
+            run_time=0.8,
         )
 
         assert_all_scene_voiceovers_played(self)
